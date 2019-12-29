@@ -1,6 +1,7 @@
 #!/bin/sh
+
+rm -rf wasm 
 mkdir -p wasm
-cp assets/wasm.html wasm/index.html
 
 GOOS=js GOARCH=wasm go build -o wasm ../examples/...
 
@@ -24,6 +25,8 @@ cat >> index.html << EOF
 	</body>
 </html>
 EOF
+
+cp assets/wasm.html wasm/index.html
 
 
 
