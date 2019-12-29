@@ -8,11 +8,11 @@ Just a personal project that I started by exploring some ECS patterns
 
 ## Examples
 
-- [gophers](https://stdiopt.github.io/gorge/wasm.html?t=gophers)
-- [simple](https://stdiopt.github.io/gorge/wasm.html?t=simple)
-- [scene](https://stdiopt.github.io/gorge/wasm.html?t=scene)
-- [boxes](https://stdiopt.github.io/gorge/wasm.html?t=boxes)
-- [text](https://stdiopt.github.io/gorge/wasm.html?t=text)
+- [gophers](https://stdiopt.github.io/gorge/wasm/?t=gophers)
+- [simple](https://stdiopt.github.io/gorge/wasm/?t=simple)
+- [scene](https://stdiopt.github.io/gorge/wasm/?t=scene)
+- [boxes](https://stdiopt.github.io/gorge/wasm/?t=boxes)
+- [text](https://stdiopt.github.io/gorge/wasm/?t=text)
 
 ## Platforms
 
