@@ -47,6 +47,18 @@ func main() {
 }
 ```
 
+## Todos
+
+There are a couple of improvements and new features that I would like to
+implement
+
+- Scene loading, unloading
+- Render textures, filters
+- shadow maps, reflection probes
+- renderer entity removal
+- particle system
+- animation, tweening
+
 ## Notes
 
 It contains a slightly modified version of `golang.org/x/mobile` in vendor

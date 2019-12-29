@@ -8,7 +8,7 @@
 	</script>
 	<script>
 		// file getter minified
-		const urlParams=new URLSearchParams(window.location.search),wasm=urlParams.get("t");(async()=>{const a=await fetch("wasm/"+wasm);if(!a.ok){const t=document.createElement("pre");return t.innerText=await a.text(),void document.body.appendChild(t)}const t=await a.arrayBuffer(),e=new Go,n=await WebAssembly.instantiate(t,e.importObject); document.body.innerHTML="";e.run(n.instance)})();
+		const urlParams=new URLSearchParams(window.location.search),wasm=urlParams.get("t");(async()=>{const a=await fetch(wasm);if(!a.ok){const t=document.createElement("pre");return t.innerText=await a.text(),void document.body.appendChild(t)}const t=await a.arrayBuffer(),e=new Go,n=await WebAssembly.instantiate(t,e.importObject); document.body.innerHTML="";e.run(n.instance)})();
 	</script>
 	</head>
 <body>

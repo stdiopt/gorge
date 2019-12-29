@@ -1,5 +1,6 @@
 #!/bin/sh
 mkdir -p wasm
+cp assets/wasm.html wasm/index.html
 
 GOOS=js GOARCH=wasm go build -o wasm ../examples/...
 
@@ -15,7 +16,7 @@ cat > index.html << EOF
 EOF
 (cd wasm;
 	for i in *; do
-		echo "<li><a href=\"wasm.html?t=$i\">$i</a></li>" >> ../index.html
+		echo "<li><a href=\"./wasm/?t=$i\">$i</a></li>" >> ../index.html
 	done
 )
 cat >> index.html << EOF
@@ -23,6 +24,7 @@ cat >> index.html << EOF
 	</body>
 </html>
 EOF
+
 
 
 
