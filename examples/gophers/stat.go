@@ -17,7 +17,6 @@ package gophers
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"math"
 	"runtime"
 	"sort"
@@ -25,7 +24,6 @@ import (
 	"time"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gl"
 	"github.com/stdiopt/gorge/gorgeutils"
 	"github.com/stdiopt/gorge/input"
@@ -34,21 +32,23 @@ import (
 	"github.com/stdiopt/gorge/x/text"
 )
 
-// StatSystemX do the thing
-func StatSystemX(g *gorge.Gorge) {
+// Stat do the thing
+func Stat(s *gorge.Scene) {
 	// Add necessary stuff here
-	assets := asset.FromECS(g)
+	//assets := asset.FromECS(g)
 
 	//root := &gorge.Transform{}
 
-	font, err := text.NewFont(assets.Asset("fonts/meslo.ttf"))
-	if err != nil {
-		return
-	}
-	g.Trigger(asset.AddEvent{Asset: font.Texture})
+	font := s.Assets().Font("fonts/meslo.ttf")
 
 	txt := text.New(font)
-	txt.Material.Name = "unlit"
+	txtMat := s.Assets().Material("shaders/unlit")
+	txtMat.SetTexture("albedoMap", font.Texture)
+
+	txt.SetMaterial(txtMat)
+	// TODO: find a better way
+	//txt.Material.ShaderLoader = txtMat.ShaderLoader
+
 	txt.SetScale(.02).SetPosition(-0.75, 0, 1)
 
 	plane := primitive.Plane()
@@ -57,17 +57,16 @@ func StatSystemX(g *gorge.Gorge) {
 
 	var camera *gorgeutils.Camera
 	var winSize vec2
+	s.AddEntity(plane, txt)
 
 	recalc := func() {
 		if camera == nil {
 			return
 		}
-		txt.SetParent(camera)
 		m := camera.Projection()
 		pvInv := m.Inv()
 
 		p := vec2{20, 20}
-
 		ndc := m32.Vec4{
 			2*p[0]/winSize[0] - 1,
 			1 - 2*p[1]/winSize[1],
@@ -83,17 +82,12 @@ func StatSystemX(g *gorge.Gorge) {
 		txt.SetScale(.02 * (1 / winSize[1] * 800))
 	}
 	// Goal make text on a right position
-	g.Handle(func(c *gorgeutils.Camera) {
+	s.Handle(func(c *gorgeutils.Camera) {
 		camera = c
-		recalc()
+		txt.SetParent(camera)
 	})
-	g.Handle(func(e gorge.ResizeEvent) {
-		log.Println("Resize:", e)
+	s.Handle(func(e gorge.ResizeEvent) {
 		winSize = vec2(e)
-		recalc()
-	})
-	g.Handle(func(evt gorge.StartEvent) {
-		g.AddEntity(plane, txt)
 	})
 
 	// Profiling
@@ -101,14 +95,15 @@ func StatSystemX(g *gorge.Gorge) {
 
 	timeInitial := float32(2)
 	timeInterval := timeInitial
-	g.Handle(func(e gorge.UpdateEvent) {
+	s.Handle(func(e gorge.UpdateEvent) {
+		recalc()
 		timeInterval -= float32(e)
 		if timeInterval > 0 {
 			return
 		}
 		timeInterval = timeInitial
 
-		statStr := statUpdate(g)
+		statStr := statUpdate(s)
 		txt.SetText(statStr)
 
 		delta := txt.Max.Sub(txt.Min)
@@ -119,11 +114,11 @@ func StatSystemX(g *gorge.Gorge) {
 
 		plane.SetScale(half[0]+padding, 0, half[1]+padding)
 	})
-	g.Handle(func(evt input.KeyEvent) {
+	s.Handle(func(evt input.KeyEvent) {
 		if evt.Type == input.KeyUp {
 			switch evt.Key {
 			case "F10":
-				statUpdate(g)
+				statUpdate(s)
 			case "F9":
 				runtime.GC()
 			}
@@ -134,14 +129,14 @@ func StatSystemX(g *gorge.Gorge) {
 }
 
 // Read stats into a formated string
-func statUpdate(g *gorge.Gorge) string {
+func statUpdate(s *gorge.Scene) string {
 	var winSize m32.Vec2
-	g.Query(func(evt gorge.ResizeEvent) {
+	s.Handle(func(evt gorge.ResizeEvent) {
 		winSize = m32.Vec2(evt)
 	})
 
 	var gw *gl.Wrapper
-	g.Query(func(evt *gl.Wrapper) { gw = evt })
+	s.Query(func(evt *gl.Wrapper) { gw = evt })
 
 	memStat := runtime.MemStats{}
 	buf := &bytes.Buffer{}
@@ -158,9 +153,10 @@ func statUpdate(g *gorge.Gorge) string {
 	)
 
 	hgroups := []*gorge.HandlerGroup{}
-	for _, v := range g.Groups {
-		hgroups = append(hgroups, v)
-	}
+	s.Range(func(k, v interface{}) bool {
+		hgroups = append(hgroups, v.(*gorge.HandlerGroup))
+		return true
+	})
 	// Since its a map we maintain an order
 	/*for _, e := range m.Messaging.Entries {
 		entries = append(entries, e)
@@ -176,7 +172,7 @@ func statUpdate(g *gorge.Gorge) string {
 			fmt.Fprintf(buf, "  delta %v: %s\n", h.CallEnd.Sub(h.CallStart), h.Desc)
 		}*/
 
-		if hg.Type.Name() == "PostUpdateEvent" {
+		if hg.Type.Name() == "RenderEvent" {
 			fmt.Fprintf(buf, "(Renderer) PostUpdate: %v fps: %.2f\n", dt.Round(time.Millisecond/100), float64(time.Second)/float64(dt))
 		}
 		for _, h := range hg.Handlers {

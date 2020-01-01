@@ -21,13 +21,16 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+type vec2 = m32.Vec2
+
 // Text renderable entity
 type Text struct {
 	gorge.Transform
 	gorge.Renderable
-	s    string
-	mesh *gorge.Mesh
-	font *Font
+	s        string
+	mesh     *gorge.Mesh
+	meshData *gorge.MeshData
+	font     *gorge.Font
 
 	Min vec2
 	Max vec2
@@ -36,11 +39,11 @@ type Text struct {
 }
 
 // New setups the renderable with a font
-func New(font *Font) *Text {
-	mat := gorge.NewMaterial("pbr")
-	mat.DoubleSided = true
+func New(font *gorge.Font) *Text {
+	mat := gorge.NewMaterial(nil)
 	mat.SetTexture("albedoMap", font.Texture)
-	mesh := &gorge.Mesh{}
+	meshData := &gorge.MeshData{Name: "text"}
+	mesh := gorge.NewMesh(meshData)
 	return &Text{
 		Transform: gorge.Transform{},
 		Renderable: gorge.Renderable{
@@ -48,8 +51,9 @@ func New(font *Font) *Text {
 			Material: mat,
 			Mesh:     mesh,
 		},
-		mesh: mesh,
-		font: font,
+		mesh:     mesh,
+		meshData: meshData,
+		font:     font,
 	}
 }
 
@@ -66,7 +70,7 @@ func (t *Text) SetText(s string) {
 	var x, y float32
 	for _, ch := range s {
 		if ch == ' ' {
-			x += float32(t.font.spaceAdv)
+			x += float32(t.font.SpaceAdv)
 			continue
 		}
 		if ch == '\n' {
@@ -74,25 +78,25 @@ func (t *Text) SetText(s string) {
 			y--
 			continue
 		}
-		g, ok := t.font.glyphs[ch]
+		g, ok := t.font.Glyphs[ch]
 		if !ok {
-			g = t.font.glyphs['�']
+			g = t.font.Glyphs['�']
 			// default to some odd char
 			//panic(fmt.Sprintf("glyph %v not found", ch))
 		}
-		w := g.size[0]
-		h := g.size[1]
-		xpos := x + g.bearingH
-		ypos := y + h - g.bearingV - 0.6
+		w := g.Size[0]
+		h := g.Size[1]
+		xpos := x + g.BearingH
+		ypos := y + h - g.BearingV - 0.6
 		verts = append(verts, []float32{
 			// Auto letters
-			xpos, ypos, 0, g.uv1[0], g.uv1[1],
-			xpos + w, ypos, 0, g.uv2[0], g.uv1[1],
-			xpos + w, ypos - h, 0, g.uv2[0], g.uv2[1],
+			xpos, ypos, 0, g.Uv1[0], g.Uv1[1],
+			xpos + w, ypos - h, 0, g.Uv2[0], g.Uv2[1],
+			xpos + w, ypos, 0, g.Uv2[0], g.Uv1[1],
 
-			xpos + w, ypos - h, 0, g.uv2[0], g.uv2[1],
-			xpos, ypos - h, 0, g.uv1[0], g.uv2[1],
-			xpos, ypos, 0, g.uv1[0], g.uv1[1],
+			xpos + w, ypos - h, 0, g.Uv2[0], g.Uv2[1],
+			xpos, ypos, 0, g.Uv1[0], g.Uv1[1],
+			xpos, ypos - h, 0, g.Uv1[0], g.Uv2[1],
 		}...)
 		if xpos < t.Min[0] {
 			t.Min[0] = xpos
@@ -106,12 +110,10 @@ func (t *Text) SetText(s string) {
 		if ypos > t.Max[1] {
 			t.Max[1] = ypos
 		}
-		x += g.advance
+		x += g.Advance
 	}
 
-	t.mesh.MeshLoader = &gorge.MeshData{
-		Format:   gorge.VertexFormatPT,
-		Vertices: verts,
-	}
-	t.mesh.Updates++
+	t.meshData.Format = gorge.VertexFormatPT
+	t.meshData.Vertices = verts
+	t.meshData.Updates++
 }

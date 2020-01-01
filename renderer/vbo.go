@@ -22,7 +22,9 @@ import (
 type vboManager struct {
 	g gl.Context3
 
-	vbos map[interface{}]*vbo
+	// For debug
+	vboCount int
+	vbos     map[interface{}]*vbo
 }
 
 func newVBOManager(g gl.Context3) *vboManager {
@@ -33,29 +35,38 @@ func newVBOManager(g gl.Context3) *vboManager {
 	return vm
 }
 
-// Get vbo for mesh
-func (vm *vboManager) Get(m *gorge.Mesh) *vbo {
-	return vm.get(m)
-}
-
-func (vm *vboManager) get(m *gorge.Mesh) *vbo {
-	if vb, ok := vm.vbos[m]; ok {
-		vb.update() // if needed
+func (vm *vboManager) Load(m *gorge.Mesh) *vbo {
+	k := m.Loader()
+	if vb, ok := vm.vbos[k]; ok {
+		vb.refCount++
 		return vb
 	}
-	g := vm.g
 
 	vb := &vbo{
-		g:       g,
-		mesh:    m,
-		VBO:     g.CreateBuffer(),
-		EBO:     g.CreateBuffer(),
+		g:       vm.g,
+		loader:  m.Loader(),
+		VBO:     vm.g.CreateBuffer(),
+		EBO:     vm.g.CreateBuffer(),
 		updates: -1,
 	}
-	vb.update()
+	vb.update(true)
 
-	vm.vbos[m] = vb
+	vm.vbos[k] = vb
 	return vb
+}
+
+// Get vbo for mesh
+func (vm *vboManager) Get(m *gorge.Mesh) *vbo {
+	k := m.Loader()
+	if vb, ok := vm.vbos[k]; ok {
+		return vb
+	}
+	// Not found, but if it is a MeshEntity we allow it to load since it will not
+	// use IO and should be already tracked in scene
+	if _, ok := m.Loader().(*gorge.MeshData); ok {
+		return vm.Load(m)
+	}
+	return nil
 }
 
 type vbo struct {
@@ -67,38 +78,56 @@ type vbo struct {
 	VertexLen   int
 
 	// Do we need this?
-	mesh    *gorge.Mesh
-	updates int
+	//mesh     *gorge.Mesh
+	// Should be a loader as mesh doesn't matter anymore here
+	loader   gorge.MeshLoader
+	updates  int
+	refCount int
 }
 
-func (v *vbo) update() bool {
-	if v.mesh.Updates == v.updates {
-		return false
-	}
-	if v.mesh.MeshLoader == nil {
-		return false
-	}
-	g := v.g
-	// Reload mesh data
-	meshData := v.mesh.Data()
+// Load data if
+// 1. State is Loading
+// 2. data IsMeshData && updates arent equal
+func (v *vbo) update(initial bool) bool {
+	data, isMeshData := v.loader.(*gorge.MeshData)
 
+	if !initial {
+		if !isMeshData {
+			return false
+		}
+		if v.updates == data.Updates {
+			return false
+		}
+	}
+
+	bufferType := uint32(gl.STATIC_DRAW)
+	if isMeshData {
+		bufferType = gl.DYNAMIC_DRAW
+		v.updates = data.Updates
+	}
+
+	meshData := v.loader.Data()
+	g := v.g
+
+	if meshData == nil {
+		return false
+	}
 	v.Format = meshData.Format
 	v.VertexLen = len(meshData.Vertices) / vertSize(meshData.Format)
 
 	g.BindBuffer(gl.ARRAY_BUFFER, v.VBO)
-	g.BufferDataX(gl.ARRAY_BUFFER, meshData.Vertices, gl.STATIC_DRAW)
+	g.BufferDataX(gl.ARRAY_BUFFER, meshData.Vertices, bufferType)
 
 	if meshData.Indices != nil && len(meshData.Indices) > 0 {
 		v.ElementsLen = len(meshData.Indices)
 		g.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, v.EBO)
-		g.BufferDataX(gl.ELEMENT_ARRAY_BUFFER, meshData.Indices, gl.STATIC_DRAW)
+		g.BufferDataX(gl.ELEMENT_ARRAY_BUFFER, meshData.Indices, bufferType)
 	}
-	v.updates = v.mesh.Updates
 	return true
 }
 
 // should bind for VAO normally?
-func (v *vbo) bindForShader(shader *Shader) {
+func (v *vbo) bindForShader(shader *shader) {
 	g := v.g
 
 	g.BindBuffer(gl.ARRAY_BUFFER, v.VBO)

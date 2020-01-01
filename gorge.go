@@ -17,8 +17,13 @@ package gorge
 
 import (
 	"fmt"
+	glog "log"
 
 	"github.com/stdiopt/gorge/m32"
+)
+
+var (
+	log = glog.New(glog.Writer(), "(gorge) ", 0)
 )
 
 type (
@@ -97,7 +102,8 @@ func (g *Gorge) Start() {
 	if g.state != StateInitialized {
 		panic(fmt.Sprintf("cannot start, current state is: %v", g.state))
 	}
-	g.Trigger(StartEvent{})
+	g.Persist(StartEvent{})
+	g.Trigger(AfterStartEvent{})
 }
 
 // Run until close is called on done
@@ -125,6 +131,8 @@ func (g *Gorge) UpdateNow(dt float32) {
 	g.Trigger(UpdateEvent(dt))
 	g.Trigger(PostUpdateEvent(dt))
 
+	g.Trigger(RenderEvent(dt))
+
 	// XXX: Profiling
 	/*g.Range(func(k, v interface{}) bool {
 		hg := v.(*HandlerGroup)
@@ -144,11 +152,7 @@ func (g *Gorge) Close() {
 }
 
 // AddEntity adds an entity
-func (g *Gorge) AddEntity(e ...Entity) {
-	/*if !g.initialized {
-		panic("gorge wasn't initialized")
-	}*/
-
+/*func (g *Gorge) AddEntity(e ...Entity) {
 	ents := make([]Entity, 0, len(e)) // at least len(e)
 	for _, e := range e {
 		switch e := e.(type) {
@@ -161,7 +165,44 @@ func (g *Gorge) AddEntity(e ...Entity) {
 	g.Trigger(EntitiesAddEvent(ents))
 }
 
-// DestroyEntity an entity
-func (g *Gorge) DestroyEntity(e ...Entity) {
-	g.Trigger(EntitiesDestroyEvent(e))
+// RemoveEntity an entity
+func (g *Gorge) RemoveEntity(ents ...Entity) {
+	g.Trigger(EntitiesRemoveEvent(ents))
+}*/
+
+//////////////////////////
+// Experiment handler funcs
+/////////////
+
+// Better typed handlers, scene doesn't work if we hide the data types
+
+// HandleStart helper listens for a gorge.StartEvent
+func (g *Gorge) HandleStart(fn func()) *Handler {
+	return g.Handle(func(e StartEvent) {
+		fn()
+	})
+}
+
+// HandleUpdate helper litens for a gorge.UpdateEvent
+func (g *Gorge) HandleUpdate(fn func(dt float32)) *Handler {
+	return g.Handle(func(e UpdateEvent) {
+		fn(float32(e))
+	})
+}
+
+// HandlePostUpdate helper listens for a gorge.PostUpdateEvent
+func (g *Gorge) HandlePostUpdate(fn func(dt float32)) *Handler {
+	return g.Handle(func(e PostUpdateEvent) {
+		fn(float32(e))
+	})
+}
+
+// Error persists an error in the event system
+func (g *Gorge) Error(err error) {
+	g.Persist(ErrorEvent{err})
+}
+
+// Warn persists a warning msg in the event system
+func (g *Gorge) Warn(s string) {
+	g.Persist(WarnEvent(s))
 }

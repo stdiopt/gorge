@@ -32,31 +32,37 @@ import (
 
 type textureManager struct {
 	g gl.Context3
+	//assets *asset.System
 
 	// Use name to loose dependency?
 	textures map[interface{}]*texture
 
-	gray   *texture
-	normal *texture
-	white  *texture
+	gray    *texture
+	invalid *texture
+	normal  *texture
+	white   *texture
 }
 
 func newTextureManager(g gl.Context3) *textureManager {
 	// Prepare some weird textures here too
 
 	tm := &textureManager{
-		g:        g,
+		g: g,
+		//assets:   assets,
 		textures: map[interface{}]*texture{},
 	}
 
-	tm.gray = tm.get(&gorge.Texture{
-		WrapU: gorge.TextureWrapRepeat,
-		WrapV: gorge.TextureWrapRepeat,
-		TextureLoader: gorge.TextureData{
-			Width: 1, Height: 1,
-			PixelData: []byte{127, 127, 127, 255},
-		},
+	grayTex := gorge.NewTexture(&gorge.TextureData{
+		Width: 1, Height: 1,
+		PixelData: []byte{127, 127, 127, 255},
 	})
+	invalidTex := gorge.NewTexture(&gorge.TextureData{
+		Width: 1, Height: 1,
+		PixelData: []byte{255, 0, 255, 255},
+	})
+	tm.gray = tm.Get(grayTex)
+	tm.invalid = tm.Get(invalidTex)
+
 	//tm.gray = tm.Get(gray)
 	//tm.gray = tm.Create2D(1, 1)
 	//tm.gray.SetImage2D([]byte{127, 127, 127, 255})
@@ -73,8 +79,10 @@ func newTextureManager(g gl.Context3) *textureManager {
 func (tm *textureManager) Get(t *gorge.Texture) *texture {
 	return tm.get(t)
 }
+
 func (tm *textureManager) get(t *gorge.Texture) *texture {
-	if tex, ok := tm.textures[t]; ok {
+	k := t
+	if tex, ok := tm.textures[k]; ok {
 		tex.update()
 		return tex
 	}
@@ -88,7 +96,7 @@ func (tm *textureManager) get(t *gorge.Texture) *texture {
 	}
 	tex.update()
 
-	tm.textures[t] = tex
+	tm.textures[k] = tex
 	return tex
 }
 
@@ -125,8 +133,9 @@ func (tm *textureManager) CreateCubeMap(size int) *texture {
 
 // Local state tracking
 type texture struct {
-	g gl.Context3
-	//manager       *textureManager
+	manager *textureManager
+	g       gl.Context3
+	// TODO: Ref or bundle ref here?
 	id gl.Texture
 
 	width, height int
@@ -148,13 +157,11 @@ func (t *texture) updateData() {
 	if t.texture.DataUpdates == t.dataUpdates {
 		return
 	}
-	if t.texture.TextureLoader == nil {
-		return
-	}
-	g := t.g
 	t.dataUpdates = t.texture.DataUpdates
 
-	texData := t.texture.Data()
+	g := t.g
+
+	texData := t.texture.Loader().Data()
 	if texData == nil {
 		// Update a pink image
 		g.TexImage2D(gl.TEXTURE_2D, 0,
@@ -192,12 +199,13 @@ func (t *texture) updateParam() {
 	}
 
 	switch t.texture.FilterMode {
-	case gorge.TextureFilterLinear:
-		g.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-		g.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	case gorge.TextureFilterPoint:
 		g.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST)
 		g.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	//case gorge.TextureFilterLinear:
+	default:
+		g.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+		g.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	}
 
 	g.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAX_ANISOTROPY_EXT, 16)

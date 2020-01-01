@@ -14,7 +14,9 @@
 
 package gorge
 
-import "github.com/stdiopt/gorge/m32"
+import (
+	"github.com/stdiopt/gorge/m32"
+)
 
 // PreUpdateEvent type
 type PreUpdateEvent float32
@@ -25,20 +27,29 @@ type UpdateEvent float32
 // PostUpdateEvent type
 type PostUpdateEvent float32
 
+// RenderEvent happens after pre,update and post update events
+type RenderEvent float32
+
 // ResizeEvent ...
 type ResizeEvent m32.Vec2
 
 // EntitiesAddEvent is triggered when entities are added
 type EntitiesAddEvent []Entity
 
-// EntitiesDestroyEvent is triggered when entities are destroyed
-type EntitiesDestroyEvent []Entity
+// EntitiesRemoveEvent is triggered when entities are destroyed
+type EntitiesRemoveEvent []Entity
 
 // StartEvent fired when things starts
 type StartEvent struct{}
 
+// AfterStartEvent to attach stuff (wasm request animation frame workaround)
+type AfterStartEvent struct{}
+
 // DestroyEvent is called when system is shutting down
 type DestroyEvent struct{}
 
-// ErrorEvent to fire up errors, log and whatnots
-type ErrorEvent error
+// ErrorEvent contains an error
+type ErrorEvent struct{ Err error }
+
+// WarnEvent contains a warning
+type WarnEvent string

@@ -14,29 +14,24 @@
 
 package gorge
 
-import (
-	"github.com/stdiopt/gorge/gl"
-)
+// ShaderLoader loads shader data for a material
+type ShaderLoader interface {
+	Data() *ShaderData
+}
 
-// DrawType type of draw for the renderer
-type DrawType int
+// ShaderData contains shaders sources
+type ShaderData struct {
+	VertSrc string
+	FragSrc string
+}
 
-// independent from gl drawTypes
-const (
-	DrawPoints = DrawType(iota)
-	DrawLines
-	DrawLineLoop
-	DrawLineStrip
-	DrawTriangles
-	DrawTriangleStrip
-	DrawTriangleFan
-)
+// Data convinient to return memory data
+func (d ShaderData) Data() *ShaderData { return &d }
 
 // Material the material
 type Material struct {
-	Name string
+	loader ShaderLoader
 	// Primitive stuff
-	DrawType    DrawType
 	Depth       bool
 	DoubleSided bool
 	// Program name (not being used yet)
@@ -49,16 +44,17 @@ type Material struct {
 }
 
 // NewMaterial returns a initialized Material
-func NewMaterial(shader string) *Material {
-	if shader == "" {
-		shader = "pbr" // default
-	}
+func NewMaterial(l ShaderLoader) *Material {
 	return &Material{
-		Name:     shader,
-		DrawType: gl.TRIANGLES,
-		Depth:    true,
+		loader: l,
+		Depth:  true,
 		//Color:    vec4{0.5, 0.5, 0.5, 1},
 	}
+}
+
+// Loader returns the shader loader for this material
+func (m *Material) Loader() ShaderLoader {
+	return m.loader
 }
 
 // SetTexture uniform thing for specific name
@@ -83,6 +79,8 @@ func (m *Material) Set(name string, value interface{}) *Material {
 
 	return m
 }
+
+// Get return named property
 func (m *Material) Get(name string) interface{} {
 	if m.props == nil {
 		return nil

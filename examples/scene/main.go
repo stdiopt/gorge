@@ -15,42 +15,34 @@
 package main
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gorgeutils"
 	"github.com/stdiopt/gorge/platform"
 	"github.com/stdiopt/gorge/primitive"
-	"github.com/stdiopt/gorge/x/scene"
+	"github.com/stdiopt/gorge/resource"
 )
 
 func main() {
 
 	opt := platform.Options{
 		Wasm: platform.WasmOptions{
-			AssetLoader: asset.HTTPLoader{BaseURL: "../assets"},
+			Loader: resource.HTTPLoader{BaseURL: "../assets"},
 		},
 		GLFW: platform.GLFWOptions{
-			AssetLoader: asset.FileLoader{BasePath: "/assets"},
+			Loader: resource.FileLoader{BasePath: "/assets"},
 		},
 	}
-	platform.Start(opt, scene.System, sceneStuff)
+	platform.Start(opt, sceneStuff)
 }
 
 func sceneStuff(g *gorge.Gorge) {
-	sm := scene.ManagerFromGorge(g)
-	s := sm.New(scene1)
-	s.Init()
+	s := g.Scene(scene1)
 
-	g.Handle(func(gorge.StartEvent) {
-		log.Println("Will load scene")
-		sm.Load(s)
-	})
+	g.StartScene(s)
 
 }
 
-func scene1(s *scene.Scene) {
+func scene1(s *gorge.Scene) {
 
 	gorgeutils.TrackballCamera(s)
 
@@ -77,7 +69,6 @@ func scene1(s *scene.Scene) {
 			s.AddEntity(box2)
 			triggerTime = 1000000
 		}
-
 	})
 
 }

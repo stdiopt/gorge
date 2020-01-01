@@ -447,7 +447,7 @@ func (g *Wrapper) EnableVertexAttribArray(a Attrib) {
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glFinish.xhtml
 func (g *Wrapper) Finish() {
-	panic("not implemented") // TODO: Implement
+	gl.Finish()
 }
 
 // Flush empties all buffers. It does not block.
@@ -457,7 +457,7 @@ func (g *Wrapper) Finish() {
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glFlush.xhtml
 func (g *Wrapper) Flush() {
-	panic("not implemented") // TODO: Implement
+	gl.Flush()
 }
 
 // FramebufferRenderbuffer attaches rb to the current frame buffer.
@@ -1262,6 +1262,9 @@ func (g *Wrapper) BufferDataX(target Enum, d interface{}, usage Enum) {
 
 	switch v := d.(type) {
 	case []float32:
+		if len(v) == 0 {
+			return
+		}
 		gl.BufferData(target, len(v)*4, gl.Ptr(v), usage)
 	case []uint32:
 		gl.BufferData(target, len(v)*4, gl.Ptr(v), usage)

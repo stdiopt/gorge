@@ -25,7 +25,7 @@ import (
 )
 
 // StatSystem thing
-func StatSystem(g *gorge.Gorge) {
+func StatSystem(s *gorge.Scene) {
 
 	// Dom, wasm specific
 	statDom := dom.El("pre",
@@ -46,7 +46,7 @@ func StatSystem(g *gorge.Gorge) {
 	// Profiling
 	go func() {
 		for {
-			statStr := statUpdate(g)
+			statStr := statUpdate(s)
 
 			statDom.Set("innerHTML", statStr)
 
@@ -54,9 +54,9 @@ func StatSystem(g *gorge.Gorge) {
 		}
 	}()
 
-	g.Handle(func(evt input.KeyEvent) {
+	s.Handle(func(evt input.KeyEvent) {
 		if evt.Type == input.KeyUp && evt.Key == "F10" {
-			statUpdate(g)
+			statUpdate(s)
 		}
 	}).Describe("stat key")
 

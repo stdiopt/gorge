@@ -21,29 +21,23 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
-// Poly creates a polygon facing Z
-func Poly(name string, n int, color vec4) *MeshEntity {
-	// build poly verts
-	if name == "" {
-		name = "poly"
-	}
-	data := makePoly(n)
-	mat := gorge.NewMaterial("")
-	mat.DrawType = gorge.DrawTriangleFan
-	r := &MeshEntity{
+// Poly creates a polygon with n sides
+func Poly(n int) *MeshEntity {
+	mesh := PolyMesh(n)
+	mat := gorge.NewMaterial(nil)
+	// Should be on mesh perhaps?
+	return &MeshEntity{
 		*gorge.NewTransform(),
 		gorge.Renderable{
-			Name:     name,
-			Color:    color,
-			Mesh:     &gorge.Mesh{MeshLoader: data},
+			Color:    vec4{1, 1, 1, 1},
+			Mesh:     mesh,
 			Material: mat,
 		},
 	}
-
-	return r
 }
 
-func makePoly(n int) *gorge.MeshData {
+// PolyMesh creates a poly mesh
+func PolyMesh(n int) *gorge.Mesh {
 	points := []float32{}
 	p := vec3{0, 1, 0}
 	theta := float32(math.Pi) / (float32(n) / 2)
@@ -52,9 +46,14 @@ func makePoly(n int) *gorge.MeshData {
 		points = append(points, p[:]...)
 		p = r.Mul3x1(p)
 	}
-	return &gorge.MeshData{
+	data := &gorge.MeshData{
+		Name:     "primitive.Poly",
 		Format:   gorge.VertexFormatP,
 		Vertices: points,
 		Indices:  nil,
 	}
+	m := gorge.NewMesh(data)
+	m.DrawType = gorge.DrawTriangleFan
+
+	return m
 }

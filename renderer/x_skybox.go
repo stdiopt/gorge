@@ -18,15 +18,19 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
-	"log"
 
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/gl"
+	"github.com/stdiopt/gorge/resource"
 )
 
 // PrepareSkybox prepares textures and skybox cube
 func (rs *Renderer) PrepareSkybox() {
 	g := rs.g
-	assets := rs.assets
+
+	var assets *resource.Manager
+	rs.gorge.Query(func(m *resource.Manager) { assets = m })
+
 	///////////////////////////////////////////////////////////////////////////
 	// XXX: PLAYING AROUND HERE
 	///////////////////////////////////////////////////////////////////////////
@@ -66,14 +70,12 @@ func (rs *Renderer) PrepareSkybox() {
 		default:
 			panic(fmt.Sprintf("image is wrong: %T", img))
 		}
+	}
 
-	}
+	mat := gorge.NewMaterial(skyboxShader)
+
 	rs.skyboxTex = tex
-	rs.skyboxShader, err = rs.shaders.Get("skybox")
-	if err != nil {
-		log.Println("Err:", err)
-		return
-	}
+	rs.skyboxShader = rs.shaders.Get(mat)
 
 	rs.skyboxVAO = g.CreateVertexArray()
 	g.BindVertexArray(rs.skyboxVAO)
@@ -167,4 +169,34 @@ var skyboxVert = []float32{
 	1.0, -1.0, 1.0, // 2
 	-1.0, -1.0, -1.0, // 1
 	-1.0, -1.0, 1.0, // 0
+}
+
+var skyboxShader = &gorge.ShaderData{
+	VertSrc: `#version 300 es
+layout (location = 0) in vec3 aPosition;
+
+out vec3 TexCoords;
+
+uniform mat4 projection;
+uniform mat4 view;
+
+void main()
+{
+	TexCoords = aPosition;
+	mat4 lview = mat4(mat3(view));
+	vec4 pos =  projection * lview * vec4(aPosition, 1.0);
+	gl_Position = pos.xyww;
+}`,
+	FragSrc: `#version 300 es
+precision highp float;
+
+out vec4 FragColor;
+
+in vec3 TexCoords;
+
+uniform samplerCube skybox;
+
+void main() {
+	FragColor = texture(skybox, TexCoords);
+}`,
 }

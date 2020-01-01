@@ -18,11 +18,10 @@ import (
 	"github.com/stdiopt/gorge"
 )
 
-// Cube generates a cube thing
-func Cube() *MeshEntity {
-
-	// All borked
-	vertices := []float32{
+var cubeMesh = gorge.NewMesh(&gorge.MeshData{
+	Name:   "primitive.Cube",
+	Format: gorge.VertexFormatPTN,
+	Vertices: []float32{
 		// Front face
 		-1.0, 1.0, 1.0, 1, 0, 0, 0, 1,
 		1.0, 1.0, 1.0, 0, 0, 0, 0, 1,
@@ -58,37 +57,32 @@ func Cube() *MeshEntity {
 		-1.0, 1.0, 1.0, 0, 0, -1, 0, 0,
 		-1.0, -1.0, 1.0, 0, 1, -1, 0, 0,
 		-1.0, -1.0, -1.0, 1, 1, -1, 0, 0,
-	}
-	indices := []uint32{
+	},
+	Indices: []uint32{
 		0, 1, 2, 0, 2, 3, // front
-		//2, 1, 0, 3, 2, 0,
 		4, 5, 6, 4, 6, 7, // back
-		//7, 6, 4, 6, 5, 4,
 		8, 9, 10, 8, 10, 11, // top
-		//11, 10, 8, 10, 9, 8,
 		12, 13, 14, 12, 14, 15, // bottom
-		//15, 14, 12, 14, 13, 12,
-
 		16, 17, 18, 16, 18, 19, // right
-		//19, 18, 16, 18, 17, 16,
 		20, 21, 22, 20, 22, 23, // left
-		//23, 22, 20, 22, 21, 20,
-	}
-	data := &gorge.MeshData{
-		Format:   gorge.VertexFormatPTN,
-		Vertices: vertices,
-		Indices:  indices,
-	}
-	material := gorge.NewMaterial("")
+	},
+})
 
-	mesh := gorge.Mesh{MeshLoader: data}
+// Cube renderable
+func Cube() *MeshEntity {
+	mat := gorge.NewMaterial(nil)
+
 	return &MeshEntity{
 		*gorge.NewTransform(),
 		gorge.Renderable{
 			Color:    vec4{1, 1, 1, 1},
-			Mesh:     &mesh,
-			Material: material,
+			Mesh:     cubeMesh,
+			Material: mat,
 		},
-		//material,
 	}
+}
+
+// CubeMesh generates a cube mesh
+func CubeMesh() *gorge.Mesh {
+	return cubeMesh
 }

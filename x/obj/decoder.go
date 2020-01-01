@@ -203,11 +203,12 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 		vertexInd = append(vertexInd, iface...)
 	}
 
-	ptn := &gorge.MeshPTN{
+	ptn := &gorge.MeshDataPTN{
+		Name:     "objDecoder",
 		Vertices: vertexRes,
 		Indices:  vertexInd,
 	}
-	return &gorge.Mesh{MeshLoader: ptn}, nil
+	return gorge.NewMesh(ptn), nil
 }
 
 func getVec3(parts []string) (m32.Vec3, error) {
