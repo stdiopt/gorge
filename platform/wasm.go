@@ -17,17 +17,16 @@
 package platform
 
 import (
-	"log"
 	"strings"
 	"syscall/js"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gl"
 	"github.com/stdiopt/gorge/input"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/platform/dom"
 	"github.com/stdiopt/gorge/renderer"
+	"github.com/stdiopt/gorge/resource"
 )
 
 // Type of the platform
@@ -73,7 +72,7 @@ func Start(opt Options, systems ...gorge.SystemFunc) {
 	// Get gl Context from WebGL thingy
 	ctxOpt := map[string]interface{}{
 		"preserveDrawingBuffer": true,
-		"antialias":             false,
+		"antialias":             true,
 	}
 	webgl := canvas.Call("getContext", "webgl2", ctxOpt)
 	js.Global().Get("console").Call("log", webgl.Call("getSupportedExtensions"))
@@ -86,12 +85,12 @@ func Start(opt Options, systems ...gorge.SystemFunc) {
 	}
 
 	// Default asset loader to .
-	assetLoader := opt.Wasm.AssetLoader
-	if assetLoader == nil {
-		assetLoader = asset.HTTPLoader{"."}
+	resourceLoader := opt.Wasm.Loader
+	if resourceLoader == nil {
+		resourceLoader = resource.HTTPLoader{"."}
 	}
 	ggArgs := []gorge.SystemFunc{
-		asset.NewSystem(assetLoader),
+		resource.NewSystem(resourceLoader),
 		input.System,
 		s.init,
 		renderer.System, // will load glctx and asset
@@ -119,6 +118,25 @@ func (s *wasmSystem) init(g *gorge.Gorge) {
 		s.checkCanvasSize()
 		s.setupEvents()
 	})
+	// XXX: The looper happens after start, since it can have race condition on start
+	// go wasm is weird
+	g.Handle(func(gorge.AfterStartEvent) {
+		var prevFrameTime float64
+		var ticker js.Func
+		ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
+			s.checkCanvasSize()
+			dt := args[0].Float()
+			dtSec := (dt - prevFrameTime) / 1000
+
+			g.UpdateNow(float32(dtSec))
+
+			prevFrameTime = dt
+			js.Global().Call("requestAnimationFrame", ticker)
+			return nil
+		})
+
+		js.Global().Call("requestAnimationFrame", ticker)
+	})
 	s.gorge = g
 }
 
@@ -131,7 +149,6 @@ func (s *wasmSystem) checkCanvasSize() {
 		s.canvas.Set("height", h)
 		s.Width, s.Height = w, h
 		s.gorge.Persist(gorge.ResizeEvent{float32(w), float32(h)})
-		log.Printf("Canvas resize: %vx%v", w, h)
 	}
 }
 
@@ -148,39 +165,22 @@ var (
 )
 
 func (s *wasmSystem) setupEvents() {
-	g := s.gorge
 
 	ptrEvent := js.FuncOf(s.handlePointerEvent)
+	keyEvent := js.FuncOf(s.handleKeyEvent)
+
 	for k := range evtMap {
 		s.canvas.Call("addEventListener", k, ptrEvent)
 	}
-
 	s.canvas.Call("addEventListener", "wheel", ptrEvent)
-	keyEvent := js.FuncOf(s.handleKeyEvent)
 	js.Global().Call("addEventListener", "keydown", keyEvent)
 	js.Global().Call("addEventListener", "keyup", keyEvent)
 	js.Global().Call("addEventListener", "keypress", keyEvent)
-
-	var prevFrameTime float64
-	var ticker js.Func
-	ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
-		s.checkCanvasSize()
-		dt := args[0].Float()
-		dtSec := (dt - prevFrameTime) / 1000
-
-		g.UpdateNow(float32(dtSec))
-
-		prevFrameTime = dt
-		js.Global().Call("requestAnimationFrame", ticker)
-		return nil
-	})
-	js.Global().Call("requestAnimationFrame", ticker)
 
 }
 
 func (s *wasmSystem) handleKeyEvent(t js.Value, args []js.Value) interface{} {
 	evt := args[0]
-	//js.Global().Get("console").Call("log", evt)
 
 	key := evt.Get("key").String()
 	etype := evt.Get("type").String()

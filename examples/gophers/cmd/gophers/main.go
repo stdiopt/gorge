@@ -18,31 +18,30 @@ import (
 	"log"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/examples/gophers"
 	"github.com/stdiopt/gorge/examples/gophers/assets"
 	"github.com/stdiopt/gorge/platform"
+	"github.com/stdiopt/gorge/renderer"
+	"github.com/stdiopt/gorge/resource"
 )
 
 func main() {
 	log.SetFlags(0)
 
-	loader := asset.EmbedLoader{Data: assets.Data}
+	renderer.ExperimentalSkybox = true
+
+	loader := resource.EmbedLoader{Data: assets.Data}
 	opt := platform.Options{
-		Wasm: platform.WasmOptions{AssetLoader: loader},
-		GLFW: platform.GLFWOptions{AssetLoader: loader},
+		Wasm: platform.WasmOptions{Loader: loader},
+		GLFW: platform.GLFWOptions{Loader: loader},
 	}
-	platform.Start(opt,
-		ErrorSystem,
-		gophers.System,
-		gophers.StatSystemX,
-	)
+
+	platform.Start(opt, gophers.System, errorReporter)
 
 }
 
-// ErrorSystem thing
-func ErrorSystem(g *gorge.Gorge) {
-	g.Handle(func(err gorge.ErrorEvent) {
-		log.Println(err)
+func errorReporter(g *gorge.Gorge) {
+	g.Handle(func(e gorge.ErrorEvent) {
+		log.Printf("\033[01;31m%v\033[0m", e.Err)
 	})
 }

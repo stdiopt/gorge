@@ -18,7 +18,7 @@ import (
 	"github.com/stdiopt/gorge/gl"
 )
 
-// TODO: Wrap mode, Filter mode not working
+// TODO: Remove gl entries
 
 // TextureFormat texture pixel format
 type TextureFormat int
@@ -59,9 +59,8 @@ func (d TextureData) Data() *TextureData { return &d }
 
 // Texture reference
 type Texture struct {
-	Name string // just for reference and debugging
-	// Loader Should be private so we can not change?
-	TextureLoader
+	asset
+	Name       string // just for reference and debugging
 	WrapU      WrapMode
 	WrapV      WrapMode
 	WrapW      WrapMode
@@ -69,6 +68,20 @@ type Texture struct {
 
 	Updates     int
 	DataUpdates int
+
+	// Loader Should be private so we can not change?
+	// Swappable texture loader
+	loader TextureLoader
+}
+
+// NewTexture returns a new texture with loader
+func NewTexture(loader TextureLoader) *Texture {
+	return &Texture{loader: loader}
+}
+
+// Loader gets the texture Loader
+func (t *Texture) Loader() TextureLoader {
+	return t.loader
 }
 
 // SetFilterMode sets the filter mode POINT,LINEAR

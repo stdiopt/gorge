@@ -15,17 +15,20 @@
 package gophers
 
 import (
-	"log"
+	glog "log"
 	"math"
 	"math/rand"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gorgeutils"
 	"github.com/stdiopt/gorge/input"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/x/text"
+)
+
+var (
+	log = glog.New(glog.Writer(), "(gophers) ", 0)
 )
 
 const (
@@ -81,9 +84,9 @@ type custom struct {
 }
 
 type gophersSystem struct {
-	gorge   *gorge.Gorge
-	assets  *asset.System
-	input   *input.Input
+	scene *gorge.Scene
+	//gorge *gorge.Gorge
+	//assets  *asset.System
 	winSize vec2
 
 	camTrans  vec3
@@ -96,43 +99,47 @@ type gophersSystem struct {
 	pointerLoc   *gorge.Transform
 	pointerShape *primitive.MeshEntity
 	pointerText  *text.Text
-	gimbal       *primitive.Gimbal
+	gimbal       *gorgeutils.Gimbal
 	cube         *primitive.MeshEntity
 	dog          *primitive.MeshEntity
 	dogText      *text.Text
 
-	font      *text.Font
+	font      *gorge.Font
 	minDist   float32
 	totalTime float32
 }
 
-// System starter
+// System gopher system initializes a scene
 func System(g *gorge.Gorge) {
-	log.Println("Gophers starting")
-	// Waiting for assets
-	assets := asset.FromECS(g)
-	if assets == nil {
-		panic("gophers requires assets")
-	}
-	input := input.FromECS(g)
-	if input == nil {
-		panic("gophers requires input")
-	}
+	s := g.Scene(Gophers, Stat)
+	log.Println("Loading scene")
+	g.LoadScene(s)
+	log.Println("Loaded")
+	s.Start() // Start linkt stuff and what nots
+}
 
-	font, err := text.FontWithOptions(assets.Asset("fonts/open-sans.ttf"), text.FontOptions{Resolution: 2048})
-	if err != nil {
-		panic(err)
-	}
-	// Fix this
-	g.Trigger(asset.AddEvent{Asset: font.Texture})
+// Gophers starts the gopher scne
+func Gophers(s *gorge.Scene) {
+	log.Println("Gophers starting")
+
+	assets := s.Assets()
+	font := assets.Font("fonts/open-sans.ttf", gorge.FontResolution(2048))
 
 	dogMesh := assets.Mesh("obj/dog.obj")
 	dogTex := assets.Texture2D("obj/dog.jpg")
+	// Renderer create texture?
+	textures = map[string]*gorge.Texture{
+		"gopher": assets.Texture2D("gopher.png"),
+		"wood":   assets.Texture2D("wood.png"),
+		"grid":   assets.Texture2D("grid.png"),
+		"wasm":   assets.Texture2D("wasm.png"),
+	}
 
-	s := gophersSystem{
-		gorge:        g,
-		assets:       assets,
-		input:        input,
+	gs := gophersSystem{
+		scene: s,
+		//gorge: gm,
+		//assets:       assets,
+		//input:        input,
 		cameraRig:    gorge.NewTransform(),
 		camera:       gorgeutils.NewCamera(),
 		light:        gorgeutils.NewLight(),
@@ -140,7 +147,7 @@ func System(g *gorge.Gorge) {
 		pointerLoc:   gorge.NewTransform(),
 		pointerShape: primitive.Plane(),
 		pointerText:  text.New(font),
-		gimbal:       primitive.NewGimbal(),
+		gimbal:       gorgeutils.NewGimbal(),
 		cube:         primitive.Cube(),
 		dogText:      text.New(font),
 		dog: &primitive.MeshEntity{
@@ -148,7 +155,7 @@ func System(g *gorge.Gorge) {
 			Renderable: gorge.Renderable{
 				Mesh:  dogMesh,
 				Color: vec4{1, 1, 1, 1},
-				Material: gorge.NewMaterial("pbr").
+				Material: gorge.NewMaterial(nil).
 					SetFloat32("metallic", 0).
 					SetFloat32("ao", 10).
 					SetTexture("albedoMap", dogTex),
@@ -158,25 +165,24 @@ func System(g *gorge.Gorge) {
 		minDist: 4,
 	}
 
-	g.Persist(s.camera)
+	txtMat := s.Assets().Material("shaders/unlit")
+	txtMat.SetTexture("albedoMap", font.Texture)
+	gs.dogText.SetMaterial(txtMat)
 
-	g.Handle(func(evt gorge.ResizeEvent) {
-		s.winSize = vec2(evt)
-		s.camera.Camera.AspectRatio = s.winSize[0] / s.winSize[1]
+	//gs.dogText.Material.ShaderLoader = txtMat.ShaderLoader
+
+	s.Persist(gs.camera)
+
+	s.Handle(func(evt gorge.ResizeEvent) {
+		gs.winSize = vec2(evt)
+		gs.camera.Camera.AspectRatio = gs.winSize[0] / gs.winSize[1]
 	})
 
-	// Renderer create texture?
-	textures = map[string]*gorge.Texture{
-		"gopher": s.assets.Texture2D("gopher.png"),
-		"wood":   s.assets.Texture2D("wood.png"),
-		"grid":   s.assets.Texture2D("grid.png"),
-		"wasm":   s.assets.Texture2D("wasm.png"),
-		"cat":    s.assets.Texture2D("cat/cat.jpg"),
-	}
+	s.Handle(gs.pointerHandler())
+	s.Handle(gs.Update).Describe("gophers-update")
+	s.Handle(gs.Start)
 
-	g.Handle(s.pointerHandler())
-	g.Handle(s.Update).Describe("gophers-update")
-	g.Handle(s.Start)
+	gs.Setup()
 }
 
 // TODO: fix this crap
@@ -193,9 +199,9 @@ func (s *gophersSystem) pointerHandler() func(evt input.PointerEvent) {
 		delta := vec2(evt.Pointers[0].Pos).Sub(lastP)
 		lastP = vec2(evt.Pointers[0].Pos)
 		if evt.Type == input.MouseWheel {
-			dist := s.camera.Transform.WorldPosition().Len()
+			dist := s.camera.WorldPosition().Len()
 			multiplier := dist * 0.005
-			s.camera.Transform.Translate(0, 0, -evt.Pointers[0].DeltaZ*multiplier)
+			s.camera.Translate(0, 0, -evt.Pointers[0].DeltaZ*multiplier)
 			return
 		}
 
@@ -253,36 +259,34 @@ func (s *gophersSystem) pointerHandler() func(evt input.PointerEvent) {
 	}
 }
 
-func (s *gophersSystem) Start(evt gorge.StartEvent) {
-
-	log.Println("Starting...")
+func (s *gophersSystem) Setup() {
 	s.createGophers()
 	// Setup camera
 	s.cameraRig.Rotate(0.4, 0, 0)
 	s.camera.Camera.
 		SetPerspective(math.Pi/4, s.winSize[0]/s.winSize[1], 0.1, 1000).
 		SetAmbient(0.4, 0.4, 0.4)
-	s.camera.Transform.
+	s.camera.
 		SetParent(s.cameraRig).
 		SetEuler(0, 0, 0).
 		SetPosition(0, 0, -17)
 	// Camera stuff
 
 	// Set Ground
-	s.ground.Transform.
+	s.ground.
 		SetPosition(0, -1.05, 0).
 		SetScale(areaX+.2, 1, areaY+0.2)
-	s.ground.Renderable.Material.
+	s.ground.Material.
 		SetTexture("albedoMap", textures["wood"]).
 		Set("roughness", float32(0.1)).
 		Set("metallic", float32(0.2)).
 		Set("ao", float32(5))
 
 	// Setup big gopher (pointer)
-	s.pointerShape.Transform.
+	s.pointerShape.
 		SetParent(s.pointerLoc).
 		SetScale(s.minDist)
-	s.pointerShape.Renderable.Material.
+	s.pointerShape.Material.
 		SetTexture("albedoMap", textures["gopher"])
 
 	s.pointerText.Material.Depth = false
@@ -306,30 +310,36 @@ func (s *gophersSystem) Start(evt gorge.StartEvent) {
 		SetScale(0.1)
 	s.dogText.SetText("random dog")
 	s.dogText.SetColor(vec4{1, 1, 1, 1})
-	s.dogText.Material.Name = "unlit"
+
 	s.dogText.SetParent(dogLoc).
 		SetPosition(1, 3, -1).
 		SetScale(0.6)
 
-	s.light.Transform.
+	s.light.
 		SetParent(s.pointerLoc).
 		SetPosition(0, 4, 0)
 	s.light.Color = vec3{1, 1, 1}
-	lightGimbal := primitive.NewGimbal()
+	lightGimbal := gorgeutils.NewGimbal()
 	lightGimbal.SetParent(s.light)
 
-	g := s.gorge
+	g := s.scene
 	g.AddEntity(s.ground)
-	g.AddEntity(thingsToEntities(s.things))
+	g.AddEntity(thingsToEntities(s.things)...)
 	g.AddEntity(s.pointerShape, s.pointerText)
-	g.AddEntity(s.gimbal.Entities)
+	g.AddEntity(s.gimbal.Entities...)
 	g.AddEntity(s.cube)
 	g.AddEntity(s.dog, s.dogText)
 	g.AddEntity(s.camera)
 	g.AddEntity(s.light)
-	g.AddEntity(lightGimbal.Entities)
-
+	g.AddEntity(lightGimbal.Entities...)
 }
+func (s *gophersSystem) Start(evt gorge.StartEvent) {
+	log.Println("START EVENT....")
+	for _, t := range s.things {
+		t.Reset(s.winSize)
+	}
+}
+
 func (s *gophersSystem) Update(evt gorge.UpdateEvent) {
 	s.totalTime += float32(evt)
 	dt := float32(evt) * timeScale
@@ -406,21 +416,25 @@ func (s *gophersSystem) Update(evt gorge.UpdateEvent) {
 	pickTex := int(s.totalTime*0.3) % len(texList)
 	s.cube.Material.SetTexture("albedoMap", textures[texList[pickTex]])
 
+	input := input.FromECS(s.scene)
+	if input == nil {
+		panic("gophers requires input")
+	}
 	const mmax = 4
 	const stp = .1
-	if s.input.GetKey("a") {
+	if input.GetKey("a") {
 		s.camTrans[0] = m32.Max(s.camTrans[0]-stp, -mmax)
 	}
-	if s.input.GetKey("d") {
+	if input.GetKey("d") {
 		s.camTrans[0] = m32.Min(s.camTrans[0]+stp, mmax)
 	}
-	if s.input.GetKey("w") {
+	if input.GetKey("w") {
 		s.camTrans[2] = m32.Min(s.camTrans[2]+stp, mmax)
 	}
-	if s.input.GetKey("s") {
+	if input.GetKey("s") {
 		s.camTrans[2] = m32.Max(s.camTrans[2]-stp, -mmax)
 	}
-	if s.input.GetKey("c") {
+	if input.GetKey("c") {
 		s.camTrans = vec3{}
 		s.cameraRig.Position = vec3{}
 	}
@@ -430,7 +444,7 @@ func (s *gophersSystem) Update(evt gorge.UpdateEvent) {
 
 func (s *gophersSystem) screenToYPlane(p vec2) vec3 {
 	m := s.camera.Camera.Projection()
-	m = m.Mul4(s.camera.Transform.Inv())
+	m = m.Mul4(s.camera.Inv())
 	//PVInv := s.camera.Mat4().Inv()
 	PVInv := m.Inv()
 	ndc := vec4{2*p[0]/s.winSize[0] - 1, 1 - 2*p[1]/s.winSize[1], -1, 1}
@@ -448,14 +462,13 @@ func (s *gophersSystem) screenToYPlane(p vec2) vec3 {
 func (s *gophersSystem) createGophers() {
 	log.Println("Adding NThings:", nThings)
 
-	mat := gorge.NewMaterial("pbr")
+	mat := gorge.NewMaterial(nil)
 	mat.Depth = false
 	mat.Set("metallic", float32(0.5)).
 		Set("roughness", float32(0.8)).
 		SetTexture("albedoMap", textures["gopher"])
 
-	plane := primitive.Plane()
-	mesh := plane.Renderable.Mesh
+	mesh := primitive.PlaneMesh()
 
 	ret := []*Thing{}
 	// Creating entities

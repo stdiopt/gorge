@@ -130,3 +130,8 @@ func Limit(v, mn, mx float32) float32 {
 	}
 	return v
 }
+
+// Cbrt returns the cube root of x.
+func Cbrt(x float32) float32 {
+	return float32(math.Cbrt(float64(x)))
+}

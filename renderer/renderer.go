@@ -20,13 +20,18 @@
 package renderer
 
 import (
+	"fmt"
+	glog "log"
+	"runtime/debug"
+
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gl"
 	"github.com/stdiopt/gorge/m32"
 )
 
 var (
+	log = glog.New(glog.Writer(), "(renderer) ", 0)
+	// ExperimentalSkybox some samples uses this static skybox
 	ExperimentalSkybox = false
 )
 
@@ -38,6 +43,7 @@ type (
 	mat4 = m32.Mat4
 	quat = m32.Quat
 )
+
 type rLight interface {
 	TransformComponent() *gorge.Transform
 	LightComponent() *gorge.Light
@@ -65,7 +71,7 @@ type renderableInstance struct {
 	//material *material
 	Material *gorge.Material
 	Mesh     *gorge.Mesh
-	shader   *Shader
+	shader   *shader
 
 	VAO gl.VertexArray
 
@@ -73,8 +79,9 @@ type renderableInstance struct {
 	// for instancing
 	TRO gl.Buffer
 
+	// before []rMesh
 	// Instances
-	meshes []rMesh
+	meshes gorge.SetList
 
 	attribBuf *F32TransferBuf
 }
@@ -85,11 +92,10 @@ type Renderer struct {
 	// Camera projection
 	camera rCamera
 	light  rLight
-	// TODO: should remove this in favour of delegated funcs
-	assets    *asset.System
-	instances []*renderableInstance
 
+	instances    []*renderableInstance
 	instancesMap map[instanceKey]*renderableInstance
+
 	//lastInstance *renderableInstance
 
 	textures *textureManager
@@ -100,7 +106,7 @@ type Renderer struct {
 	totalTime float32
 
 	skyboxTex    *texture
-	skyboxShader *Shader
+	skyboxShader *shader
 	skyboxVAO    gl.VertexArray
 	skyboxEBO    []uint32
 }
@@ -108,46 +114,72 @@ type Renderer struct {
 // System initializes gl context and attatch the handlers on manager
 func System(gm *gorge.Gorge) {
 	var g *gl.Wrapper
-	gm.Query(func(glctx *gl.Wrapper) {
-		g = glctx
-	})
+	gm.Query(func(glctx *gl.Wrapper) { g = glctx })
+
 	if g == nil {
 		panic("renderer requires persisted glctx")
 	}
 	// Left hand
 	g.ClearDepthf(-1)
 	g.DepthFunc(gl.GEQUAL)
-	g.LineWidth(3)
 	g.FrontFace(gl.CCW)
 	g.Hint(gl.GENERATE_MIPMAP_HINT, gl.NICEST)
-	// should be on material
+	g.LineWidth(3)
 
-	// Material
+	// should be on material
 	g.Enable(gl.BLEND)
 	g.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 	g.CullFace(gl.BACK)
 
-	// Don't use assets
-	assets := asset.FromECS(gm)
-	if assets == nil {
-		panic("renderer requires assets system to be initialized first")
-	}
-
 	rs := &Renderer{
 		gorge:        gm,
 		g:            g,
-		assets:       assets,
 		instances:    []*renderableInstance{},
 		instancesMap: map[instanceKey]*renderableInstance{},
 		textures:     newTextureManager(g),
 		vbos:         newVBOManager(g),
-		shaders:      &shaderManager{g: g, assets: assets},
+		shaders:      newShaderManager(g),
 	}
 
-	gm.Handle(rs.watchResize)
+	gm.Handle(rs.handleResize)
 	gm.Handle(rs.handleEntityAdd)
+	gm.Handle(rs.handleEntityRemove)
 	gm.Handle(rs.handlePostUpdate)
-	gm.Handle(rs.handleAssetAdd)
+
+	// XXX: Two tales
+	// current asset.Bundle doesn't require us to pass assets in textureManager
+	// gorge.AssetBundle does as we load assets with asset.Manager here
+
+	gm.Handle(func(bundle gorge.LoadBundleEvent) {
+		for a := range bundle.Assets {
+			switch v := a.(type) {
+			case *gorge.Texture:
+				rs.textures.Get(v)
+			case *gorge.Mesh:
+				rs.vbos.Load(v)
+			default:
+				gm.Warn(fmt.Sprintf("unknown asset: %T", a))
+			}
+		}
+	})
+
+	// DEBUGGING
+	/*go func() {
+		for {
+			log.Printf("GPU Resources: textures: %v vbos: %v shaders: %v",
+				len(rs.textures.textures),
+				len(rs.vbos.vbos),
+				len(rs.shaders.shaders),
+			)
+
+			idx := 0
+			for s := range rs.shaders.shaders {
+				log.Println("  shader:", idx, s)
+				idx++
+			}
+			time.Sleep(3 * time.Second)
+		}
+	}()*/
 
 	if ExperimentalSkybox {
 		rs.PrepareSkybox()
@@ -158,47 +190,50 @@ func System(gm *gorge.Gorge) {
 // AddMesh adds a mesh
 // Mesh Manager?
 func (rs *Renderer) AddMesh(m rMesh) {
-	renderable := m.RenderableComponent()
 	g := rs.g
+	renderable := m.RenderableComponent()
 	key := instanceKey{
 		renderable.Material,
 		renderable.Mesh,
 	}
 
 	if instanced, ok := rs.instancesMap[key]; ok {
-		instanced.meshes = append(instanced.meshes, m)
+		// We are adding stuff so we reset the transfer buf
+		// (Grow method would be better)
+		if instanced.attribBuf != nil {
+			instanced.attribBuf = nil
+		}
+		instanced.meshes.Add(m)
 		return
 	}
-	instanced := &renderableInstance{}
 
 	mat := renderable.Material
 	if mat == nil {
-		// set some default material
+		// TODO: set some default material
 		panic("no material")
 	}
-	shader, err := rs.shaders.Get(mat.Name)
-	if err != nil {
-		panic(err)
+	shader := rs.shaders.Get(mat)
+	vb := rs.vbos.Get(renderable.Mesh)
+	if vb == nil {
+		debug.PrintStack()
+		rs.gorge.Error(fmt.Errorf("asset not found in renderer: %v", renderable.Mesh))
+		return
+	}
+	// Preload textures on add
+	for _, t := range mat.Textures {
+		rs.textures.Get(t)
 	}
 
+	instanced := &renderableInstance{}
 	instanced.shader = shader
 	instanced.Material = mat
 
-	// Preload textures on add
-	for _, t := range mat.Textures {
-		rs.textures.Get(t) // or by Name?
-		/*if err != nil {
-			rs.error(err)
-			panic(err)
-		}*/
-		//mat.SetTexture(k, tex)
-	}
 	instanced.Mesh = renderable.Mesh
 	instanced.VAO = g.CreateVertexArray()
 	g.BindVertexArray(instanced.VAO)
-	vb := rs.vbos.Get(renderable.Mesh)
 	instanced.vbo = vb
 
+	// Bind vertexAttribs on VAO
 	vb.bindForShader(shader)
 
 	//gles3
@@ -208,6 +243,8 @@ func (rs *Renderer) AddMesh(m rMesh) {
 	// Hack to upload a mat4 into attr (4*4 vec4)
 	vec4size := 4 * 4 // 4 floats in bytes size
 	if a, ok := shader.Attrib("aTransform"); ok {
+		// Attribs only support vec4 at a time
+		// we bind 4 times for the full model matrix
 		for i := uint32(0); i < 4; i++ {
 			aa := a + gl.Attrib(i)
 			g.EnableVertexAttribArray(aa)
@@ -216,25 +253,56 @@ func (rs *Renderer) AddMesh(m rMesh) {
 		}
 	}
 
+	// Bind the main color next
 	if a, ok := shader.Attrib("aColor"); ok {
 		g.EnableVertexAttribArray(a)
 		g.VertexAttribPointer(a, 4, gl.FLOAT, false, 4*vec4size+vec4size, 4*vec4size)
 		g.VertexAttribDivisor(a, 1)
 	}
 
-	instanced.meshes = append(instanced.meshes, m)
+	instanced.meshes.Add(m)
 
 	rs.instances = append(rs.instances, instanced)
 	rs.instancesMap[key] = instanced
-
 }
 
-func (rs *Renderer) watchResize(evt gorge.ResizeEvent) {
+// RemoveMesh remove to renderable renderable
+func (rs *Renderer) RemoveMesh(m rMesh) {
+	// Go trough instances and remove from there
+	renderable := m.RenderableComponent()
+	key := instanceKey{
+		renderable.Material,
+		renderable.Mesh,
+	}
+
+	instance, ok := rs.instancesMap[key]
+	if !ok {
+		return
+	}
+
+	instance.meshes.Remove(m)
+
+	// Remove instance from system
+	if instance.meshes.Len() == 0 {
+		delete(rs.instancesMap, key)
+		for i, is := range rs.instances {
+			if is != instance {
+				continue
+			}
+			// Maintain order, slower
+			rs.instances = append(rs.instances[:i], rs.instances[i+1:]...)
+		}
+	}
+
+}
+func (rs *Renderer) handleResize(evt gorge.ResizeEvent) {
 	sz := m32.Vec2(evt)
 	rs.g.Viewport(0, 0, int(sz[0]), int(sz[1]))
 }
-func (rs *Renderer) handleEntityAdd(entities gorge.EntitiesAddEvent) {
-	for _, e := range entities {
+func (rs *Renderer) handleEntityAdd(ents gorge.EntitiesAddEvent) {
+
+	for _, e := range ents {
+		//for _, e := range entities {
 		switch v := e.(type) {
 		case rCamera:
 			rs.camera = v
@@ -246,27 +314,41 @@ func (rs *Renderer) handleEntityAdd(entities gorge.EntitiesAddEvent) {
 	}
 }
 
-// HandlePostUpdate will render stuff uppon post update called
-func (rs *Renderer) handlePostUpdate(evt gorge.PostUpdateEvent) {
-	rs.totalTime += float32(evt)
-	rs.Render()
+// handleEntityRemove
+func (rs *Renderer) handleEntityRemove(ents gorge.EntitiesRemoveEvent) {
+	for _, e := range ents {
+		switch v := e.(type) {
+		case rCamera:
+			rs.camera = v
+		case rLight: // light list
+			rs.light = v
+		case rMesh:
+			rs.RemoveMesh(v)
+		}
+	}
 }
 
-// handleAssetAdd when an event from asset manager occurs we upload to gpu right away?
-func (rs *Renderer) handleAssetAdd(a asset.AddEvent) {
-	switch v := a.Asset.(type) {
-	case *gorge.Texture:
-		rs.textures.Get(v)
-	case *gorge.Mesh:
-		rs.vbos.Get(v)
-	}
+// HandlePostUpdate will render stuff uppon post update called
+func (rs *Renderer) handlePostUpdate(e gorge.RenderEvent) {
+	rs.totalTime += float32(e)
+	rs.Render()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // RENDER
 ///////////////////////////////////////////////////////////////////////////////
 
-// RenderPass struct
+type renderInfo struct {
+	projection mat4
+	view       mat4
+	camPos     vec3
+	ambient    vec3
+	lightPos   vec3
+	lightColor vec3
+
+	// Target framebuffer
+	// Material overrides for specific cases, shadows etc
+}
 
 // Render Scene
 func (rs *Renderer) Render() {
@@ -283,10 +365,6 @@ func (rs *Renderer) Render() {
 	projection := cam.Projection()
 	view := rs.camera.TransformComponent().Inv()
 
-	/*type mat4er interface{ Mat4() m32.Mat4 }
-	if m, ok := rs.camera.(mat4er); ok {
-		projection = m.Mat4()
-	}*/
 	camPos := rs.camera.TransformComponent().WorldPosition()
 	ambient := cam.Ambient
 
@@ -316,20 +394,10 @@ func (rs *Renderer) Render() {
 		rs.g.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	}
 	rs.Pass(&ri)
-	// build transforms and whatnots
+	// Waits for scene to finish renderer
+	// Good to check gpu performance I guess
+	rs.g.Finish()
 
-}
-
-type renderInfo struct {
-	projection mat4
-	view       mat4
-	camPos     vec3
-	ambient    vec3
-	lightPos   vec3
-	lightColor vec3
-
-	// Target framebuffer
-	// Material overrides for specific cases, shadows etc
 }
 
 // Prepare will update instance attribs to gpu
@@ -337,32 +405,37 @@ func (rs *Renderer) Prepare() {
 	g := rs.g
 	// Per material
 	for _, ins := range rs.instances {
-
-		if len(ins.meshes) == 0 {
+		mlen := ins.meshes.Len()
+		if mlen == 0 {
 			continue
 		}
 		if ins.attribBuf == nil {
-			ins.attribBuf = NewF32TransferBuf(
-				len(ins.meshes)*16 + len(ins.meshes)*4,
-			)
+			// 16- Transform attrib + 4 - Color attrib
+			sz := mlen * (16 + 4)
+			ins.attribBuf = NewF32TransferBuf(sz)
 		}
 		g.BindVertexArray(ins.VAO)
-		if ins.vbo.update() {
+		if ins.vbo.update(false) {
 			ins.vbo.bindForShader(ins.shader)
 		}
 		// Do we need this here at all?
 
 		// Instancing upload all transforms into a float array
-		for i, r := range ins.meshes {
+
+		offs := 0
+		ins.meshes.Range(func(v interface{}) bool {
+			mesh := v.(rMesh)
 			// Do the transformations
-			transform := r.TransformComponent()
-			r := r.RenderableComponent()
+			transform := mesh.TransformComponent()
+			r := mesh.RenderableComponent()
 			m := transform.Mat4()
 
 			totSize := 16 + 4
-			ins.attribBuf.WriteAt(m[:], i*totSize)
-			ins.attribBuf.WriteAt(r.Color[:], i*totSize+16)
-		}
+			ins.attribBuf.WriteAt(m[:], offs)
+			ins.attribBuf.WriteAt(r.Color[:], offs+16)
+			offs += totSize
+			return true
+		})
 		g.BindBuffer(gl.ARRAY_BUFFER, ins.TRO)
 		g.BufferDataX(gl.ARRAY_BUFFER, ins.attribBuf.Get(), gl.DYNAMIC_DRAW)
 	}
@@ -373,7 +446,8 @@ func (rs *Renderer) Pass(ri *renderInfo) {
 	g := rs.g
 
 	for _, ins := range rs.instances {
-		if len(ins.meshes) == 0 {
+		mlen := ins.meshes.Len()
+		if mlen == 0 {
 			continue
 		}
 		shader := ins.shader
@@ -405,24 +479,24 @@ func (rs *Renderer) Pass(ri *renderInfo) {
 		//shader.Set("time", rs.totalTime)
 
 		g.BindVertexArray(ins.VAO)
-		drawType := gl.Enum(ins.Material.DrawType)
+		drawType := drawType2gl(ins.Mesh.DrawType)
 
 		if ins.vbo.ElementsLen > 0 {
 			////if ins.ElementsLen > 0 {
-			g.DrawElementsInstanced(drawType, ins.vbo.ElementsLen, gl.UNSIGNED_INT, 0, len(ins.meshes))
+			g.DrawElementsInstanced(drawType, ins.vbo.ElementsLen, gl.UNSIGNED_INT, 0, mlen)
 		} else {
-			g.DrawArraysInstanced(drawType, 0, ins.vbo.VertexLen, len(ins.meshes))
+			g.DrawArraysInstanced(drawType, 0, ins.vbo.VertexLen, mlen)
 		}
 	}
 }
 
 func (rs *Renderer) error(err error) {
-	rs.gorge.Trigger(gorge.ErrorEvent(err))
+	rs.gorge.Trigger(gorge.ErrorEvent{Err: err})
 }
 
 // useMaterial this function sets the shader uniforms from a gorge.Material
 // it will check values if they are different it will set
-func (rs *Renderer) useMaterial(shader *Shader, mat *gorge.Material) {
+func (rs *Renderer) useMaterial(shader *shader, mat *gorge.Material) {
 	g := rs.g
 	// Rebind stuff here?
 	// This is from material
@@ -450,9 +524,37 @@ func (rs *Renderer) useMaterial(shader *Shader, mat *gorge.Material) {
 		shader.Set(k, i)
 	}
 
-	// This way we can prepare stuff?
+	// TODO: Bug we should run through shader props and fetch value from
+	// material
 	props := mat.Props()
 	for k, v := range props {
 		shader.Set(k, v)
 	}
+}
+
+//POINTS                                       = 0x0000
+//LINES                                        = 0x0001
+//LINE_LOOP                                    = 0x0002
+//LINE_STRIP                                   = 0x0003
+//TRIANGLES                                    = 0x0004
+//TRIANGLE_STRIP                               = 0x0005
+//TRIANGLE_FAN                                 = 0x0006
+func drawType2gl(d gorge.DrawType) gl.Enum {
+	switch d {
+	case gorge.DrawPoints:
+		return gl.POINTS
+	case gorge.DrawLines:
+		return gl.LINES
+	case gorge.DrawLineLoop:
+		return gl.LINE_LOOP
+	case gorge.DrawLineStrip:
+		return gl.LINE_STRIP
+	case gorge.DrawTriangles:
+		return gl.TRIANGLES
+	case gorge.DrawTriangleStrip:
+		return gl.TRIANGLE_STRIP
+	case gorge.DrawTriangleFan:
+		return gl.TRIANGLE_FAN
+	}
+	panic("unknown drawtype")
 }

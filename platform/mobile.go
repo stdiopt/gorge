@@ -21,11 +21,11 @@ import (
 	"time"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	gorgegl "github.com/stdiopt/gorge/gl"
 	"github.com/stdiopt/gorge/input"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/renderer"
+	"github.com/stdiopt/gorge/resource"
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/mouse"
@@ -39,12 +39,12 @@ import (
 const Type = "mobile"
 
 // Mobile stars a mobile up
-func Mobile(assetPath string, systems ...gorge.SystemFunc) {
+func Mobile(path string, systems ...gorge.SystemFunc) {
 
-	assetLoader := asset.FileLoader{BasePath: assetPath}
+	resourceLoader := resource.FileLoader{BasePath: path}
 
 	ggArgs := []gorge.SystemFunc{
-		asset.NewSystem(assetLoader),
+		resource.NewSystem(resourceLoader),
 		input.System,
 	}
 	ggArgs = append(ggArgs, systems...)

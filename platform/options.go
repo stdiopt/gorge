@@ -14,7 +14,7 @@
 
 package platform
 
-import "github.com/stdiopt/gorge/asset"
+import "github.com/stdiopt/gorge/resource"
 
 // Options for loader
 type Options struct {
@@ -24,13 +24,13 @@ type Options struct {
 
 // WasmOptions options for wasm
 type WasmOptions struct {
-	AssetLoader asset.Loader
+	Loader resource.Loader
 	// Dom element to use
 	// Canvas resolution
 }
 
 // GLFWOptions options for glfw
 type GLFWOptions struct {
-	AssetLoader asset.Loader
+	Loader resource.Loader
 	// FAA
 }

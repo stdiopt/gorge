@@ -1,12 +1,12 @@
-# Gorge
+# Gorge - WIP
 
 gorge - go r? game engine
 
 (reduced? rudimentary?)
 
-Just a personal project that I started by exploring some ECS patterns
+A personal project that I am developing for learning purposes
 
-## Examples
+## Demos
 
 - [gophers](https://stdiopt.github.io/gorge/wasm/?t=gophers)
 - [simple](https://stdiopt.github.io/gorge/wasm/?t=simple)
@@ -16,7 +16,7 @@ Just a personal project that I started by exploring some ECS patterns
 
 ## Platforms
 
-It was developed with wasm in mind others were added later
+It was first created with wasm in mind, others were added later
 
 - wasm
 - glfw (linux, windows?, osx?)
@@ -29,23 +29,36 @@ func main() {
 	opt := platform.Options{}
 
 	platform.Start(opt, func(g *gorge.Gorge) {
-		gorgeutils.TrackballCamera(g)
+        s := g.Scene(simpleScene)
+        g.StartScene(s)
+	})
+}
 
-		light := gorgeutils.NewLight()
-		light.SetPosition(0, 10, -4)
+func simpleScene(s *gorge.Scene) {
+	gorgeutils.TrackballCamera(s)
 
-		cube := primitive.Cube()
+	light := gorgeutils.NewLight()
+	light.SetPosition(0, 10, -4)
 
-		g.Handle(func(gorge.StartEvent) {
-			g.AddEntity(light)
-			g.AddEntity(cube)
-		})
-		g.Handle(func(dt gorge.UpdateEvent) {
-			cube.Rotate(0, 1*float32(dt), 0)
-		})
+	cube := primitive.Cube()
+	g.AddEntity(light)
+	g.AddEntity(cube)
+
+	g.Handle(func(dt gorge.UpdateEvent) {
+		cube.Rotate(0, 1*float32(dt), 0)
 	})
 }
 ```
+
+## Packages
+
+- `gorge` - contains mostly core components as data (light, camera, renderable,
+  material, texture, font, transform,...)
+- `resource` - knows how to load gorge data (textures, mesh, material, fonts, ... )
+  and might eventually have custom importers
+- `renderer` - knows how to render gorge components
+- input - ...
+- ...
 
 ## Todos
 

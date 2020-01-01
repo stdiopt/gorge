@@ -18,7 +18,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stdiopt/gorge/asset"
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/gl"
 )
 
@@ -32,47 +32,56 @@ type uniform struct {
 // ShaderManager globalized shader states
 type shaderManager struct {
 	g       gl.Context3
-	assets  *asset.System
-	shaders map[string]*Shader
+	shaders map[gorge.ShaderLoader]*shader
+}
+
+func newShaderManager(g gl.Context3) *shaderManager {
+	sm := &shaderManager{
+		g:       g,
+		shaders: map[gorge.ShaderLoader]*shader{},
+	}
+	return sm
 }
 
 // Get it will return a cached program or load a shader using asset package
 // Shaders should be named {name}.vert and {name}.frag
-func (sm *shaderManager) Get(name string) (*Shader, error) {
+func (sm *shaderManager) Get(m *gorge.Material) *shader {
+	return sm.get(m)
+}
+func (sm *shaderManager) get(m *gorge.Material) *shader {
 	if sm.shaders == nil {
-		sm.shaders = map[string]*Shader{}
+		sm.shaders = map[gorge.ShaderLoader]*shader{}
 	}
+
+	k := m.Loader()
+
 	// Already loaded
-	if shader, ok := sm.shaders[name]; ok {
-		return shader, nil
+	if shader, ok := sm.shaders[k]; ok {
+		return shader
 	}
+
 	var vertSrc string
 	var fragSrc string
-	if name == "pbr" {
+	if k == nil {
 		vertSrc = shaderPBRVert
 		fragSrc = shaderPBRFrag
 	} else {
-		var err error
-		vertSrc, err = sm.assets.LoadString("shaders/" + name + ".vert")
-		if err != nil {
-			return nil, err
-		}
-
-		fragSrc, err = sm.assets.LoadString("shaders/" + name + ".frag")
-		if err != nil {
-			return nil, err
-		}
+		// Load shaders here
+		shaderData := m.Loader().Data()
+		vertSrc = shaderData.VertSrc
+		fragSrc = shaderData.FragSrc
 	}
 
 	shader, err := sm.CompileShader(vertSrc, fragSrc)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	sm.shaders[name] = shader
-	return shader, nil
+	shader.material = m
+	sm.shaders[k] = shader
+	return shader
 }
 
-func (sm *shaderManager) New(p gl.Program) *Shader {
+func (sm *shaderManager) New(p gl.Program) *shader {
 	g := sm.g
 	// Load names from program
 	nUniforms := g.GetProgrami(p, gl.ACTIVE_UNIFORMS)
@@ -97,7 +106,7 @@ func (sm *shaderManager) New(p gl.Program) *Shader {
 		attribs[name] = loc
 	}
 
-	return &Shader{
+	return &shader{
 		g:        sm.g,
 		program:  p,
 		attribs:  attribs,
@@ -106,10 +115,10 @@ func (sm *shaderManager) New(p gl.Program) *Shader {
 	}
 }
 
-func (sm *shaderManager) CompileShader(vertSrc, fragSrc string) (*Shader, error) {
+func (sm *shaderManager) CompileShader(vertSrc, fragSrc string) (*shader, error) {
 	program, err := sm.compileProgram(vertSrc, fragSrc)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	s := sm.New(program)
 	return s, nil
@@ -150,10 +159,11 @@ func (sm *shaderManager) compileProgram(vertSrc, fragSrc string) (gl.Program, er
 ///////////////////////////////////////////////////////////////////////////////
 
 // Shader handle gl program, it holds a local State
-type Shader struct {
+type shader struct {
 	g       gl.Context3
 	program gl.Program
 
+	material *gorge.Material
 	//UBO gl.Buffer
 
 	// Extra attribs and uniforms
@@ -162,15 +172,19 @@ type Shader struct {
 	samplers []string
 }
 
+func (s *shader) update() {
+
+}
+
 // Attrib returns the attribute for name
-func (s *Shader) Attrib(k string) (gl.Attrib, bool) {
+func (s *shader) Attrib(k string) (gl.Attrib, bool) {
 	a, ok := s.attribs[k]
 	return a, ok
 }
 
 // Set sets a uniform value
 // TODO: Try UBO's uniform buffer objects here too
-func (s *Shader) Set(k string, v interface{}) {
+func (s *shader) Set(k string, v interface{}) {
 	u, ok := s.uniforms[k]
 	if !ok {
 		return
@@ -181,7 +195,7 @@ func (s *Shader) Set(k string, v interface{}) {
 	s.set(u, v)
 }
 
-func (s *Shader) set(u *uniform, v interface{}) {
+func (s *shader) set(u *uniform, v interface{}) {
 	g := s.g
 	// Lastly do a type switch
 	switch v := v.(type) {
@@ -206,7 +220,7 @@ func (s *Shader) set(u *uniform, v interface{}) {
 	u.value = v
 }
 
-func (s *Shader) bind() {
+func (s *shader) bind() {
 	s.g.UseProgram(s.program)
 }
 

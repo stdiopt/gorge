@@ -15,22 +15,20 @@
 package main
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gorgeutils"
 	"github.com/stdiopt/gorge/platform"
 	"github.com/stdiopt/gorge/primitive"
+	"github.com/stdiopt/gorge/resource"
 )
 
 func main() {
 	opt := platform.Options{
 		Wasm: platform.WasmOptions{
-			AssetLoader: asset.HTTPLoader{BaseURL: "../assets"},
+			Loader: resource.HTTPLoader{BaseURL: "../assets"},
 		},
 		GLFW: platform.GLFWOptions{
-			AssetLoader: asset.FileLoader{BasePath: "/assets"},
+			Loader: resource.FileLoader{BasePath: "/assets"},
 		},
 	}
 	// Setup the asset system with an http loader
@@ -39,16 +37,15 @@ func main() {
 
 func boxesSystem(g *gorge.Gorge) {
 
-	assets := asset.FromECS(g)
-	log.Println("asset system:", assets)
+	s := g.Scene()
 
-	woodTex := assets.Texture2D("wood.png")
-	wasmTex := assets.Texture2D("wasm.png")
-
-	gorgeutils.TrackballCamera(g)
-
+	gorgeutils.TrackballCamera(s)
 	light := gorgeutils.NewLight()
 	light.SetPosition(0, 5, 3)
+
+	assets := s.Assets()
+	woodTex := assets.Texture2D("wood.png")
+	wasmTex := assets.Texture2D("wasm.png")
 
 	box := primitive.Cube()
 	box.Material.
@@ -66,15 +63,14 @@ func boxesSystem(g *gorge.Gorge) {
 		SetScale(0.2, 0.2, 0.2).
 		SetPosition(2, 0, 0)
 
-	// Add entities when start event was fired
-	g.Handle(func(gorge.StartEvent) {
-		g.AddEntity(light, box, box2)
-	})
+	s.AddEntity(light, box, box2)
 
 	// update event at every frameupdate
-	g.Handle(func(evt gorge.UpdateEvent) {
-		dt := float32(evt)
+	s.Handle(func(e gorge.UpdateEvent) {
+		dt := float32(e)
 		box.Rotate(dt/2, dt, 0)
 		box2.Rotate(dt*2, 0, dt*2)
 	})
+	g.LoadScene(s)
+	s.Start()
 }

@@ -24,19 +24,21 @@ import (
 func main() {
 	opt := platform.Options{}
 	platform.Start(opt, func(g *gorge.Gorge) {
-		gorgeutils.TrackballCamera(g)
+		s := g.Scene(simpleScene)
+		g.StartScene(s)
+	})
+}
+func simpleScene(s *gorge.Scene) {
+	gorgeutils.TrackballCamera(s)
 
-		light := gorgeutils.NewLight()
-		light.SetPosition(0, 10, -4)
+	light := gorgeutils.NewLight()
+	light.SetPosition(0, 10, -4)
+	cube := primitive.Cube()
 
-		cube := primitive.Cube()
+	s.AddEntity(light)
+	s.AddEntity(cube)
 
-		g.Handle(func(gorge.StartEvent) {
-			g.AddEntity(light)
-			g.AddEntity(cube)
-		})
-		g.Handle(func(dt gorge.UpdateEvent) {
-			cube.Rotate(0, 1*float32(dt), 0)
-		})
+	s.Handle(func(dt gorge.UpdateEvent) {
+		cube.Rotate(0, 1*float32(dt), 0)
 	})
 }

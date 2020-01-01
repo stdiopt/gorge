@@ -19,22 +19,22 @@ import (
 	"math"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gorgeutils"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/platform"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/renderer"
+	"github.com/stdiopt/gorge/resource"
 )
 
 func main() {
 	renderer.ExperimentalSkybox = true
 	opt := platform.Options{
 		Wasm: platform.WasmOptions{
-			AssetLoader: asset.HTTPLoader{BaseURL: "../assets"},
+			Loader: resource.HTTPLoader{BaseURL: "../assets"},
 		},
 		GLFW: platform.GLFWOptions{
-			AssetLoader: asset.FileLoader{BasePath: "/assets"},
+			Loader: resource.FileLoader{BasePath: "/assets"},
 		},
 	}
 	// Setup the asset system with an http loader
@@ -42,14 +42,17 @@ func main() {
 }
 
 func objSystem(g *gorge.Gorge) {
-	assets := asset.FromECS(g)
-	g.Handle(func(err gorge.ErrorEvent) {
+
+	s := g.Scene()
+
+	assets := s.Assets()
+	s.Handle(func(err gorge.ErrorEvent) {
 		log.Println("Something errored:", err)
 	})
 
-	tex := assets.Texture2D("dog/dog.jpg")
+	tex := s.Assets().Texture2D("obj/dog.jpg")
 
-	gorgeutils.TrackballCamera(g)
+	gorgeutils.TrackballCamera(s)
 
 	light := gorgeutils.NewLight()
 	light.SetPosition(0, 20, 0)
@@ -64,16 +67,14 @@ func objSystem(g *gorge.Gorge) {
 	//Set("ao", float32(10))
 
 	// Load here instead
-	objData := assets.Mesh("dog/dog.obj").Data()
-
-	objMesh := &gorge.Mesh{MeshLoader: objData}
+	objMesh := assets.Mesh("obj/dog.obj")
 
 	// MeshEntity a basic renderable entity
 	r1 := &primitive.MeshEntity{
 		Transform: *gorge.NewTransform(),
 		Renderable: *gorge.NewRenderable("",
 			objMesh,
-			gorge.NewMaterial("").
+			gorge.NewMaterial(nil).
 				SetFloat32("ao", 10).
 				SetTexture("albedoMap", tex),
 		),
@@ -87,7 +88,7 @@ func objSystem(g *gorge.Gorge) {
 		Renderable: *gorge.NewRenderable(
 			"",
 			objMesh,
-			gorge.NewMaterial("reflect"),
+			assets.Material("shaders/reflect"),
 		),
 	}
 	r2.Mesh = objMesh
@@ -99,19 +100,18 @@ func objSystem(g *gorge.Gorge) {
 		Transform: *gorge.NewTransform(),
 		Renderable: *gorge.NewRenderable("",
 			objMesh,
-			gorge.NewMaterial("refract"),
+			assets.Material("shaders/refract"),
 		),
 	}
 	r3.SetScale(0.1).
 		SetPosition(4, -0.8, 0).
 		SetEuler(math.Pi/2, 0, 0)
 
-	g.Handle(func(gorge.StartEvent) {
-		g.AddEntity(light)
-		//m.AddEntity(box)
-		g.AddEntity(r1, r2, r3)
+	s.AddEntity(light)
+	s.AddEntity(r1, r2, r3)
 
-	})
+	g.StartScene(s)
+
 }
 
 // Create a mesher

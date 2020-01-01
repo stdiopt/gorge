@@ -56,11 +56,15 @@ func (s Input) GetKey(key string) bool {
 	return s.keyState[key]
 }
 
+type queryier interface {
+	Query(fn interface{})
+}
+
 // FromECS returns a input system from gorge
-func FromECS(g *gorge.Gorge) *Input {
+func FromECS(q queryier) *Input {
 	// Get from messaging store
 	var ret *Input
-	g.Query(func(s *Input) { ret = s })
+	q.Query(func(s *Input) { ret = s })
 
 	if ret == nil {
 		panic("input system doesn't exist in gorge")

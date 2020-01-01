@@ -31,5 +31,60 @@ type (
 type MeshEntity struct {
 	gorge.Transform
 	gorge.Renderable
-	//gorge.MaterialComponent
 }
+
+// Primitive generator
+/*type Primitive struct {
+	scene *gorge.Scene
+}
+
+// Context returns a primitive creater based on scene
+func Context(s *gorge.Scene) *Primitive {
+	return &Primitive{s}
+}
+
+// Cube creates a cube entity
+func (p *Primitive) Cube() *MeshEntity {
+	// This is needed to be binded to scene
+	mesh := p.scene.Assets().MeshFromData(Cube())
+	mat := gorge.NewMaterial("")
+
+	return &MeshEntity{
+		*gorge.NewTransform(),
+		gorge.Renderable{
+			Color:    vec4{1, 1, 1, 1},
+			Mesh:     mesh,
+			Material: mat,
+		},
+	}
+}
+
+// Plane returns a plane entity
+func (p *Primitive) Plane() *MeshEntity {
+	mesh := p.scene.Assets().MeshFromData(Plane())
+	mat := gorge.NewMaterial("")
+	return &MeshEntity{
+		*gorge.NewTransform(),
+		gorge.Renderable{
+			Color:    vec4{1, 1, 1, 1},
+			Mesh:     mesh,
+			Material: mat,
+		},
+	}
+}
+
+// Poly returns a polygon with n sides
+func (p *Primitive) Poly(n int) *MeshEntity {
+	mesh := p.scene.Assets().MeshFromData(Poly(n))
+	mat := gorge.NewMaterial("")
+	mat.DrawType = gorge.DrawTriangleFan
+
+	return &MeshEntity{
+		*gorge.NewTransform(),
+		gorge.Renderable{
+			Color:    vec4{1, 1, 1, 1},
+			Mesh:     mesh,
+			Material: mat,
+		},
+	}
+}*/

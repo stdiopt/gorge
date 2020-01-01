@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/asset"
 	"github.com/stdiopt/gorge/gl"
 	"github.com/stdiopt/gorge/input"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/renderer"
+	"github.com/stdiopt/gorge/resource"
 
 	opengl "github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -76,13 +76,13 @@ func Start(opt Options, systems ...gorge.SystemFunc) {
 		window: window,
 	}
 
-	assetLoader := opt.GLFW.AssetLoader
-	if assetLoader == nil {
-		assetLoader = asset.FileLoader{BasePath: "."}
+	resourceLoader := opt.GLFW.Loader
+	if resourceLoader == nil {
+		resourceLoader = resource.FileLoader{BasePath: "."}
 	}
 
 	ggArgs := []gorge.SystemFunc{
-		asset.NewSystem(assetLoader),
+		resource.NewSystem(resourceLoader),
 		input.System,
 		s.Init,
 		renderer.System,

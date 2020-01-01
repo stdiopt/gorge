@@ -16,30 +16,37 @@ package primitive
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/gl"
 )
 
-// Plane creates a polygon facing Z
-func Plane() *MeshEntity {
-	mesh := &gorge.MeshPTN{}
-	mesh.Add(vec3{-1, 0, -1}, vec2{0, 1}, vec3{0, 1, 0})
-	mesh.Add(vec3{1, 0, -1}, vec2{1, 1}, vec3{0, 1, 0})
-	mesh.Add(vec3{1, 0, 1}, vec2{1, 0}, vec3{0, 1, 0})
-	mesh.Add(vec3{-1, 0, 1}, vec2{0, 0}, vec3{0, 1, 0})
-
-	mesh.Indices = []uint32{
+var planeMesh = gorge.NewMesh(&gorge.MeshData{
+	Name:   "primitive.Plane",
+	Format: gorge.VertexFormatPTN,
+	Vertices: []float32{
+		-1, 0, -1, 0, 1, 0, 1, 0,
+		1, 0, -1, 1, 1, 0, 1, 0,
+		1, 0, 1, 1, 0, 0, 1, 0,
+		-1, 0, 1, 0, 0, 0, 1, 0,
+	},
+	Indices: []uint32{
 		0, 1, 2,
 		2, 3, 0,
-	}
+	},
+})
 
-	material := gorge.NewMaterial("pbr")
-	material.DrawType = gl.TRIANGLES
+// Plane returns a mesh entity ready to add
+func Plane() *MeshEntity {
+	mat := gorge.NewMaterial(nil)
 	return &MeshEntity{
 		*gorge.NewTransform(),
 		gorge.Renderable{
 			Color:    vec4{1, 1, 1, 1},
-			Mesh:     &gorge.Mesh{MeshLoader: mesh},
-			Material: material,
+			Mesh:     planeMesh,
+			Material: mat,
 		},
 	}
+}
+
+// PlaneMesh creates a polygon facing Z
+func PlaneMesh() *gorge.Mesh {
+	return planeMesh
 }

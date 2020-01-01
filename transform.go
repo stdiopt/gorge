@@ -15,6 +15,7 @@
 package gorge
 
 import (
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/stdiopt/gorge/m32"
 )
 
@@ -178,6 +179,11 @@ func (c *Transform) Rotatev(angles vec3) *Transform {
 // WorldPosition returns world position
 func (c *Transform) WorldPosition() vec3 {
 	return c.Mat4().Col(3).Vec3()
+}
+
+// WorldRotation returns world position
+func (c *Transform) WorldRotation() quat {
+	return mgl32.Mat4ToQuat(c.Mat4())
 }
 
 // Left returns left of the transform

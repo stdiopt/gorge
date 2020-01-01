@@ -15,6 +15,7 @@
 package gorge
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -33,6 +34,22 @@ type Messaging struct {
 func (m *Messaging) Link(sub *Messaging) {
 	if m.links == nil {
 		m.links = map[*Messaging]struct{}{}
+	}
+	// Pass persistence along
+	for _, g := range m.Groups {
+		if g.Last == nil {
+			continue
+		}
+		subG := sub.group(g.Type)
+		if subG == nil {
+			continue
+		}
+		// Do not override persisted in sub
+		if subG.Last != nil {
+			continue
+		}
+		subG.Last = g.Last
+		subG.Call(g.Last)
 	}
 
 	sub.parent = m
@@ -118,6 +135,52 @@ func (m *Messaging) Persist(v interface{}) *HandlerGroup {
 	m.trigger(k, v)
 
 	return g
+}
+
+type rangeFunc func(k, v interface{}) bool
+
+// Range through linked messengers
+// 1. range parents
+// 2. range local
+// 3. range links
+func (m *Messaging) Range(fn rangeFunc) {
+	if !m.rangeParent(fn) {
+		return
+	}
+	if m.lrange(fn) {
+		return
+	}
+	m.rangeLinks(fn)
+}
+func (m *Messaging) lrange(fn rangeFunc) bool {
+	for k, v := range m.Groups {
+		if !fn(k, v) {
+			return false
+		}
+	}
+	return true
+}
+func (m *Messaging) rangeParent(fn rangeFunc) bool {
+	// Parent first
+	if m.parent == nil {
+		return true
+	}
+	if !m.parent.rangeParent(fn) {
+		return false
+	}
+	return m.parent.lrange(fn)
+}
+
+func (m *Messaging) rangeLinks(fn rangeFunc) bool {
+	for l := range m.links {
+		if !l.lrange(fn) {
+			return false
+		}
+		if !l.rangeLinks(fn) {
+			return false
+		}
+	}
+	return true
 }
 func (m *Messaging) trigger(k reflect.Type, v interface{}) {
 	m.triggerParent(k, v)
@@ -272,5 +335,17 @@ func fnTyp(fn interface{}) reflect.Type {
 	if typ.Kind() != reflect.Func && typ.NumIn() != 1 {
 		panic("wrong type, should be a func with 1 param")
 	}
-	return typ.In(0)
+	vtyp := typ.In(0)
+	if vtyp.Kind() == reflect.Interface {
+		panic(fmt.Sprintf("handler parameter should not be an interface: %v", vtyp))
+	}
+	// Consider this since we have a couple of big things to store
+	// it would be good so one system can't change a certain resource
+	// but for example we might want a camera that is constantly being updated
+	// elsewhere
+
+	/*if vtyp.Kind() == reflect.Ptr {
+		panic(fmt.Sprintf("handler parameter should not be a pointer: %v", vtyp))
+	}*/
+	return vtyp
 }

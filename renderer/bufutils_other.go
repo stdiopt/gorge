@@ -25,6 +25,12 @@ import (
 
 const f32size = 4
 
+// TODO: Space for improvements, need a Redim() method to resize the float
+// buffer
+// TODO: wasm version is almost similar to this maybe create
+// a common base overriding Redim() and Get() which are the funcs currently
+// having any js code
+
 //F32TransferBuf holds a buffer and a js reference
 type F32TransferBuf struct {
 	buffer []float32

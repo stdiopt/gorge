@@ -61,7 +61,11 @@ var (
 // Wrapper exposes the methods
 type Wrapper struct {
 	js.Value
-	undef
+}
+
+// GetWebGL Return a js.Value Wrapper context
+func GetWebGL(v js.Value) Wrapper {
+	return Wrapper{v}
 }
 
 // ActiveTexture sets the active texture unit.
@@ -149,6 +153,10 @@ func (c Wrapper) BlendFunc(sfactor, dfactor Enum) {
 	c.Call("blendFunc", sfactor, dfactor)
 }
 
+func (c Wrapper) BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha Enum) {
+	panic("not implemented")
+}
+
 // BufferData creates a new data store for the bound buffer object.
 // XXX: Can be pooled
 //
@@ -159,6 +167,10 @@ func (c Wrapper) BufferData(target Enum, data []byte, usage Enum) {
 	c.Call("bufferData", target, d, usage)
 }
 
+func (c Wrapper) BufferInit(target Enum, size int, usage Enum) {
+	panic("not implemented")
+}
+
 // BufferSubData sets some of data in the bound buffer object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferSubData.xhtml
@@ -166,6 +178,10 @@ func (c Wrapper) BufferSubData(target Enum, offset int, data []byte) {
 	d := js.Global().Get("Uint8Array").New(len(data))
 	js.CopyBytesToJS(d, data)
 	c.Call("bufferSubData", target, offset, d)
+}
+
+func (c Wrapper) CheckFramebufferStatus(target Enum) Enum {
+	panic("not implemented")
 }
 
 // Clear clears the window.
@@ -192,10 +208,10 @@ func (c Wrapper) ClearDepthf(d float32) {
 	c.Call("clearDepth", d)
 }
 
-// ColorMask specifies whether color components in the framebuffer
-// can be written.
-//
-// http://www.khronos.org/opengles/sdk/docs/man3/html/glColorMask.xhtml
+func (c Wrapper) ClearStencil(s int) {
+	panic("not implemented")
+}
+
 func (c Wrapper) ColorMask(red, green, blue, alpha bool) {
 	c.Call("colorMask", red, green, blue, alpha)
 }
@@ -207,6 +223,22 @@ func (c Wrapper) CompileShader(s Shader) {
 	c.Call("compileShader", s)
 }
 
+func (c Wrapper) CompressedTexImage2D(target Enum, level int, internalformat Enum, width, height, border int, data []byte) {
+	panic("not implemented")
+}
+
+func (c Wrapper) CompressedTexSubImage2D(target Enum, level, xoffset, yoffset, width, height int, format Enum, data []byte) {
+	panic("not implemented")
+}
+
+func (c Wrapper) CopyTexImage2D(target Enum, level int, internalformat Enum, x, y, width, height, border int) {
+	panic("not implemented")
+}
+
+func (c Wrapper) CopyTexSubImage2D(target Enum, level, xoffset, yoffset, x, y, width, height int) {
+	panic("not implemented")
+}
+
 // CreateBuffer creates a buffer object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glGenBuffers.xhtml
@@ -214,11 +246,19 @@ func (c Wrapper) CreateBuffer() Buffer {
 	return Buffer(c.Call("createBuffer"))
 }
 
+func (c Wrapper) CreateFramebuffer() Framebuffer {
+	panic("not implemented")
+}
+
 // CreateProgram creates a new empty program object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glCreateProgram.xhtml
 func (c Wrapper) CreateProgram() Program {
 	return Program(c.Call("createProgram"))
+}
+
+func (c Wrapper) CreateRenderbuffer() Renderbuffer {
+	panic("not implemented")
 }
 
 // CreateShader creates a new empty shader object.
@@ -272,6 +312,22 @@ func (c Wrapper) DeleteProgram(p Program) {
 	c.Call("deleteProgram", p)
 }
 
+func (c Wrapper) DeleteRenderbuffer(v Renderbuffer) {
+	panic("not implemented")
+}
+
+func (c Wrapper) DeleteShader(s Shader) {
+	panic("not implemented")
+}
+
+func (c Wrapper) DeleteTexture(v Texture) {
+	panic("not implemented")
+}
+
+func (c Wrapper) DeleteVertexArray(v VertexArray) {
+	panic("not implemented")
+}
+
 // DepthFunc sets the function used for depth buffer comparisons.
 //
 // Valid fn values:
@@ -285,7 +341,6 @@ func (c Wrapper) DeleteProgram(p Program) {
 //	ALWAYS
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glDepthFunc.xhtml
-
 func (c Wrapper) DepthFunc(fn Enum) {
 	c.Call("depthFunc", fn)
 }
@@ -295,6 +350,14 @@ func (c Wrapper) DepthFunc(fn Enum) {
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glDepthMask.xhtml
 func (c Wrapper) DepthMask(flag bool) {
 	c.Call("depthMask", flag)
+}
+
+func (c Wrapper) DepthRangef(n, f float32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) DetachShader(p Program, s Shader) {
+	panic("not implemented")
 }
 
 // Disable disables various GL capabilities.
@@ -337,6 +400,32 @@ func (c Wrapper) Enable(cp Enum) {
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glEnableVertexAttribArray.xhtml
 func (c Wrapper) EnableVertexAttribArray(a Attrib) {
 	c.Call("enableVertexAttribArray", a)
+}
+
+// Finish blocks until the effects of all previously called GL
+// commands are complete.
+//
+// http://www.khronos.org/opengles/sdk/docs/man3/html/glFinish.xhtml
+func (c Wrapper) Finish() {
+	c.Call("finish")
+}
+
+// Flush empties all buffers. It does not block.
+//
+// An OpenGL implementation may buffer network communication,
+// the command stream, or data inside the graphics accelerator.
+//
+// http://www.khronos.org/opengles/sdk/docs/man3/html/glFlush.xhtml
+func (c Wrapper) Flush() {
+	c.Call("flush")
+}
+
+func (c Wrapper) FramebufferRenderbuffer(target, attachment, rbTarget Enum, rb Renderbuffer) {
+	panic("not implemented")
+}
+
+func (c Wrapper) FramebufferTexture2D(target, attachment, texTarget Enum, t Texture, level int) {
+	panic("not implemented")
 }
 
 // FrontFace defines which polygons are front-facing.
@@ -386,11 +475,43 @@ func (c Wrapper) GetActiveUniform(p Program, index uint32) (name string, size in
 	return name, size, ty
 }
 
+func (c Wrapper) GetAttachedShaders(p Program) []Shader {
+	panic("not implemented")
+}
+
 // GetAttribLocation returns the location of an attribute variable.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glGetAttribLocation.xhtml
 func (c Wrapper) GetAttribLocation(p Program, name string) Attrib {
 	return Attrib(c.Call("getAttribLocation", p, name).Int())
+}
+
+func (c Wrapper) GetBooleanv(dst []bool, pname Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetFloatv(dst []float32, pname Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetIntegerv(dst []int32, pname Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetInteger(pname Enum) int {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetBufferParameteri(target, value Enum) int {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetError() Enum {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetFramebufferAttachmentParameteri(target, attachment, pname Enum) int {
+	panic("not implemented")
 }
 
 // GetProgrami returns a parameter value for a program.
@@ -419,6 +540,10 @@ func (c Wrapper) GetProgramInfoLog(p Program) string {
 	return c.Call("getProgramInfoLog", p).String()
 }
 
+func (c Wrapper) GetRenderbufferParameteri(target, pname Enum) int {
+	panic("not implemented")
+}
+
 // GetShaderi returns a parameter value for a shader.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glGetShaderiv.xhtml
@@ -436,6 +561,15 @@ func (c Wrapper) GetShaderInfoLog(s Shader) string {
 	return c.Call("getShaderInfoLog", s).String()
 }
 
+func (c Wrapper) GetShaderPrecisionFormat(shadertype, precisiontype Enum) (rangeLow, rangeHigh, precision int) {
+	panic("not implemented")
+
+}
+
+func (c Wrapper) GetShaderSource(s Shader) string {
+	panic("not implemented")
+}
+
 // GetString reports current GL state.
 //
 // Valid name values:
@@ -450,15 +584,43 @@ func (c Wrapper) GetString(pname Enum) string {
 	return c.Call("getParameter", pname).String()
 }
 
-func (c Wrapper) GetUniformfv(dst []float32, src Uniform, p Program) {
-	c.Call("getUniformfv", dst, src, p)
+func (c Wrapper) GetTexParameterfv(dst []float32, target, pname Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetTexParameteriv(dst []int32, target, pname Enum) {
+	panic("not implemented")
 }
 
 // GetUniformfv returns the float values of a uniform variable.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glGetUniform.xhtml
+func (c Wrapper) GetUniformfv(dst []float32, src Uniform, p Program) {
+	c.Call("getUniformfv", dst, src, p)
+}
+
+func (c Wrapper) GetUniformiv(dst []int32, src Uniform, p Program) {
+	panic("not implemented")
+}
+
 func (c Wrapper) GetUniformLocation(p Program, name string) Uniform {
 	return Uniform(c.Call("getUniformLocation", p, name))
+}
+
+func (c Wrapper) GetVertexAttribf(src Attrib, pname Enum) float32 {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetVertexAttribfv(dst []float32, src Attrib, pname Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetVertexAttribi(src Attrib, pname Enum) int32 {
+	panic("not implemented")
+}
+
+func (c Wrapper) GetVertexAttribiv(dst []int32, src Attrib, pname Enum) {
+	panic("not implemented")
 }
 
 // Hint sets implementation-specific modes.
@@ -466,6 +628,35 @@ func (c Wrapper) GetUniformLocation(p Program, name string) Uniform {
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glHint.xhtml
 func (c Wrapper) Hint(target, mode Enum) {
 	c.Call("hint", target, mode)
+}
+
+func (c Wrapper) IsBuffer(b Buffer) bool {
+	panic("not implemented")
+}
+
+func (c Wrapper) IsEnabled(cap Enum) bool {
+	panic("not implemented")
+
+}
+
+func (c Wrapper) IsFramebuffer(fb Framebuffer) bool {
+	panic("not implemented")
+}
+
+func (c Wrapper) IsProgram(p Program) bool {
+	panic("not implemented")
+}
+
+func (c Wrapper) IsRenderbuffer(rb Renderbuffer) bool {
+	panic("not implemented")
+}
+
+func (c Wrapper) IsShader(s Shader) bool {
+	panic("not implemented")
+}
+
+func (c Wrapper) IsTexture(t Texture) bool {
+	panic("not implemented")
 }
 
 // LineWidth specifies the width of lines.
@@ -482,11 +673,63 @@ func (c Wrapper) LinkProgram(p Program) {
 	c.Call("linkProgram", p)
 }
 
+func (c Wrapper) PixelStorei(pname Enum, param int32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) PolygonOffset(factor, units float32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) ReadPixels(dst []byte, x, y, width, height int, format, ty Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) ReleaseShaderCompiler() {
+	panic("not implemented")
+}
+
+func (c Wrapper) RenderbufferStorage(target, internalFormat Enum, width, height int) {
+	panic("not implemented")
+}
+
+func (c Wrapper) SampleCoverage(value float32, invert bool) {
+	panic("not implemented")
+}
+
+func (c Wrapper) Scissor(x, y, width, height int32) {
+	panic("not implemented")
+}
+
 // ShaderSource sets the source code of s to the given source code.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glShaderSource.xhtml
 func (c Wrapper) ShaderSource(s Shader, src string) {
 	c.Call("shaderSource", s, src)
+}
+
+func (c Wrapper) StencilFunc(fn Enum, ref int, mask uint32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) StencilFuncSeparate(face, fn Enum, ref int, mask uint32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) StencilMask(mask uint32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) StencilMaskSeparate(face Enum, mask uint32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) StencilOp(fail, zfail, zpass Enum) {
+	panic("not implemented")
+}
+
+func (c Wrapper) StencilOpSeparate(face, sfail, dpfail, dppass Enum) {
+	panic("not implemented")
 }
 
 // TexImage2D writes a 2D texture image.
@@ -507,11 +750,19 @@ func (c Wrapper) TexImage2D(target Enum, level int, internalFormat int, width, h
 
 }
 
+func (c Wrapper) TexSubImage2D(target Enum, level int, x, y, width, height int, format, ty Enum, data []byte) {
+	panic("not implemented")
+
+}
+
 // TexParameterf sets a float texture parameter.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glTexParameter.xhtml
 func (c Wrapper) TexParameterf(target, pname Enum, param float32) {
 	c.Call("texParameterf", target, pname, param)
+}
+func (c Wrapper) TexParameterfv(target, pname Enum, params []float32) {
+	panic("not implemented")
 }
 
 // TexParameteri sets an integer texture parameter.
@@ -520,12 +771,18 @@ func (c Wrapper) TexParameterf(target, pname Enum, param float32) {
 func (c Wrapper) TexParameteri(target, pname Enum, param int) {
 	c.Call("texParameteri", target, pname, param)
 }
+func (c Wrapper) TexParameteriv(target, pname Enum, params []int32) {
+	panic("not implemented")
+}
 
 // Uniform1f writes a float uniform variable.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
 func (c Wrapper) Uniform1f(dst Uniform, v float32) {
 	c.Call("uniform1f", dst, v)
+}
+func (c Wrapper) Uniform1fv(dst Uniform, src []float32) {
+	panic("not implemented")
 }
 
 // Uniform1i writes an int uniform variable.
@@ -537,6 +794,9 @@ func (c Wrapper) Uniform1f(dst Uniform, v float32) {
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
 func (c Wrapper) Uniform1i(dst Uniform, v int) {
 	c.Call("uniform1i", dst, v)
+}
+func (c Wrapper) Uniform1iv(dst Uniform, src []int32) {
+	panic("not implemented")
 }
 
 // Uniform2f writes a vec2 uniform variable.
@@ -554,6 +814,14 @@ func (c Wrapper) Uniform2fv(dst Uniform, src []float32) {
 	c.Call("uniform2fv", dst, f2buf)
 }
 
+func (c Wrapper) Uniform2i(dst Uniform, v0, v1 int) {
+	panic("not implemented")
+}
+
+func (c Wrapper) Uniform2iv(dst Uniform, src []int32) {
+	panic("not implemented")
+}
+
 // Uniform3f writes a vec3 uniform variable.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
@@ -569,6 +837,14 @@ func (c Wrapper) Uniform3fv(dst Uniform, src []float32) {
 	c.Call("uniform3fv", dst, f3buf)
 }
 
+func (c Wrapper) Uniform3i(dst Uniform, v0, v1, v2 int32) {
+	panic("not implemented")
+}
+
+func (c Wrapper) Uniform3iv(dst Uniform, src []int32) {
+	panic("not implemented")
+}
+
 // Uniform4f writes a vec4 uniform variable.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glUniform.xhtml
@@ -582,6 +858,15 @@ func (c Wrapper) Uniform4f(dst Uniform, v0, v1, v2, v3 float32) {
 func (c Wrapper) Uniform4fv(dst Uniform, src []float32) {
 	js.CopyBytesToJS(b16buf, F32Bytes(src...))
 	c.Call("uniform4fv", dst, f4buf)
+}
+func (c Wrapper) Uniform4i(dst Uniform, v0, v1, v2, v3 int32) {
+	panic("not implemented")
+}
+func (c Wrapper) Uniform4iv(dst Uniform, src []int32) {
+	panic("not implemented")
+}
+func (c Wrapper) UniformMatrix2fv(dst Uniform, src []float32) {
+	panic("not implemented")
 }
 
 // UniformMatrix3fv writes 3x3 matrices. Each matrix uses nine
@@ -611,6 +896,33 @@ func (c Wrapper) UniformMatrix4fv(dst Uniform, src []float32) {
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glUseProgram.xhtml
 func (c Wrapper) UseProgram(p Program) {
 	c.Call("useProgram", p)
+}
+func (c Wrapper) ValidateProgram(p Program) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib1f(dst Attrib, x float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib1fv(dst Attrib, src []float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib2f(dst Attrib, x, y float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib2fv(dst Attrib, src []float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib3f(dst Attrib, x, y, z float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib3fv(dst Attrib, src []float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib4f(dst Attrib, x, y, z, w float32) {
+	panic("not implemented")
+}
+func (c Wrapper) VertexAttrib4fv(dst Attrib, src []float32) {
+	panic("not implemented")
 }
 
 // VertexAttribPointer uses a bound buffer to define vertex attribute data.
