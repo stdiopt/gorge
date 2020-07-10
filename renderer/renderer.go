@@ -163,24 +163,6 @@ func System(gm *gorge.Gorge) {
 		}
 	})
 
-	// DEBUGGING
-	/*go func() {
-		for {
-			log.Printf("GPU Resources: textures: %v vbos: %v shaders: %v",
-				len(rs.textures.textures),
-				len(rs.vbos.vbos),
-				len(rs.shaders.shaders),
-			)
-
-			idx := 0
-			for s := range rs.shaders.shaders {
-				log.Println("  shader:", idx, s)
-				idx++
-			}
-			time.Sleep(3 * time.Second)
-		}
-	}()*/
-
 	if ExperimentalSkybox {
 		rs.PrepareSkybox()
 	}

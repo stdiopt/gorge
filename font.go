@@ -18,6 +18,11 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+// FontRef for resource
+type FontRef struct {
+	asset
+}
+
 // Glyph char information
 type Glyph struct {
 	Uv1  vec2
