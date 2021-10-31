@@ -1,18 +1,6 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
+
+import "github.com/stdiopt/gorge/m32"
 
 // LightType type for lights
 type LightType int
@@ -24,13 +12,66 @@ const (
 	LightSpot
 )
 
-// Light component type of light and what nots
+// LightComponent component type of light and what nots
 // type of light as in
 // position and direction determined by transform Z direction
-type Light struct {
-	Type  LightType // default point
-	Color vec3
+type LightComponent struct {
+	Type      LightType // default point
+	Intensity float32
+	Color     m32.Vec3
+	Range     float32
+
+	InnerConeCos float32
+	OuterConeCos float32
+
+	CastShadows bool
 }
 
-// LightComponent method to satisfy component
-func (l *Light) LightComponent() *Light { return l }
+// NewLightComponent returns a New light component with some defaults (pointsLight)
+func NewLightComponent() *LightComponent {
+	return &LightComponent{
+		Type:      LightPoint,
+		Intensity: 100,
+		Color:     m32.Vec3{1, 1, 1},
+		Range:     100,
+	}
+}
+
+// Light method to satisfy component
+func (l *LightComponent) Light() *LightComponent { return l }
+
+// SetType sets the light type Directional, Spot, Point.
+func (l *LightComponent) SetType(t LightType) {
+	l.Type = t
+}
+
+// SetColor sets light Color
+func (l *LightComponent) SetColor(r, g, b float32) {
+	l.Color = m32.Vec3{r, g, b}
+}
+
+// SetIntensity gets light intensity
+func (l *LightComponent) SetIntensity(v float32) {
+	l.Intensity = v
+}
+
+// SetRange sets Point or Spot light range
+func (l *LightComponent) SetRange(v float32) {
+	l.Range = v
+}
+
+// SetCastShadows convinient accessor that sets the CastShadows field and
+// returns self.
+func (l *LightComponent) SetCastShadows(v bool) {
+	l.CastShadows = v
+}
+
+// SetInnerConeCos sets the InnerConeCos for spot lights.
+func (l *LightComponent) SetInnerConeCos(v float32) {
+	l.InnerConeCos = v
+}
+
+// SetOuterConeCos sets the OuterConeCos for spot lights.
+func (l *LightComponent) SetOuterConeCos(v float32) {
+	l.OuterConeCos = v
+}

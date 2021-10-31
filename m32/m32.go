@@ -1,60 +1,65 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// Package m32 math and gl math for floats32 it uses go-gl/mathgl/mgl32 for
-// certain things
+// Package m32 math and gl math for floats32
+// Contains code from github.com/go-gl/mathgl/mgl32
+// BSD-3 Copyright ©2013 The go-gl Authors. All rights reserved.
 package m32
 
 import (
 	"math"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
 
-type (
-	vec2 = mgl32.Vec2
-	vec3 = mgl32.Vec3
-	vec4 = mgl32.Vec4
-	mat3 = mgl32.Mat3
-	mat4 = mgl32.Mat4
-	quat = mgl32.Quat
+// Epsilon float error stuff.
+const (
+	Epsilon   = 0.000001
+	MinNormal = float32(1.1754943508222875e-38) // 1 / 2**(127 - 1)
+	MinValue  = float32(math.SmallestNonzeroFloat32)
+	MaxValue  = float32(math.MaxFloat32)
 )
 
-/*var (
-	up      = vec3{0, 1, 0}
-	forward = vec3{0, 0, 1}
-)*/
+// values from math
+var (
+	InfPos = float32(math.Inf(1))
+	InfNeg = float32(math.Inf(-1))
+	NaN    = float32(math.NaN())
+)
 
-// Up returns a up vector
-func Up() vec3 { return vec3{0, 1, 0} }
+// FloatEqualThreshold is a utility function to compare floats.
+// It's Taken from http://floating-point-gui.de/errors/comparison/
+//
+// It is slightly altered to not call Abs when not needed.
+//
+// This differs from FloatEqual in that it lets you pass in your comparison
+// threshold, so that you can adjust the comparison value to your specific
+// needs
+func FloatEqualThreshold(a, b, epsilon float32) bool {
+	// Handles the case of inf or shortcuts the loop when no significant
+	// error has accumulated
+	if a == b {
+		return true
+	}
 
-// Down returns a down vector
-func Down() vec3 { return vec3{0, -1, 0} }
+	diff := Abs(a - b)
+	if a*b == 0 || diff < MinNormal { // If a or b are 0 or both are extremely close to it
+		return diff < epsilon*epsilon
+	}
 
-// Forward returns a vector facing forward
-func Forward() vec3 { return vec3{0, 0, 1} }
+	// Else compare difference
+	return diff/(Abs(a)+Abs(b)) < epsilon
+}
 
-// Backward returns a vector facing backward
-func Backward() vec3 { return vec3{0, 0, -1} }
+// FloatEqual is a safe utility function to compare floats.
+// It's Taken from http://floating-point-gui.de/errors/comparison/
+//
+// It is slightly altered to not call Abs when not needed.
+func FloatEqual(a, b float32) bool {
+	return FloatEqualThreshold(a, b, Epsilon)
+}
 
-// Left returns a vector pointing left
-func Left() vec3 { return vec3{-1, 0, 0} }
-
-// Right returns a vector pointing left
-func Right() vec3 { return vec3{1, 0, 0} }
-
-// Whatever I cast I will put the func here
+// Mod returns the floating-point remainder of x/y.
+// The magnitude of the result is less than y and its
+// sign agrees with that of x.
+func Mod(x, y float32) float32 {
+	return float32(math.Mod(float64(x), float64(y)))
+}
 
 // Cos casts values to float64 and uses native math.Cos
 // to return the cosine of the radian argument x.
@@ -62,8 +67,7 @@ func Cos(x float32) float32 {
 	return float32(math.Cos(float64(x)))
 }
 
-// Sin casts values to float64 and uses native math.Sin
-// to return the sine of the radian argument x.
+// Sin to return the sine of the radian argument x.
 func Sin(x float32) float32 {
 	return float32(math.Sin(float64(x)))
 }
@@ -80,9 +84,14 @@ func Hypot(x, y float32) float32 {
 }
 
 // Atan2 returns the arc tangent of y/x, using the signs of the two to determine
-//the quadrant of the return value.
+// the quadrant of the return value.
 func Atan2(y, x float32) float32 {
 	return float32(math.Atan2(float64(y), float64(x)))
+}
+
+// Tan returns the tangent of the radian argument x.
+func Tan(x float32) float32 {
+	return float32(math.Tan(float64(x)))
 }
 
 // Sqrt returns the square root of x.
@@ -121,12 +130,13 @@ func Ceil(x float32) float32 {
 	return float32(math.Ceil(float64(x)))
 }
 
-// Limit maintains v between min and max
-func Limit(v, mn, mx float32) float32 {
-	if v < mn {
-		return mn
-	} else if v > mx {
-		return mx
+// Clamp v
+func Clamp(v, min, max float32) float32 {
+	if v < min {
+		return min
+	}
+	if v > max {
+		return max
 	}
 	return v
 }
@@ -134,4 +144,9 @@ func Limit(v, mn, mx float32) float32 {
 // Cbrt returns the cube root of x.
 func Cbrt(x float32) float32 {
 	return float32(math.Cbrt(float64(x)))
+}
+
+// Lerp Linear interpolation between 2 scalar
+func Lerp(v0, v1, t float32) float32 {
+	return v0 + t*(v1-v0)
 }

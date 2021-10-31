@@ -1,17 +1,3 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package primitive
 
 import (
@@ -21,39 +7,27 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
-// Poly creates a polygon with n sides
-func Poly(n int) *MeshEntity {
-	mesh := PolyMesh(n)
-	mat := gorge.NewMaterial(nil)
-	// Should be on mesh perhaps?
-	return &MeshEntity{
-		*gorge.NewTransform(),
-		gorge.Renderable{
-			Color:    vec4{1, 1, 1, 1},
-			Mesh:     mesh,
-			Material: mat,
-		},
-	}
+// NewPoly creates a poly mesh
+func NewPoly(n int) *gorge.Mesh {
+	m := gorge.NewMesh(PolyMeshData(n))
+	m.DrawMode = gorge.DrawTriangleFan
+	return m
 }
 
-// PolyMesh creates a poly mesh
-func PolyMesh(n int) *gorge.Mesh {
+// PolyMeshData returns a poly as meshData.
+func PolyMeshData(n int) *gorge.MeshData {
 	points := []float32{}
-	p := vec3{0, 1, 0}
+	p := m32.Vec3{0, 1, 0}
 	theta := float32(math.Pi) / (float32(n) / 2)
-	r := m32.HomogRotate2D(theta)
+	r := m32.M3Rotate(theta)
 	for i := 0; i < n+1; i++ {
 		points = append(points, p[:]...)
-		p = r.Mul3x1(p)
+		p = r.MulV3(p)
 	}
-	data := &gorge.MeshData{
+	return &gorge.MeshData{
 		Name:     "primitive.Poly",
-		Format:   gorge.VertexFormatP,
+		Format:   gorge.VertexFormatP(),
 		Vertices: points,
 		Indices:  nil,
 	}
-	m := gorge.NewMesh(data)
-	m.DrawType = gorge.DrawTriangleFan
-
-	return m
 }

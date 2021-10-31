@@ -1,55 +1,59 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
 
-// Renderable contains info for renderer
+type (
+	// Materialer interface for material controllers.
+	Materialer interface{ Material() *Material }
+	// Mesher interface for Mesh controller.
+	Mesher interface{ Mesh() *Mesh }
+)
+
+// TODO: Add masking constants and camera masking stuff here
+// All, None, UI, Debug etc
+const (
+	MaskDefault = 0xFF
+	MaskUI      = 0x100
+)
+
+// RenderableComponent contains info for renderer
 // material and mesh
-type Renderable struct {
-	Name     string
-	Color    vec4
-	Material *Material
-	Mesh     *Mesh
+type RenderableComponent struct {
+	Name string
+	*Material
+	*Mesh
+
+	CullMask      uint32
+	DisableShadow bool
 }
 
-// RenderableComponent to satisfy component
-func (r *Renderable) RenderableComponent() *Renderable { return r }
-
-// SetMaterial sets the material
-func (r *Renderable) SetMaterial(m *Material) *Renderable {
-	r.Material = m
-	return r
-}
-
-// SetMesh sets the mesh
-func (r *Renderable) SetMesh(m *Mesh) *Renderable {
-	r.Mesh = m
-	return r
-}
-
-// SetColor sets the color
-func (r *Renderable) SetColor(c vec4) *Renderable {
-	r.Color = c
-	return r
-}
-
-// NewRenderable returns a new mesh
-func NewRenderable(n string, mesh *Mesh, mat *Material) *Renderable {
-	return &Renderable{
-		Name:     n,
-		Color:    vec4{0.5, 0.5, 0.5, 1},
-		Mesh:     mesh,
-		Material: mat,
+// NewRenderableComponent returns a new renderable component
+func NewRenderableComponent(mesh Mesher, mat Materialer) *RenderableComponent {
+	return &RenderableComponent{
+		Mesh:     mesh.Mesh(),
+		Material: mat.Material(),
 	}
+}
+
+// Renderable returns the renderable component
+func (r *RenderableComponent) Renderable() *RenderableComponent { return r }
+
+// SetMaterial sets the material.
+func (r *RenderableComponent) SetMaterial(m Materialer) {
+	r.Material = m.Material()
+}
+
+// SetMesh sets the mesh.
+func (r *RenderableComponent) SetMesh(m Mesher) {
+	r.Mesh = m.Mesh()
+}
+
+// SetCullMask will set the cull mask which is used in conjunction with camera
+// mask to filter which renderables will render in each camera.
+func (r *RenderableComponent) SetCullMask(m uint32) {
+	r.CullMask = m
+}
+
+// SetDisableShadow sets the disableShadow property which if it is true it
+// won't cast a shadow.
+func (r *RenderableComponent) SetDisableShadow(b bool) {
+	r.DisableShadow = b
 }

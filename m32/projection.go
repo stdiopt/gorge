@@ -1,17 +1,3 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package m32
 
 import (
@@ -19,9 +5,29 @@ import (
 )
 
 // Perspective generates a Perspective Matrix.
-func Perspective(fovy, aspect, near, far float32) mat4 {
+//
+func Perspective(fovy, aspect, near, far float32) Mat4 {
+	fovy = (fovy * math.Pi) / 180.0 // convert from degrees to radians
 	// fovy = (fovy * math.Pi) / 180.0 // convert from degrees to radians
 	nmf, f := near-far, float32(1./math.Tan(float64(fovy)/2.0))
 
-	return mat4{f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (near + far) / nmf, 1, 0, 0, (-2. * far * near) / nmf, 0}
+	return Mat4{
+		f / aspect, 0, 0, 0,
+		0, f, 0, 0,
+		0, 0, (near + far) / nmf, -1,
+		0, 0, (2. * far * near) / nmf, 0,
+	}
+}
+
+// Ortho creates an orthographic matrix
+// https://stackoverflow.com/questions/31839119/projection-and-orthographic-matrices-for-opengl
+func Ortho(left, right, bottom, top, near, far float32) Mat4 {
+	rml, tmb, fmn := (right - left), (top - bottom), (far - near)
+
+	return Mat4{
+		2. / rml, 0, 0, 0,
+		0, 2. / tmb, 0, 0,
+		0, 0, -2. / fmn, 0,
+		-(right + left) / rml, -(top + bottom) / tmb, -(far + near) / fmn, 1,
+	}
 }

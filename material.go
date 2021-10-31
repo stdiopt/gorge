@@ -1,99 +1,132 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
 
-// ShaderLoader loads shader data for a material
-type ShaderLoader interface {
-	Data() *ShaderData
-}
-
-// ShaderData contains shaders sources
-type ShaderData struct {
-	VertSrc string
-	FragSrc string
-}
-
-// Data convinient to return memory data
-func (d ShaderData) Data() *ShaderData { return &d }
+import (
+	"fmt"
+)
 
 // Material the material
 type Material struct {
-	loader ShaderLoader
+	resourcer
+	Name string
 	// Primitive stuff
-	Depth       bool
+	Queue       int
+	Depth       DepthMode
 	DoubleSided bool
-	// Program name (not being used yet)
-	Program string
-	//Color   vec4
+	Blend       BlendType
 
-	// Texture loaders instead?
-	Textures map[string]*Texture
-	props    map[string]interface{}
+	shaderProps
 }
 
-// NewMaterial returns a initialized Material
-func NewMaterial(l ShaderLoader) *Material {
+// NewMaterial returns a material using the default gorge shader
+func NewMaterial() *Material {
+	return &Material{}
+}
+
+// Material implements the materialer interface.
+func (m *Material) Material() *Material {
+	return m
+}
+
+// NewShaderMaterial returns a new material based on shader data
+// if ShaderData is nil it will use the default PBR material
+func NewShaderMaterial(r Resourcer) *Material {
 	return &Material{
-		loader: l,
-		Depth:  true,
-		//Color:    vec4{0.5, 0.5, 0.5, 1},
+		resourcer: resourcer{r},
 	}
 }
 
-// Loader returns the shader loader for this material
-func (m *Material) Loader() ShaderLoader {
-	return m.loader
+func (m Material) String() string {
+	return fmt.Sprintf("(material: %q)", m.Name)
 }
 
-// SetTexture uniform thing for specific name
-func (m *Material) SetTexture(k string, t *Texture) *Material {
-	if m.Textures == nil {
-		m.Textures = map[string]*Texture{}
-	}
-	m.Textures[k] = t
-	return m
+// SetQueue sets the material target queue
+// transparent materials should be in a higher queue
+func (m *Material) SetQueue(v int) {
+	m.Queue = v
 }
 
-// Set properties by name
-func (m *Material) Set(name string, value interface{}) *Material {
-	if m.props == nil {
-		m.props = map[string]interface{}{}
-	}
-	if f, ok := value.(float64); ok {
-		m.props[name] = float32(f)
-		return m
-	}
-	m.props[name] = value
-
-	return m
+// SetDepth sets if material uses depth buffer.
+func (m *Material) SetDepth(v DepthMode) {
+	m.Depth = v
 }
 
-// Get return named property
+// SetDoubleSided sets material double sided prop.
+func (m *Material) SetDoubleSided(v bool) {
+	m.DoubleSided = true
+}
+
+// Defines override shaderProp defines with hierarchy
+func (m *Material) Defines() map[string]string {
+	pm, ok := m.Resourcer.(*Material)
+	if !ok {
+		return m.shaderProps.Defines()
+	}
+	ret := map[string]string{}
+	for k, v := range pm.Defines() {
+		ret[k] = v
+	}
+	for k, v := range m.defines {
+		ret[k] = v
+	}
+	return ret
+}
+
+// DefinesHash returns an hash based on the material defines.
+func (m *Material) DefinesHash() uint {
+	if m == nil {
+		return 0
+	}
+	hash := uint(0)
+	if p, ok := m.Resourcer.(*Material); ok {
+		hash ^= p.DefinesHash()
+	}
+	hash ^= m.shaderProps.DefinesHash()
+	return hash
+}
+
+// Get returns the material property for name or if the material has a Parent
+// material returns the property from parent else returns nil.
 func (m *Material) Get(name string) interface{} {
-	if m.props == nil {
-		return nil
+	pm, ok := m.Resourcer.(*Material)
+	if !ok {
+		return m.shaderProps.Get(name)
 	}
-	return m.props[name]
+	if v := m.shaderProps.Get(name); v != nil {
+		return v
+	}
+	return pm.Get(name)
 }
 
-// Props returns the properties of this material
-func (m *Material) Props() map[string]interface{} {
-	return m.props
+// GetTexture returns the texture for name
+func (m *Material) GetTexture(name string) *Texture {
+	if t := m.shaderProps.GetTexture(name); t != nil {
+		return t
+	}
+
+	if pm, ok := m.Resourcer.(*Material); ok {
+		return pm.GetTexture(name)
+	}
+
+	return nil
 }
 
-// SetFloat32 XXX testing sets a float32
-func (m *Material) SetFloat32(name string, v float32) *Material {
-	return m.Set(name, v)
-}
+// BlendType for material
+// TODO: Fix this blending stuff with src and dst for Func
+type BlendType uint32
+
+const (
+	// BlendOneOneMinusSrcAlpha - gl.ONE, gl.ONE_MINUS_SRC_ALPHA
+	BlendOneOneMinusSrcAlpha = BlendType(iota)
+	// BlendOneOne - gl.ONE, gl.ONE
+	BlendOneOne
+)
+
+// DepthMode handle depth R&W types on render
+type DepthMode uint32
+
+// Default deph modes
+const (
+	DepthReadWrite = DepthMode(iota)
+	DepthRead
+	DepthNone
+)

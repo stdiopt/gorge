@@ -1,32 +1,60 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
 
 import (
 	"fmt"
-	"reflect"
-	"unsafe"
+
+	"github.com/stdiopt/gorge/m32"
 )
 
-// DrawType type of draw for the renderer
-type DrawType int
+// Mesh representation
+type Mesh struct {
+	resourcer
+	DrawMode DrawMode
 
-// independent from gl drawTypes
+	// This is for shaders like material
+	shaderProps
+}
+
+// NewMesh creates a new mesh with meshData
+func NewMesh(res Resourcer) *Mesh {
+	return &Mesh{
+		resourcer: resourcer{res},
+	}
+}
+
+// Mesh implements mesher interface.
+func (m *Mesh) Mesh() *Mesh {
+	return m
+}
+
+// Clone will clone the mesh and it's props.
+func (m Mesh) Clone() *Mesh {
+	return &Mesh{
+		resourcer:   resourcer{m.Resourcer},
+		DrawMode:    m.DrawMode,
+		shaderProps: m.copy(),
+	}
+}
+
+// isGPU indicates this is a gpuResourcer so it should have
+// gpuResource in the resourcer
+func (m *Mesh) isGPU() {}
+
+func (m Mesh) String() string {
+	return fmt.Sprintf("(mesh: drawType: %v, loader: %v)",
+		m.DrawMode,
+		m.Resourcer,
+	)
+}
+
+// GetDrawMode returns the mesh drawmode.
+func (m *Mesh) GetDrawMode() DrawMode {
+	return m.DrawMode
+}
+
+// Mesh draw type
 const (
-	// Default triangles
-	DrawTriangles = DrawType(iota)
+	DrawTriangles = DrawMode(iota)
 	DrawTriangleStrip
 	DrawTriangleFan
 	DrawPoints
@@ -35,106 +63,224 @@ const (
 	DrawLineStrip
 )
 
-// VertexFormat vertex Formats
-type VertexFormat int
-
-// Vertex formats
+// FrontFacing indicates the frontfacing property for the meshData vertices
 const (
-	VertexFormatP   = VertexFormat(iota)
-	VertexFormatPN  // Vertex Normal
-	VertexFormatPT  // Vertex Texture
-	VertexFormatPTN // Vertex Texture Normal
-	VertexPNC       // Vertex Normal Color
+	FrontFacingCW  = FrontFacing(0)
+	FrontFacingCCW = FrontFacing(1)
 )
 
-// MeshLoader is a mesh loader interface
-type MeshLoader interface {
-	Data() *MeshData
+// VertexFormatAttrib vertex format entry for interleaving vertex data in meshData.
+type VertexFormatAttrib struct {
+	Size   int
+	Attrib string
+	Define string
 }
 
-// MeshLoader struct
-/*type MeshLoader struct {
-	meshLoader
-	Updates int
-}*/
+// VertexFormat type for describing vertex formats.
+type VertexFormat []VertexFormatAttrib
 
-// MeshData raw mesh data
-type MeshData struct {
-	Name     string
-	Format   VertexFormat
-	Vertices []float32
-	Indices  []uint32
-	Updates  int
+// Size returns the data size for this vertex
+func (f VertexFormat) Size() int {
+	r := 0
+	for _, v := range f {
+		r += v.Size
+	}
+	return r
 }
 
-func (m *MeshData) String() string {
-	return fmt.Sprintf("MeshData: %s, %v verts: %v, ind: %v, upd: %v",
-		m.Name,
-		m.Format,
-		len(m.Vertices), len(m.Indices), m.Updates,
-	)
-}
-
-// Data returns self to satisfy meshLoader
-func (m *MeshData) Data() *MeshData { return m }
-
-// Mesh representation
-type Mesh struct {
-	asset
-	// HashID once we change data we could change this hash?
-	// Repdate Flag for dynamic stuff
-	DrawType DrawType
-
-	loader MeshLoader // Disallow changes
-}
-
-// Loader returns the mesh loader
-func (m *Mesh) Loader() MeshLoader {
-	return m.loader
-}
-
-// NewMesh creates a mesh based on loader
-func NewMesh(m MeshLoader) *Mesh {
-	return &Mesh{
-		loader: m,
+// VertexAttrib return a vertex attribute definition
+func VertexAttrib(sz int, attrib string, define string) VertexFormatAttrib {
+	return VertexFormatAttrib{
+		Size:   sz,
+		Attrib: attrib,
+		Define: define,
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// VertexFormatP default vertex with positioning only
+func VertexFormatP() VertexFormat {
+	return VertexFormat{
+		{3, "a_Position", "HAS_POSITION"},
+	}
+}
+
+// VertexFormatPN format for Position and Normal
+func VertexFormatPN() VertexFormat {
+	return VertexFormat{
+		{3, "a_Position", "HAS_POSITION"},
+		{3, "a_Normal", "HAS_NORMALS"},
+	}
+}
+
+// VertexFormatPT format for Position and TexCoord
+func VertexFormatPT() VertexFormat {
+	return VertexFormat{
+		{3, "a_Position", "HAS_POSITION"},
+		{2, "a_UV1", "HAS_UV_SET1"},
+	}
+}
+
+// VertexFormatPTN format for Position Texture and Normal
+func VertexFormatPTN() VertexFormat {
+	return VertexFormat{
+		{3, "a_Position", "HAS_POSITION"},
+		{2, "a_UV1", "HAS_UV_SET1"},
+		{3, "a_Normal", "HAS_NORMALS"},
+	}
+}
+
+// VertexFormatPNT format for Position Normal and Texture
+func VertexFormatPNT() VertexFormat {
+	return VertexFormat{
+		{3, "a_Position", "HAS_POSITION"},
+		{3, "a_Normal", "HAS_NORMALS"},
+		{2, "a_UV1", "HAS_UV_SET1"},
+	}
+}
+
+// MeshData raw mesh data
+type MeshData struct {
+	gpuResource
+
+	Name string
+
+	FrontFacing FrontFacing
+	// Describe format and indexes
+	Format VertexFormat
+
+	// TODO: This might need to be pure data instead of float32
+	// Indices could be a byte we just need to tell gl to read as a byte
+	// so we would have a field Indices "type"
+	Vertices []float32
+	// Indices can be one of []byte, []uint16, []uint32
+	Indices interface{}
+	Updates int
+}
+
+// Resource implements the resourcer interface so MeshData can be used directly
+// in the Mesh.
+func (d *MeshData) Resource() ResourceRef { return d }
+
+// CalcBounds calculate the bounding box for this mesh (slow)
+func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {
+	sz := d.Format.Size()
+	offs := 0
+	// Find renderer hardcoded aPosition attrib which is 2
+	for _, f := range d.Format {
+		if f.Attrib == "a_Position" {
+			break
+		}
+		offs += f.Size
+	}
+
+	var min m32.Vec3
+	var max m32.Vec3
+	v := d.Vertices[offs:]
+	copy(min[:], v)
+	copy(max[:], v)
+	for v := v[sz:]; sz < len(v); v = v[sz:] {
+		min[0] = m32.Min(v[0], min[0])
+		max[0] = m32.Max(v[0], max[0])
+		min[1] = m32.Min(v[1], min[1])
+		max[1] = m32.Max(v[1], max[1])
+		min[2] = m32.Min(v[2], min[2])
+		max[2] = m32.Max(v[2], max[2])
+
+		if sz > len(v) {
+			break
+		}
+	}
+	return min, max
+}
+
+// ScaleUV manipulate meshData directly
+func (d *MeshData) ScaleUV(s ...float32) {
+	var scale m32.Vec2
+	switch len(s) {
+	case 0:
+		return
+	case 1:
+		scale = m32.Vec2{s[0], s[0]}
+	default:
+		scale = m32.Vec2{s[0], s[1]}
+	}
+
+	sz := d.Format.Size()
+	offs := 0
+	// Find renderer hardcoded TexCoord attrib which is 2
+	for _, f := range d.Format {
+		if f.Attrib == "a_UV1" {
+			break
+		}
+		offs += f.Size
+	}
+
+	for v := d.Vertices[offs:]; ; v = v[sz:] {
+		v[0] *= 1 / scale[0]
+		v[1] *= 1 / scale[1]
+		if sz > len(v) {
+			break
+		}
+	}
+}
+
+func (d *MeshData) String() string {
+	var ind string
+	switch v := d.Indices.(type) {
+	case []byte:
+		ind = fmt.Sprint("byte:", len(v))
+	case []uint16:
+		ind = fmt.Sprint("u16:", len(v))
+	case []uint32:
+		ind = fmt.Sprint("u32:", len(v))
+	default:
+		ind = "<unknown>"
+	}
+	return fmt.Sprintf("MeshData: %s, %v verts: %v, ind: %v, upd: %v",
+		d.Name,
+		d.Format,
+		len(d.Vertices), ind, d.Updates,
+	)
+}
+
+// ////////////////////////////////////////////////////////////////////////////
 
 // Helper mesh struct
 
-// VertexPTN position tex normal vertex
-type VertexPTN struct {
-	Pos    vec3
-	Tex    vec2
-	Normal vec3
+// DrawMode type of draw for the renderer
+type DrawMode int
+
+func (m DrawMode) String() string {
+	switch m {
+	case DrawTriangles:
+		return "DrawTriangles"
+	case DrawTriangleStrip:
+		return "DrawTriangleStrip"
+	case DrawTriangleFan:
+		return "DrawTriangleFan"
+	case DrawPoints:
+		return "DrawPoints"
+	case DrawLines:
+		return "DrawLines"
+	case DrawLineLoop:
+		return "DrawLineLoop"
+	case DrawLineStrip:
+		return "DrawLineStrip"
+	default:
+		return fmt.Sprintf("DrawModeUnknown(%d)", m)
+	}
 }
 
-// MeshDataPTN a slice of those vertices
-type MeshDataPTN struct {
-	Name     string
-	Vertices []VertexPTN
-	Indices  []uint32
-}
+// FrontFacing type to setup rendering cull.
+type FrontFacing int
 
-// Add a vertex
-func (m *MeshDataPTN) Add(p vec3, t vec2, n vec3) {
-	m.Vertices = append(m.Vertices, VertexPTN{p, t, n})
-}
-
-// Data returns the mesh data
-func (m *MeshDataPTN) Data() *MeshData {
-	vsize := 3 + 2 + 3
-	hdr := *(*reflect.SliceHeader)(unsafe.Pointer(&m.Vertices))
-	hdr.Len *= vsize
-	hdr.Cap *= vsize
-	vertices := *(*[]float32)(unsafe.Pointer(&hdr))
-
-	return &MeshData{
-		Name:     m.Name,
-		Format:   VertexFormatPTN,
-		Vertices: vertices,
-		Indices:  m.Indices,
+func (f FrontFacing) String() string {
+	switch f {
+	case FrontFacingCCW:
+		return "FrontFacingCCW"
+	case FrontFacingCW:
+		return "FrontFacingCW"
+	default:
+		return fmt.Sprintf("FrontFacingUnknown(%d)", f)
 	}
 }

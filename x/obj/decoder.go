@@ -1,25 +1,5 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // Package obj preliminary obj loader outside of the package as we probably
 // will load more than 1 mesh, we don't have concept of "objects" with several meshes yet
-//
-// Entity
-//   Transform
-//   Mesh
-//
-//
 package obj
 
 import (
@@ -29,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unsafe"
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
@@ -48,18 +29,18 @@ type face []rawIndex
 // This produces one or more meshes but lets try with one first
 
 type rawIndex struct {
-	//position,texture, normal
+	// position,texture, normal
 	indices [3]int
 }
 
 // Decode the obj file into some format
-func Decode(rd io.Reader) (*gorge.Mesh, error) {
-	mesh, err := readMesh(rd)
+func Decode(rd io.Reader) (*gorge.MeshData, error) {
+	data, err := readMesh(rd)
 	if err != nil {
 		return nil, err
 	}
 
-	return mesh, nil
+	return data, nil
 }
 
 type rawObj struct {
@@ -69,7 +50,7 @@ type rawObj struct {
 	faces    []face
 }
 
-func readMesh(rd io.Reader) (*gorge.Mesh, error) {
+func readMesh(rd io.Reader) (*gorge.MeshData, error) {
 	s := bufio.NewScanner(rd)
 
 	o := rawObj{
@@ -80,7 +61,7 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 	}
 	line := 0
 	oCount := 0
-	//MainLoop:
+	// MainLoop:
 	for s.Scan() {
 		if err := s.Err(); err != nil {
 			return nil, err
@@ -141,14 +122,11 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 		case "s": // Smoothing group
 		case "o": // Object name
 			oCount++
-			if oCount > 2 {
-				//break MainLoop
-			}
 		default:
 		}
 	}
 
-	vertexRes := []gorge.VertexPTN{}
+	vertexRes := []VertexPTN{}
 	vertexInd := []uint32{}
 
 	// Good mapping
@@ -158,8 +136,8 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 	// Convert from raw to Mesh
 	for _, face := range o.faces {
 		iface := []uint32{}
-		//for i := len(face) - 1; i >= 0; i-- {
-		//fi := face[i]
+		// for i := len(face) - 1; i >= 0; i-- {
+		// fi := face[i]
 		for i, fi := range face {
 			key := fmt.Sprintf("%d/%d/%d", fi.indices[0], fi.indices[1], fi.indices[2])
 
@@ -177,7 +155,7 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 			}
 			// If doesn't exists we get the vertex info and create a new vertex
 
-			nv := gorge.VertexPTN{}
+			nv := VertexPTN{}
 			if fi.indices[0] > 0 {
 				nv.Pos = o.vertices[fi.indices[0]-1]
 				nv.Pos[2] *= -1 // Invert Z
@@ -188,8 +166,8 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 			}
 			if fi.indices[2] > 0 {
 				nv.Normal = o.normals[fi.indices[2]-1]
-				//nv.Normal[0] *= -1
-				//nv.Normal[1] *= -1
+				// nv.Normal[0] *= -1
+				// nv.Normal[1] *= -1
 				nv.Normal[2] *= -1
 			}
 
@@ -203,12 +181,12 @@ func readMesh(rd io.Reader) (*gorge.Mesh, error) {
 		vertexInd = append(vertexInd, iface...)
 	}
 
-	ptn := &gorge.MeshDataPTN{
+	ptn := &MeshDataPTN{
 		Name:     "objDecoder",
 		Vertices: vertexRes,
 		Indices:  vertexInd,
 	}
-	return gorge.NewMesh(ptn), nil
+	return ptn.Data(), nil
 }
 
 func getVec3(parts []string) (m32.Vec3, error) {
@@ -221,6 +199,7 @@ func getVec3(parts []string) (m32.Vec3, error) {
 	}
 	return ret, nil
 }
+
 func getVec2(parts []string) (m32.Vec2, error) {
 	var ret m32.Vec2
 	for i := 0; i < 2; i++ {
@@ -245,4 +224,42 @@ func parse(s string, v interface{}) error {
 		*v = float32(r)
 	}
 	return err
+}
+
+// VertexPTN position tex normal vertex
+type VertexPTN struct {
+	Pos    m32.Vec3
+	Tex    m32.Vec2
+	Normal m32.Vec3
+}
+
+// MeshDataPTN a slice of those vertices
+type MeshDataPTN struct {
+	Name     string
+	Vertices []VertexPTN
+	Indices  []uint32
+}
+
+// Add a vertex
+func (m *MeshDataPTN) Add(p m32.Vec3, t m32.Vec2, n m32.Vec3) {
+	m.Vertices = append(m.Vertices, VertexPTN{p, t, n})
+}
+
+// Data returns the mesh data
+func (m *MeshDataPTN) Data() *gorge.MeshData {
+	const max = ^uint32(0)
+	vsize := 3 + 2 + 3
+
+	sz := len(m.Vertices) * vsize
+	uverts := (*(*[max]float32)(unsafe.Pointer(&m.Vertices[0])))[:sz:sz]
+
+	verts := make([]float32, sz)
+	copy(verts, uverts)
+
+	return &gorge.MeshData{
+		Name:     m.Name,
+		Format:   gorge.VertexFormatPTN(),
+		Vertices: verts,
+		Indices:  m.Indices,
+	}
 }

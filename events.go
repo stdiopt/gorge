@@ -1,55 +1,65 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
 
-import (
-	"github.com/stdiopt/gorge/m32"
-)
+// EventPreUpdate type
+type EventPreUpdate float32
 
-// PreUpdateEvent type
-type PreUpdateEvent float32
+// DeltaTime returns the float32 delta time for the event.
+func (e EventPreUpdate) DeltaTime() float32 { return float32(e) }
 
-// UpdateEvent type
-type UpdateEvent float32
+// EventUpdate type
+type EventUpdate float32
 
-// PostUpdateEvent type
-type PostUpdateEvent float32
+// DeltaTime returns the float32 delta time for the event.
+func (e EventUpdate) DeltaTime() float32 { return float32(e) }
 
-// RenderEvent happens after pre,update and post update events
-type RenderEvent float32
+// EventPostUpdate type
+type EventPostUpdate float32
 
-// ResizeEvent ...
-type ResizeEvent m32.Vec2
+// DeltaTime returns the float32 delta time for the event.
+func (e EventPostUpdate) DeltaTime() float32 { return float32(e) }
 
-// EntitiesAddEvent is triggered when entities are added
-type EntitiesAddEvent []Entity
+// EventRender happens after pre,update and post update events
+type EventRender float32
 
-// EntitiesRemoveEvent is triggered when entities are destroyed
-type EntitiesRemoveEvent []Entity
+// EventAddEntity is triggered when entities are added
+type EventAddEntity struct {
+	Entity
+}
 
-// StartEvent fired when things starts
-type StartEvent struct{}
+// EventRemoveEntity is triggered when entities are destroyed
+type EventRemoveEntity struct {
+	Entity
+}
 
-// AfterStartEvent to attach stuff (wasm request animation frame workaround)
-type AfterStartEvent struct{}
+// EventStart fired when things starts
+type EventStart struct{}
 
-// DestroyEvent is called when system is shutting down
-type DestroyEvent struct{}
+// EventAfterStart to attach stuff (wasm request animation frame workaround)
+type EventAfterStart struct{}
 
-// ErrorEvent contains an error
-type ErrorEvent struct{ Err error }
+// EventDestroy is called when system is shutting down
+type EventDestroy struct{}
 
-// WarnEvent contains a warning
-type WarnEvent string
+// EventError contains an error
+type EventError struct{ Err error }
+
+// EventWarn contains a warning
+type EventWarn string
+
+// EventResourceUpdate sends a resource through systems for aditional treatment
+// i.e: uploading to gpu
+type EventResourceUpdate struct {
+	Resource interface{}
+}
+
+/*func UpdateHandler(fn func(e EventUpdate)) event.HandlerFunc {
+	return func(v event.Event) {
+		if e, ok := v.(EventUpdate); ok {
+			fn(e)
+		}
+	}
+}*/
+
+/*func HandleUpdate(fn func(e EventUpdate)) {
+	HandleFunc(UpdateHandler(fn))
+}*/

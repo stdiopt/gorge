@@ -1,54 +1,180 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
 
 import (
+	"math"
+
 	"github.com/stdiopt/gorge/m32"
 )
 
-// Camera thing
-type Camera struct {
-	Fov         float32
+// ProjectionType camera projection type.
+type ProjectionType int
+
+func (t ProjectionType) String() string {
+	switch t {
+	case ProjectionPerspective:
+		return "Perspective"
+	case ProjectionOrtho:
+		return "Ortho"
+	default:
+		return "<invalid>"
+	}
+}
+
+// Projection types for camera.
+const (
+	ProjectionPerspective = ProjectionType(iota)
+	ProjectionOrtho
+)
+
+// ClearType method on how the camera clears.
+type ClearType int
+
+func (t ClearType) String() string {
+	switch t {
+	case ClearSkybox:
+		return "ClearSkybox"
+	case ClearColor:
+		return "ClearColor"
+	case ClearDepthOnly:
+		return "ClearDepthOnly"
+	case ClearNothing:
+		return "ClearNothing"
+	default:
+		return "<invalid>"
+	}
+}
+
+// Clear types
+const (
+	ClearColor = ClearType(iota)
+	ClearDepthOnly
+	ClearNothing
+	ClearSkybox
+)
+
+// CameraComponent thing
+type CameraComponent struct {
+	Name           string
+	ProjectionType ProjectionType
+	CullMask       uint32
+
+	Fov       float32
+	OrthoSize float32
+
 	AspectRatio float32
 	Near        float32
 	Far         float32
 
-	// Ambient color
-	Ambient vec3
+	ClearFlag     ClearType
+	ClearMaterial *Material
+	Order         int
+	Viewport      m32.Vec4
+	ClearColor    m32.Vec3
+
+	// Or Forward, deferred, etc type of pass
+	// RenderShadow bool
 	// Or sky box
 }
 
-// CameraComponent returns camera component
-func (c *Camera) CameraComponent() *Camera { return c }
+// NewCameraComponent returns a new default camera Component
+func NewCameraComponent(name string) *CameraComponent {
+	c := &CameraComponent{
+		Name:     name,
+		Viewport: m32.Vec4{0, 0, 1, 1},
+	}
+	c.SetPerspective(math.Pi/4, .1, 1000)
+	return c
+}
 
-// Projection returns the projection matrix
-func (c Camera) Projection() mat4 {
-	return m32.Perspective(c.Fov, c.AspectRatio, c.Near, c.Far)
+// Camera returns camera component
+// We actually only need Projection :/
+func (c *CameraComponent) Camera() *CameraComponent { return c }
+
+// Projection returns the projection matrix with default aspect ratio based
+// on registered size
+func (c CameraComponent) Projection(screenSize m32.Vec2) m32.Mat4 {
+	aspectRatio := c.AspectRatio
+	if aspectRatio == 0 {
+		vp := c.CalcViewport(screenSize)
+		aspectRatio = vp[2] / vp[3]
+	}
+
+	return c.ProjectionWithAspect(aspectRatio)
+}
+
+// ProjectionWithAspect Sets the projection matrices with given aspect ratio
+func (c CameraComponent) ProjectionWithAspect(aspect float32) m32.Mat4 {
+	if c.ProjectionType == ProjectionPerspective {
+		return m32.Perspective(c.Fov, aspect, c.Near, c.Far)
+	}
+
+	halfH := c.OrthoSize * aspect * .5
+	halfV := c.OrthoSize * .5
+
+	bottom := -halfV
+	top := halfV
+
+	left := -halfH
+	right := halfH
+
+	// Ortho
+	return m32.Ortho(left, right, bottom, top, c.Near, c.Far)
 }
 
 // SetPerspective resets projection matrix to perspective
-func (c *Camera) SetPerspective(fov, aspectRatio, near, far float32) *Camera {
+func (c *CameraComponent) SetPerspective(fov, near, far float32) {
+	c.ProjectionType = ProjectionPerspective
 	c.Fov = fov
-	c.AspectRatio = aspectRatio
 	c.Near = near
 	c.Far = far
-	return c
 }
 
-// SetAmbient sets camera ambient/clear color
-func (c *Camera) SetAmbient(r, g, b float32) *Camera {
-	c.Ambient = vec3{r, g, b}
-	return c
+// SetOrtho sets ortho matrix
+func (c *CameraComponent) SetOrtho(size, near, far float32) {
+	c.ProjectionType = ProjectionOrtho
+	c.OrthoSize = size
+	c.Near = near
+	c.Far = far
+}
+
+// SetAspectRatio sets the camera aspect ratio
+func (c *CameraComponent) SetAspectRatio(a float32) {
+	c.AspectRatio = a
+}
+
+// SetClearFlag sets the clear flag and returns
+func (c *CameraComponent) SetClearFlag(clr ClearType) {
+	c.ClearFlag = clr
+}
+
+// SetClearColor for the camera.
+func (c *CameraComponent) SetClearColor(r, g, b float32) {
+	c.ClearColor = m32.Vec3{r, g, b}
+}
+
+// SetCullMask for camera, only specific renderables that masks this cullmask
+// will render with this camera.
+func (c *CameraComponent) SetCullMask(m uint32) {
+	c.CullMask = m
+}
+
+// SetOrder camera rendering order, higher will render later.
+func (c *CameraComponent) SetOrder(n int) {
+	c.Order = n
+}
+
+// SetViewport sets the viewport for camera, viewport is relative to screensize.
+func (c *CameraComponent) SetViewport(x, y, w, h float32) {
+	c.Viewport = m32.Vec4{x, y, w, h}
+}
+
+// CalcViewport gives the viewport in screen dimensions
+// TODO: consider `ScreenViewport` name
+func (c *CameraComponent) CalcViewport(screenSize m32.Vec2) m32.Vec4 {
+	return m32.Vec4{
+		c.Viewport[0] * screenSize[0],
+		c.Viewport[1] * screenSize[1],
+		c.Viewport[2] * screenSize[0],
+		c.Viewport[3] * screenSize[1],
+	}
 }

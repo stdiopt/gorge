@@ -1,113 +1,187 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package gorge
 
 import (
-	"github.com/stdiopt/gorge/gl"
+	"fmt"
 )
 
-// TODO: Remove gl entries
+// Texture reference
+type Texture struct {
+	resourcer
+	Name       string // just for reference and debugging
+	Wrap       [3]TextureWrap
+	FilterMode TextureFilter
+}
+
+// NewTexture returns a new texture based on resourcer.
+func NewTexture(r Resourcer) *Texture {
+	return &Texture{resourcer: resourcer{r}}
+}
+
+func (t *Texture) isGPU() {}
+
+// GetWrap get the components of TextureWrap UVW
+func (t *Texture) GetWrap() (u, v, w TextureWrap) {
+	return t.Wrap[0], t.Wrap[1], t.Wrap[2]
+}
+
+// GetFilterMode texture filter mode
+func (t *Texture) GetFilterMode() TextureFilter {
+	return t.FilterMode
+}
+
+// SetFilterMode sets the filter mode POINT,LINEAR
+func (t *Texture) SetFilterMode(f TextureFilter) {
+	t.FilterMode = f
+}
+
+// SetWrapUVW texture wrap for U, V, W
+func (t *Texture) SetWrapUVW(uvw ...TextureWrap) {
+	switch len(uvw) {
+	case 1:
+		t.Wrap[0], t.Wrap[1], t.Wrap[2] = uvw[0], uvw[0], uvw[0]
+	default:
+		copy(t.Wrap[:], uvw)
+	}
+}
 
 // TextureFormat texture pixel format
 type TextureFormat int
 
-// WrapMode for texture
-type WrapMode int
+func (f TextureFormat) String() string {
+	switch f {
+	case TextureFormatRGBA:
+		return "RGBA"
+	case TextureFormatRGB:
+		return "RGB"
+	case TextureFormatGray:
+		return "Gray"
+	case TextureFormatGray16:
+		return "Gray16"
+	case TextureFormatRGB32F:
+		return "RGB32F"
+	default:
+		return "Unknown"
+	}
+}
 
-// FilterMode texture filter mode
-type FilterMode int
+// Known texture formats
+const (
+	TextureFormatRGBA = TextureFormat(iota)
+	TextureFormatRGB
+	TextureFormatGray
+	TextureFormatGray16
+	TextureFormatRGB32F
+)
+
+// TextureWrap for texture
+type TextureWrap int
+
+func (m TextureWrap) String() string {
+	switch m {
+	case TextureWrapRepeat:
+		return "TextureWrapRepeat"
+	case TextureWrapClamp:
+		return "TextureWrapClamp"
+	case TextureWrapMirror:
+		return "TextureWrapMirror"
+	default:
+		return "<invalid>"
+	}
+}
+
+// TextureFilter texture filter mode
+type TextureFilter int
 
 // Wrapmode consts
 const (
-	TextureWrapClamp  = WrapMode(gl.CLAMP_TO_EDGE)
-	TextureWrapRepeat = WrapMode(gl.REPEAT)
-	TextureWrapMirror = WrapMode(gl.MIRRORED_REPEAT)
-
-	TextureFilterPoint  = FilterMode(gl.NEAREST)
-	TextureFilterLinear = FilterMode(gl.LINEAR)
-
-	TextureFormatRGBA = TextureFormat(gl.RGBA)
+	TextureWrapRepeat = TextureWrap(iota)
+	TextureWrapClamp
+	TextureWrapMirror
 )
 
-// TextureLoader interface for a texture loader
-type TextureLoader interface {
-	Data() *TextureData
-}
+// TextureFilter types
+const (
+	TextureFilterLinear = TextureFilter(iota)
+	TextureFilterPoint
+)
 
-// TextureData representes the data for the texture
+// TextureData is the data for the texture
 type TextureData struct {
+	gpuResource
+
 	Source        string
 	Format        TextureFormat
 	Width, Height int
 	PixelData     []byte
+	Updates       int
 }
 
-// Data convenient func
-func (d TextureData) Data() *TextureData { return &d }
-
-// Texture reference
-type Texture struct {
-	asset
-	Name       string // just for reference and debugging
-	WrapU      WrapMode
-	WrapV      WrapMode
-	WrapW      WrapMode
-	FilterMode FilterMode
-
-	Updates     int
-	DataUpdates int
-
-	// Loader Should be private so we can not change?
-	// Swappable texture loader
-	loader TextureLoader
+func (d *TextureData) String() string {
+	return fmt.Sprintf(
+		"texture: (source: %q, format: %v  size: %dx%d)",
+		d.Source,
+		d.Format,
+		d.Width, d.Height,
+	)
 }
 
-// NewTexture returns a new texture with loader
-func NewTexture(loader TextureLoader) *Texture {
-	return &Texture{loader: loader}
+// Resource implements the resourcer interface.
+func (d *TextureData) Resource() ResourceRef { return d }
+
+// ////////////////////////////////////////////////////////////////////////////
+// Experiment, single pixel color texture
+// /////
+type texture = Texture
+
+// ColorTexture helper for a single color texture.
+type ColorTexture struct {
+	TextureData
 }
 
-// Loader gets the texture Loader
-func (t *Texture) Loader() TextureLoader {
-	return t.loader
-}
-
-// SetFilterMode sets the filter mode POINT,LINEAR
-func (t *Texture) SetFilterMode(f FilterMode) *Texture {
-	t.FilterMode = f
-	t.Updates++
+// NewColorTexture returns a single pixel colored texture
+func NewColorTexture(r, g, b, a float32) *ColorTexture {
+	t := &ColorTexture{}
+	t.SetColor(r, g, b, a)
 	return t
 }
 
-// SetWrapU texture wrap for U
-func (t *Texture) SetWrapU(w WrapMode) *Texture {
-	t.WrapU = w
-	t.Updates++
+// SetColor sets color data for underlying texture.
+func (t *ColorTexture) SetColor(r, g, b, a float32) {
+	tex := &t.TextureData
+	if len(tex.PixelData) == 0 {
+		tex.Format = TextureFormatRGBA
+		tex.Width = 1
+		tex.Height = 1
+		tex.PixelData = make([]byte, 4)
+	}
+	tex.PixelData[0] = byte(r * 255)
+	tex.PixelData[1] = byte(g * 255)
+	tex.PixelData[2] = byte(b * 255)
+	tex.PixelData[3] = byte(a * 255)
+	tex.Updates++
+}
+
+// ValueTexture helper for a single valued texture.
+type ValueTexture struct {
+	TextureData
+}
+
+// NewValueTexture returns a single pixel colored texture
+func NewValueTexture(v float32) *ValueTexture {
+	t := &ValueTexture{}
+	t.SetValue(v)
 	return t
 }
 
-// SetWrapV texture wrap for V
-func (t *Texture) SetWrapV(w WrapMode) *Texture {
-	t.WrapV = w
-	t.Updates++
-	return t
-}
-
-// SetWrapW texture wrap for W
-func (t *Texture) SetWrapW(w WrapMode) *Texture {
-	t.WrapW = w
-	t.Updates++
-	return t
+// SetValue sets the texture Value
+func (t *ValueTexture) SetValue(v float32) {
+	tex := &t.TextureData
+	if len(tex.PixelData) == 0 {
+		tex.Format = TextureFormatGray
+		tex.Width = 1
+		tex.Height = 1
+		tex.PixelData = make([]byte, 1)
+	}
+	tex.PixelData[0] = byte(v * 255)
+	tex.Updates++
 }

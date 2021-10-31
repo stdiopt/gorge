@@ -1,208 +1,168 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // Package gorge contains mostly data only components
 package gorge
 
 import (
-	"fmt"
-	glog "log"
+	"log"
 
+	"github.com/stdiopt/gorge/core"
+	"github.com/stdiopt/gorge/core/event"
+	"github.com/stdiopt/gorge/internal/logger"
 	"github.com/stdiopt/gorge/m32"
 )
 
-var (
-	log = glog.New(glog.Writer(), "(gorge) ", 0)
-)
-
-type (
-	vec2 = m32.Vec2
-	vec3 = m32.Vec3
-	vec4 = m32.Vec4
-	mat4 = m32.Mat4
-	quat = m32.Quat
-)
-
-// State type for gorge
-type State int
-
-func (s State) String() string {
-	switch s {
-	case StateZero:
-		return "zero"
-	case StateInitialized:
-		return "initialized"
-	case StateStarted:
-		return "started"
-	case StateClosed:
-		return "closed"
-	}
-	return "<undefined>"
+func init() {
+	logger.Global()
 }
 
-// gorge States
-const (
-	StateZero = iota
-	StateInitialized
-	StateStarted
-	StateClosed
-)
-
-// Entity can be any thing
-type Entity interface{}
-
-// SystemFunc initializers
-type SystemFunc = func(*Gorge)
+type tcore = core.Core
 
 // Gorge main state manager and message bus
 type Gorge struct {
-	Messaging
-	done  chan struct{}
-	tick  chan float32
-	state State
+	tcore
+	// screenSize since this is shared between places
+	// Maybe create Device/Dysplay so we can even use multiple displays
+	screenSize m32.Vec2
 
-	inits []SystemFunc
+	fnch chan syncFunc
 }
 
-// New create a new manager
-func New(systems ...SystemFunc) *Gorge {
+// New create a new manager with default systems
+func New(systems ...interface{}) *Gorge {
 	g := &Gorge{
-		inits: systems,
-		done:  make(chan struct{}),
-		tick:  make(chan float32),
+		tcore: *core.New(systems...),
+		fnch:  make(chan syncFunc, 64),
 	}
-	g.init()
+	g.PutProp(func() *Context {
+		return &Context{g}
+	})
 	return g
 }
 
-// Init systems
-func (g *Gorge) init() {
-	if g.state != StateZero {
-		return
-	}
-	g.state = StateInitialized
-	for _, fn := range g.inits {
-		fn(g)
-	}
+// SetScreenSize used by the gorgeapp to set the current screensize
+// Might be changed in the future if we use multiple Display devices.
+func (g *Gorge) SetScreenSize(s m32.Vec2) {
+	g.screenSize = s
+}
+
+// ScreenSize returns the previously set screensize
+func (g *Gorge) ScreenSize() m32.Vec2 {
+	return g.screenSize
 }
 
 // Start the systems
-func (g *Gorge) Start() {
-	if g.state != StateInitialized {
-		panic(fmt.Sprintf("cannot start, current state is: %v", g.state))
+// nolint: errcheck
+func (g *Gorge) Start() error {
+	if err := g.tcore.Start(); err != nil {
+		return err
 	}
-	g.Persist(StartEvent{})
-	g.Trigger(AfterStartEvent{})
+
+	g.Trigger(EventStart{})
+	g.Trigger(EventAfterStart{})
+	return nil
 }
 
-// Run until close is called on done
-func (g *Gorge) Run() {
-	g.Start()
-	for {
-		select {
-		case dt := <-g.tick:
-			g.UpdateNow(dt)
-		case <-g.done:
-			return
-		}
+// Run will initialize gorge, Start and wait.
+func (g *Gorge) Run() error {
+	if err := g.Start(); err != nil {
+		return err
 	}
+	return g.Wait()
 }
 
-// Update triggers update events
+type syncFunc struct {
+	fn func()
+	ch chan struct{}
+}
+
+// RunInMain schedule a func to be run on main loop
+// It will wait for the function to return
+func (g *Gorge) RunInMain(fn func()) {
+	sf := syncFunc{
+		fn: fn,
+		ch: make(chan struct{}),
+	}
+	g.fnch <- sf
+	// Wait for func to finish
+	<-sf.ch
+}
+
+// Update just updates stuff right away
+// nolint: errcheck
 func (g *Gorge) Update(dt float32) {
-	g.tick <- dt
-}
-
-// UpdateNow just updates stuff right awaym does not use the channel thing
-func (g *Gorge) UpdateNow(dt float32) {
-
-	g.Trigger(PreUpdateEvent(dt))
-	g.Trigger(UpdateEvent(dt))
-	g.Trigger(PostUpdateEvent(dt))
-
-	g.Trigger(RenderEvent(dt))
-
-	// XXX: Profiling
-	/*g.Range(func(k, v interface{}) bool {
-		hg := v.(*HandlerGroup)
-		if hg.CallEnd.Sub(hg.CallStart) > 30*time.Millisecond {
-			log.Printf("group: %v took too long %v", hg.Type, hg.CallEnd.Sub(hg.CallStart))
-			hg.CallStart = time.Time{}
-			hg.CallEnd = time.Time{}
-		}
-		return true
-	})*/
-}
-
-// Close closes manager
-func (g *Gorge) Close() {
-	g.state = StateClosed
-	close(g.done)
-}
-
-// AddEntity adds an entity
-/*func (g *Gorge) AddEntity(e ...Entity) {
-	ents := make([]Entity, 0, len(e)) // at least len(e)
-	for _, e := range e {
-		switch e := e.(type) {
-		case []Entity:
-			ents = append(ents, e...)
-		default:
-			ents = append(ents, e)
-		}
+	// How much does this costs?
+	// Calls any schedule func
+	select {
+	case sf := <-g.fnch:
+		sf.fn()
+		close(sf.ch)
+	default:
 	}
-	g.Trigger(EntitiesAddEvent(ents))
+	g.Trigger(EventPreUpdate(dt))
+	g.Trigger(EventUpdate(dt))
+	g.Trigger(EventPostUpdate(dt))
+	g.Trigger(EventRender(dt))
 }
 
-// RemoveEntity an entity
-func (g *Gorge) RemoveEntity(ents ...Entity) {
-	g.Trigger(EntitiesRemoveEvent(ents))
-}*/
-
-//////////////////////////
-// Experiment handler funcs
-/////////////
-
-// Better typed handlers, scene doesn't work if we hide the data types
-
-// HandleStart helper listens for a gorge.StartEvent
-func (g *Gorge) HandleStart(fn func()) *Handler {
-	return g.Handle(func(e StartEvent) {
-		fn()
-	})
+// Add adds an entity
+// nolint: errcheck
+func (g *Gorge) Add(ents ...Entity) {
+	for _, e := range ents {
+		EachEntity(e, func(e Entity) {
+			g.Trigger(EventAddEntity{e})
+		})
+	}
 }
 
-// HandleUpdate helper litens for a gorge.UpdateEvent
-func (g *Gorge) HandleUpdate(fn func(dt float32)) *Handler {
-	return g.Handle(func(e UpdateEvent) {
-		fn(float32(e))
-	})
+// Remove an entity
+// nolint: errcheck
+func (g *Gorge) Remove(ents ...Entity) {
+	for _, e := range ents {
+		EachEntity(e, func(e Entity) {
+			g.Trigger(EventRemoveEntity{e})
+		})
+	}
 }
 
-// HandlePostUpdate helper listens for a gorge.PostUpdateEvent
-func (g *Gorge) HandlePostUpdate(fn func(dt float32)) *Handler {
-	return g.Handle(func(e PostUpdateEvent) {
-		fn(float32(e))
-	})
+// TriggerOnUpdate does not trigger synchronous per say but does trigger in main loop
+// this is useful for GL related operations that depends on the specific thread it's running
+// since we don't control much threads
+func (g *Gorge) TriggerOnUpdate(v interface{}) {
+	g.RunInMain(func() { g.Trigger(v) })
 }
 
 // Error persists an error in the event system
+// nolint: errcheck
 func (g *Gorge) Error(err error) {
-	g.Persist(ErrorEvent{err})
+	log.Printf("[error] %v", err)
+	g.Trigger(EventError{err})
 }
 
-// Warn persists a warning msg in the event system
-func (g *Gorge) Warn(s string) {
-	g.Persist(WarnEvent(s))
+// UpdateResource triggers an EventResourceUpdate event
+// so the systems can garsp the resource (put textures in gpu, etc...).
+func (g *Gorge) UpdateResource(r ResourceRef) {
+	g.TriggerOnUpdate(EventResourceUpdate{
+		Resource: r,
+	})
+}
+
+// Handlers helpers
+
+// HandleUpdate adds a listener that filters events and calls fn if it is the
+// EventUpdate.
+func (g *Gorge) HandleUpdate(fn func(EventUpdate)) {
+	g.HandleFunc(func(e event.Event) {
+		if e, ok := e.(EventUpdate); ok {
+			fn(e)
+		}
+	})
+}
+
+// HandleError registers a function that filters events and calls fn if event
+// is the EventError.
+func (g *Gorge) HandleError(fn func(err error)) {
+	g.HandleFunc(func(v event.Event) {
+		if e, ok := v.(EventError); ok {
+			fn(e.Err)
+		}
+	})
 }

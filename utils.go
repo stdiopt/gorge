@@ -1,54 +1,49 @@
 package gorge
 
-import "container/list"
-
-//SetList is an append ordered Set.
-// it has better performance than slice while removing elements
-// and avoid duplications on insert
-type SetList struct {
-	list  list.List
-	index map[interface{}]*list.Element
+// StringHash builds an hash from a string
+func StringHash(str ...string) uint {
+	seed := uint(0)
+	for _, s := range str {
+		for _, c := range s {
+			seed = 31*seed + uint(c)
+		}
+	}
+	return seed
 }
 
-//Add to list, returns true if element was added, false if already existed
-func (l *SetList) Add(v interface{}) bool {
-	if l.index == nil {
-		l.index = map[interface{}]*list.Element{}
-	}
-	if _, ok := l.index[v]; ok {
-		return false
-	}
-	e := l.list.PushBack(v)
-	l.index[v] = e
-	return true
-}
-
-// Remove from list, returns true if removed, false if not found
-func (l *SetList) Remove(v interface{}) bool {
-	if l.index == nil {
-		return false
-	}
-	e, ok := l.index[v]
-	if !ok {
-		return false
-	}
-	l.list.Remove(e)
-	delete(l.index, v)
-	return true
-}
-
-// Range the list
-func (l *SetList) Range(fn func(v interface{}) bool) {
-	var next *list.Element
-	for e := l.list.Front(); e != nil; e = next {
-		next = e.Next()
-		if !fn(e.Value) {
-			return
+// EachEntity solves entities containers and walk on every entity.
+func EachEntity(e Entity, fn func(e Entity)) {
+	fn(e)
+	if v, ok := e.(EntityContainer); ok {
+		for _, e := range v.GetEntities() {
+			EachEntity(e, fn)
 		}
 	}
 }
 
-// Len returns the number of items
-func (l *SetList) Len() int {
-	return l.list.Len()
+// EachParent iterates parents
+func EachParent(e Entity, fn func(e Entity) bool) {
+	for e != nil {
+		if !fn(e) {
+			return
+		}
+		p, ok := e.(ParentGetter)
+		if !ok {
+			break
+		}
+		e = p.Parent()
+	}
+}
+
+// HasParent verifies if the parent exists in e hierarchy
+func HasParent(e Entity, parent Entity) bool {
+	hasParent := false
+	EachParent(e, func(e Entity) bool {
+		if e == parent {
+			hasParent = true
+			return false
+		}
+		return true
+	})
+	return hasParent
 }

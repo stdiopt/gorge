@@ -1,15 +1,19 @@
 module github.com/stdiopt/gorge
 
-go 1.13
+go 1.16
 
 require (
-	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72
-	github.com/go-gl/mathgl v0.0.0-20190713194549-592312d8590a
-	github.com/gohxs/folder2go v0.0.0 // indirect
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
-	golang.org/x/mobile v0.0.0-20191210151939-1a1fef82734d
+	github.com/go-gl/gl v0.0.0-20210501111010-69f74958bac0
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20210410170116-ea3d685f79fb
+	github.com/gohxs/prettylog v0.0.0-20190304114953-faf23b5b615b
+	github.com/hajimehoshi/go-mp3 v0.3.2
+	github.com/hajimehoshi/oto v0.7.1
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mdouchement/hdr v0.2.3
+	github.com/stdiopt/layerfs v0.0.0-20211030073843-0a91f85bdb16
+	golang.org/x/exp v0.0.0-20210603111838-86dd7ad88cc9 // indirect
+	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e
+	golang.org/x/mobile v0.0.0-20210527171505-7e972142eb43
+	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
+	golang.org/x/text v0.3.6 // indirect
 )
-
-replace golang.org/x/mobile => ./vendor/golang.org/x/mobile

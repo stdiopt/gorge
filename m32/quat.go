@@ -1,46 +1,211 @@
-// Copyright 2019 Luis Figueiredo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package m32
 
-// Quaternions
-/*
-Resources:
-	https://answers.unity.com/questions/467614/what-is-the-source-code-of-quaternionlookrotation.html
-*/
 import (
-	"github.com/go-gl/mathgl/mgl32"
+	"math"
 )
 
-type (
-	// Quat mgl32 alias
-	Quat = mgl32.Quat
+// RotationOrder is the order in which rotations will be transformed for the
+// purposes of QFromAngles.
+type RotationOrder int
+
+// The RotationOrder constants represent a series of rotations along the given
+// axes for the use of QFromAngles.
+const (
+	XYX RotationOrder = iota
+	XYZ
+	XZX
+	XZY
+	YXY
+	YXZ
+	YZY
+	YZX
+	ZYZ
+	ZYX
+	ZXZ
+	ZXY
 )
 
-// QuatBetweenVectors
+// Quat short for quaternion:
+// 	https://answers.unity.com/questions/467614/what-is-the-source-code-of-quaternionlookrotation.html
+// W is [2]
+type Quat [4]float32
 
-// QuatLookAt implementation from GLM
-// glm/gtc/quaternion.inl + quat_cast
-func QuatLookAt(dir, up vec3) quat {
+// Len computes quaternion length.
+func (q Quat) Len() float32 {
+	return float32(math.Sqrt(float64(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3])))
+}
 
+// Normalize returns a normalized copy of the quaternion.
+func (q Quat) Normalize() Quat {
+	length := q.Len()
+
+	if FloatEqual(1, length) {
+		return q
+	}
+	if length == 0 {
+		return QIdent()
+	}
+	if length == float32(math.Inf(1)) {
+		length = MaxValue
+	}
+
+	invLen := 1 / length
+	return Quat{
+		q[0] * invLen,
+		q[1] * invLen,
+		q[2] * invLen,
+		q[3] * invLen,
+	}
+}
+
+// V returns the Vector (0,1,2) part of the quaternion.
+func (q Quat) V() Vec3 {
+	return Vec3{q[0], q[1], q[2]}
+}
+
+// Mul returns a new quaternion based on the multiplication with q2.
+func (q Quat) Mul(q2 Quat) Quat {
+	v1 := q.V()
+	v2 := q2.V()
+
+	qv := v1.Cross(v2).
+		Add(v2.Mul(q[3])).
+		Add(v1.Mul(q2[3]))
+	return Quat{
+		qv[0],
+		qv[1],
+		qv[2],
+		q[3]*q2[3] - v1.Dot(v2),
+	}
+}
+
+// Add returns a new quaternion based on the sum of q and q2.
+func (q Quat) Add(q2 Quat) Quat {
+	return Quat{
+		q[0] + q2[0],
+		q[1] + q2[1],
+		q[2] + q2[2],
+		q[3] + q2[3],
+	}
+}
+
+// Mat4 returns a 4x4 matrix from the quaternion.
+func (q Quat) Mat4() Mat4 {
+	x, y, z, w := q[0], q[1], q[2], q[3]
+	return Mat4{
+		1 - 2*y*y - 2*z*z, 2*x*y + 2*w*z, 2*x*z - 2*w*y, 0,
+		2*x*y - 2*w*z, 1 - 2*x*x - 2*z*z, 2*y*z + 2*w*x, 0,
+		2*x*z + 2*w*y, 2*y*z - 2*w*x, 1 - 2*x*x - 2*y*y, 0,
+		0, 0, 0, 1,
+	}
+}
+
+// QFromAngles returns a rotation quaternion based on the angles.
+func QFromAngles(a1, a2, a3 float32, order RotationOrder) Quat {
+	var s [3]float64
+	var c [3]float64
+
+	s[0], c[0] = math.Sincos(float64(a1 / 2))
+	s[1], c[1] = math.Sincos(float64(a2 / 2))
+	s[2], c[2] = math.Sincos(float64(a3 / 2))
+
+	switch order {
+	case ZYX:
+		return Quat{
+			float32(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
+			float32(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
+			float32(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
+		}
+	case ZYZ:
+		return Quat{
+			float32(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
+			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			float32(s[0]*c[1]*c[2] + c[0]*c[1]*s[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+		}
+	case ZXY:
+		return Quat{
+			float32(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
+			float32(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
+			float32(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
+		}
+	case ZXZ:
+		return Quat{
+			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			float32(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+		}
+	case YXZ:
+		return Quat{
+			float32(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
+			float32(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
+			float32(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
+		}
+	case YXY:
+		return Quat{
+			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			float32(s[0]*c[1]*c[2] + c[0]*c[1]*s[2]),
+			float32(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+		}
+	case YZX:
+		return Quat{
+			float32(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
+			float32(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
+		}
+	case YZY:
+		return Quat{
+			float32(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+		}
+	case XYZ:
+		return Quat{
+			float32(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
+			float32(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
+		}
+	case XYX:
+		return Quat{
+			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			float32(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+		}
+	case XZY:
+		return Quat{
+			float32(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
+			float32(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
+			float32(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
+		}
+	case XZX:
+		return Quat{
+			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			float32(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
+			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+		}
+	default:
+		panic("Unsupported rotation order")
+	}
+}
+
+// QLookAt creates a LookAt Matrix and extract the quaternion
+func QLookAt(dir, up Vec3) Quat {
+	mat := LookAt(dir, Vec3{0, 0, 0}, up)
 	var (
-		v             = dir.Normalize()
-		v2            = up.Cross(v).Normalize()
-		v3            = v.Cross(v2)
-		m00, m01, m02 = v2[0], v2[1], v2[2]
-		m10, m11, m12 = v3[0], v3[1], v3[2]
-		m20, m21, m22 = v[0], v[1], v[2]
+		m00, m01, m02 = mat[0], mat[4], mat[8]
+		m10, m11, m12 = mat[1], mat[5], mat[9]
+		m20, m21, m22 = mat[2], mat[6], mat[10]
 	)
 
 	fourXSquaredMinus1 := m00 - m11 - m22
@@ -68,43 +233,98 @@ func QuatLookAt(dir, up vec3) quat {
 
 	switch biggestIndex {
 	case 0:
-		return quat{
-			W: biggestVal,
-			V: vec3{(m12 - m21) * mult, (m20 - m02) * mult, (m01 - m10) * mult},
+		return Quat{
+			(m12 - m21) * mult, (m20 - m02) * mult, (m01 - m10) * mult,
+			biggestVal,
 		}
 	case 1:
-		return quat{
-			W: (m12 - m21) * mult,
-			V: vec3{biggestVal, (m01 + m10) * mult, (m20 + m02) * mult},
+		return Quat{
+			biggestVal, (m01 + m10) * mult, (m20 + m02) * mult,
+			(m12 - m21) * mult,
 		}
 	case 2:
-		return quat{
-			W: (m20 - m02) * mult,
-			V: vec3{(m01 + m10) * mult, biggestVal, (m12 + m21) * mult},
+		return Quat{
+			(m01 + m10) * mult, biggestVal, (m12 + m21) * mult,
+			(m20 - m02) * mult,
 		}
 	case 3:
-		return quat{
-			W: (m01 - m10) * mult,
-			V: vec3{(m20 + m02) * mult, (m12 + m21) * mult, biggestVal},
+		return Quat{
+			(m20 + m02) * mult, (m12 + m21) * mult, biggestVal,
+			(m01 - m10) * mult,
 		}
 	}
-	return mgl32.QuatIdent()
+	return QIdent()
 }
 
-// QuatEuler returns a quaternion based on those euler angles
-// https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-func QuatEuler(x, y, z float32) quat {
+// QIdent returns a quaternion identity.
+func QIdent() Quat {
+	return Quat{0, 0, 0, 1}
+}
 
+// QEuler returns a quaternion based on those euler angles
+// https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+func QEuler(x, y, z float32) Quat {
 	cy, sy := Sincos(z * 0.5)
 	cp, sp := Sincos(y * 0.5)
 	cr, sr := Sincos(x * 0.5)
 
-	return quat{
-		W: cy*cp*cr + sy*sp*sr,
-		V: vec3{
-			cy*cp*sr - sy*sp*cr,
-			sy*cp*sr + cy*sp*cr,
-			sy*cp*cr - cy*sp*sr,
-		},
+	return Quat{
+		cy*cp*sr - sy*sp*cr,
+		sy*cp*sr + cy*sp*cr,
+		sy*cp*cr - cy*sp*sr,
+		cy*cp*cr + sy*sp*sr,
+	}
+}
+
+// QAxisAngle returns a axis angle quaternion.
+func QAxisAngle(v3 Vec3, rad float32) Quat {
+	s, c := Sincos(rad * 0.5)
+
+	return Quat{
+		v3[0] * s,
+		v3[1] * s,
+		v3[2] * s,
+		c,
+	}.Normalize()
+}
+
+// QSlerp spherical linear interpolation between two quat
+// https://github.com/toji/gl-matrix/blob/6c0268c89f30090b17bcadade9e7feb7205b85c5/src/quat.js#L296
+func QSlerp(a, b Quat, t float32) Quat {
+	ax := a[0]
+	ay := a[1]
+	az := a[2]
+	aw := a[3]
+
+	bx := b[0]
+	by := b[1]
+	bz := b[2]
+	bw := b[3]
+
+	var omega, cosom, sinom, scale0, scale1 float32
+
+	cosom = ax*bx + ay*by + az*bz + aw*bw
+	if cosom < 0.0 {
+		cosom = -cosom
+		bx = -bx
+		by = -by
+		bz = -bz
+		bw = -bw
+	}
+
+	if 1.0-cosom > Epsilon {
+		omega = Cos(cosom)
+		sinom = Sin(omega)
+		scale0 = Sin((1-t)*omega) / sinom
+		scale1 = Sin(t*omega) / sinom
+	} else {
+		scale0 = 1.0 - t
+		scale1 = t
+	}
+	return Quat{
+		scale0*ax + scale1*bx,
+		scale0*ay + scale1*by,
+		scale0*az + scale1*bz,
+		scale0*aw + scale1*bw,
 	}
 }
