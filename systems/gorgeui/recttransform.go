@@ -13,7 +13,9 @@ import (
 // RectComponent data component based on transform with fields specific for UI
 // elements.
 type RectComponent struct {
-	gorge.TransformComponent
+	gorge.TransformComponent // local transform
+	// Anchor Rect
+	// Container gorge.TransformComponent // parent offset transform
 
 	Dim    m32.Vec2
 	Anchor m32.Vec4 // left, bottom, right, top
@@ -23,12 +25,18 @@ type RectComponent struct {
 
 // RectIdent returns a identity rect transform.
 func RectIdent() RectComponent {
-	return RectComponent{
-		TransformComponent: gorge.TransformIdent(),
-		Anchor:             m32.Vec4{0, 0, 1, 1},
-		Dim:                m32.Vec2{0, 0},
-		Pivot:              m32.Vec2{.5, .5},
+	// parent := gorge.TransformIdent()
+	// parent.SetPosition(2, 0, 0)
+	transform := gorge.TransformIdent()
+	rc := RectComponent{
+		TransformComponent: transform,
+		// Container:          parent,
+		Anchor: m32.Vec4{0, 0, 1, 1},
+		Dim:    m32.Vec2{0, 0},
+		Pivot:  m32.Vec2{.5, .5},
 	}
+	// rc.TransformComponent.SetParent(&rc.Container)
+	return rc
 }
 
 // NewRectComponent returns a new Rect Transform.
@@ -39,6 +47,19 @@ func NewRectComponent() *RectComponent {
 
 // RectTransform implements the RectTransform and returns self
 func (r *RectComponent) RectTransform() *RectComponent { return r }
+
+/*
+// SetParent experiment to relativize anchor.
+func (r *RectComponent) SetParent(t gorge.Transformer) {
+	log.Println("Sub Set parent")
+	r.Container.SetParent(t)
+}
+
+// Parent returns parent sub transform.
+func (r *RectComponent) Parent() gorge.Transformer {
+	return &r.Container
+}
+*/
 
 // SetRect sets the rect.
 func (r *RectComponent) SetRect(v ...float32) {
@@ -52,7 +73,10 @@ func (r *RectComponent) SetRect(v ...float32) {
 
 // SetAnchor sets anchor.
 func (r *RectComponent) SetAnchor(v ...float32) {
-	r.Anchor = v4f(v...)
+	v4 := v4f(v...)
+	// Grab parent
+	// r.ParentTransform.SetPosition(v4[0], v4[1], 0)
+	r.Anchor = v4
 }
 
 // SetPivot sets the pivot.
@@ -99,10 +123,4 @@ func (r *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
 	}
 
 	return m32.Vec4{left, bottom, right, top}
-}
-
-// ApplyTo will copy this rect transform to the specific entity
-func (r RectComponent) ApplyTo(e Entity) {
-	// copy Rect transform
-	*e.RectTransform() = r
 }

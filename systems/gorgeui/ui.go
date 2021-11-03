@@ -84,6 +84,11 @@ func (w *UI) Rect() m32.Vec4 {
 // ScreenSize returns the screensize.
 func (w *UI) ScreenSize() m32.Vec2 { return w.gorge.ScreenSize() }
 
+type parenter interface {
+	SetParent(gorge.Transformer)
+	Parent() gorge.Transformer
+}
+
 // Add alias to add entities to gorge.
 func (w *UI) Add(ents ...gorge.Entity) {
 	for _, e := range ents {
@@ -92,6 +97,11 @@ func (w *UI) Add(ents ...gorge.Entity) {
 				r.RectTransform().SetParent(w)
 			}
 		}
+		/*if r, ok := e.(parenter); ok {
+			if r.Parent() == nil {
+				r.SetParent(w)
+			}
+		}*/
 	}
 	w.gorge.Add(ents...)
 }

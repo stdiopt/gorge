@@ -13,7 +13,6 @@ import (
 // Build calls fn to build a widget and returns the widget.
 func Build(fn func(b *Builder)) *Widget {
 	root := New()
-
 	b := Builder{
 		root: curEntity{
 			widget: root,
@@ -47,22 +46,17 @@ type BuilderStyle struct {
 }
 
 func (b *BuilderStyle) cur() *cursorStyle {
+	cur := b.edit()
 	if b.once != nil {
-		s := b.once
 		b.once = nil
-		return s
 	}
-	if len(b.stack) == 0 {
-		return &b.def
-	}
-	return b.stack[len(b.stack)-1]
+	return cur
 }
 
 // edit same as cur but doesn't remove the once.
 func (b *BuilderStyle) edit() *cursorStyle {
 	if b.once != nil {
-		s := b.once
-		return s
+		return b.once
 	}
 	if len(b.stack) == 0 {
 		return &b.def

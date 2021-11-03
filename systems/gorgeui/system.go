@@ -64,6 +64,7 @@ type system struct {
 func (s *system) HandleEvent(v event.Event) {
 	switch e := v.(type) {
 	// TODO: Warning experimental code here
+	// TODO: Move this to or PostUpdate?!
 	case input.EventPointer:
 		s.deltaMouse = e.Pointers[0].Pos.Sub(s.curMouse)
 		s.curMouse = e.Pointers[0].Pos
@@ -324,6 +325,11 @@ func (s *system) debugRects() {
 
 		s.dbg.SetColor(1, 0, 0, 1)
 		s.dbg.AddLine(planePos, planePos.Add(planeNorm))
+
+		// Position cross
+		s.dbg.SetColor(1, 1, 0, 1)
+		s.dbg.AddLine(t.Position.Add(m32.Vec3{-1, 0, 0}), t.Position.Add(m32.Vec3{1, 0, 0}))
+		s.dbg.AddLine(t.Position.Add(m32.Vec3{0, -1, 0}), t.Position.Add(m32.Vec3{0, 1, 0}))
 
 		s.dbg.SetColor(.5+rs.Float32()*.5, rs.Float32(), rs.Float32(), 1)
 		v3 := m.MulV4(m32.Vec4{rect[2], rect[3], 0, 1}).Vec3()
