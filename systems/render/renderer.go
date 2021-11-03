@@ -34,20 +34,24 @@ type Render struct {
 }
 
 func newRenderer(g *gorge.Context) *Render {
+	gl.Enable(gl.PROGRAM_POINT_SIZE)
+	gl.Hint(gl.GENERATE_MIPMAP_HINT, gl.NICEST)
+	gl.LineWidth(1.4) // Not implemented by all drivers
+
 	gl.ClearDepthf(1)
 	gl.DepthFunc(gl.LESS)
 
 	gl.FrontFace(gl.CW)
 	gl.CullFace(gl.BACK)
-	gl.Hint(gl.GENERATE_MIPMAP_HINT, gl.NICEST)
-
-	gl.LineWidth(1.4) // Not implemented by all drivers
 
 	// should be on material
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
 	bm := newBufferManager(g)
+	vbos := newVBOManager(g, bm)
+	shaders := newShaderManager(g, vbos)
+	textures := newTextureManager(g)
 
 	cameraUBO := bufutil.NewNamedOffset(
 		bufutil.NewCached(bm.New(gl.UNIFORM_BUFFER, gl.DYNAMIC_DRAW)),
@@ -58,14 +62,13 @@ func newRenderer(g *gorge.Context) *Render {
 			"viewPos": 80,
 		},
 	)
-	vbos := newVBOManager(g, bm)
 	// Setup default pipeline
 	return &Render{
 		gorge:          g,
 		Renderables:    []*RenderableGroup{},
 		renderablesMap: map[*gorge.RenderableComponent]*RenderableGroup{},
-		shaders:        newShaderManager(g, vbos),
-		textures:       newTextureManager(g),
+		shaders:        shaders,
+		textures:       textures,
 		vbos:           vbos,
 		buffers:        bm,
 		renderInfo: Pass{

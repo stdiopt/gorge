@@ -4,96 +4,52 @@ import "github.com/stdiopt/gorge"
 
 type keyManager struct {
 	gorge    *gorge.Context
-	keyState map[Key]KeyState
+	keyState map[Key]ActionState
 }
 
-// SetKeyDown triggers key down
-// nolint: errcheck
-func (m *keyManager) SetKeyDown(key Key) {
-	if m.keyState == nil {
-		m.keyState = map[Key]KeyState{}
+func (m *keyManager) update() {
+	for k, v := range m.keyState {
+		switch v {
+		case ActionDown:
+			m.keyState[k] = ActionHold
+		case ActionUp:
+			delete(m.keyState, k)
+		}
 	}
-	m.keyState[key] = KeyStateDown
-	m.gorge.Trigger(EventKey{
-		KeyStateDown,
-		key,
-	})
-	m.gorge.Trigger(EventKeyDown{key})
 }
 
-// SetKeyUp triggers key down
-// nolint: errcheck
-func (m *keyManager) SetKeyUp(key Key) {
+func (m *keyManager) SetKeyState(key Key, s ActionState) {
 	if m.keyState == nil {
-		m.keyState = map[Key]KeyState{}
+		m.keyState = map[Key]ActionState{}
 	}
-	m.keyState[key] = KeyStateUp
-	m.gorge.Trigger(EventKey{
-		KeyStateUp,
-		key,
-	})
-	m.gorge.Trigger(EventKeyUp{key})
+	m.keyState[key] = s
+	switch s {
+	case ActionUp:
+		m.gorge.Trigger(EventKeyUp{key})
+	case ActionDown:
+		m.gorge.Trigger(EventKeyDown{key})
+	}
 }
 
 func (m *keyManager) KeyUp(k Key) bool {
-	return m.getKey(k) == KeyStateUp
+	return m.getKey(k) == ActionUp
 }
 
 // GetKey checks if a key was pressed
 func (m *keyManager) KeyPress(k Key) bool {
-	return m.getKey(k) == KeyStateUp
+	return m.getKey(k) == ActionUp
 }
 
 func (m *keyManager) KeyDown(k Key) bool {
 	s := m.getKey(k)
-	return s == KeyStateDown || s == KeyStateHold
+	return s == ActionDown || s == ActionHold
 }
 
-func (m *keyManager) getKey(k Key) KeyState {
+func (m *keyManager) getKey(k Key) ActionState {
 	if m.keyState == nil {
-		return KeyState(0)
+		return ActionState(0)
 	}
 	return m.keyState[k]
-}
-
-// KeyState type
-type KeyState int
-
-func (k KeyState) String() string {
-	switch k {
-	case KeyStateDown:
-		return "KeyDown"
-	case KeyStateHold:
-		return "KeyHold"
-	case KeyStateUp:
-		return "KeyUp"
-	default:
-		return "<no state>"
-	}
-}
-
-// Key states
-const (
-	_ = KeyState(iota)
-	KeyStateDown
-	KeyStateHold
-	KeyStateUp
-)
-
-// EventKeyDown keydown event.
-type EventKeyDown struct {
-	Key Key
-}
-
-// EventKeyUp keyup event.
-type EventKeyUp struct {
-	Key Key
-}
-
-// EventKey key event.
-type EventKey struct {
-	Type KeyState
-	Key  Key // temp, it should be code
 }
 
 // Key represents a keyboard key.

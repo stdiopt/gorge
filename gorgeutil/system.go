@@ -3,6 +3,7 @@ package gorgeutil
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/primitive"
+	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // Context extends gorge context with default entity instantiators.
@@ -22,7 +23,7 @@ func System(g *gorge.Context) func() *Context {
 	}
 }
 
-// Camera creates and adds a camera to a gorge context.
+// Camera creates and adds a default camera to a gorge context.
 func (c Context) Camera() *Camera {
 	cam := NewCamera()
 	c.Add(cam)
@@ -111,4 +112,12 @@ func (c Context) Plane(dir primitive.PlaneDir) *Renderable {
 	r := NewPlane(dir)
 	c.Add(r)
 	return r
+}
+
+// UI returns a gorgeui.New(gorge.Context) with the injected context.
+func (c Context) UI(cam cameraEntity) *gorgeui.UI {
+	ui := gorgeui.New(c)
+	ui.SetCamera(cam)
+	c.Add(ui)
+	return ui
 }

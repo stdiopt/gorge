@@ -5,7 +5,6 @@ package wasm
 
 import (
 	"log"
-	"strings"
 	"syscall/js"
 
 	"github.com/stdiopt/gorge"
@@ -127,30 +126,28 @@ func (s *wasmSystem) checkCanvasSize() {
 	}
 }
 
-var evtMap = map[string]input.PointerType{
-	"mousedown":   input.MouseDown,
-	"mouseup":     input.MouseUp,
-	"mousemove":   input.MouseMove,
-	"touchstart":  input.PointerDown,
-	"touchmove":   input.PointerMove,
-	"touchcancel": input.PointerCancel,
-	"touchend":    input.PointerEnd,
-}
-
 func (s *wasmSystem) setupEvents() {
-	ptrEvent := js.FuncOf(s.handleEventPointer)
-	keyEvent := js.FuncOf(s.handleKeyEvent)
+	keyEvent := js.FuncOf(s.handleKeyEvents)
+	mouseEvent := js.FuncOf(s.handleMouseEvents)
+	touchEvent := js.FuncOf(s.handleTouchEvents)
 
-	for k := range evtMap {
-		s.canvas.Call("addEventListener", k, ptrEvent)
-	}
-	s.canvas.Call("addEventListener", "wheel", ptrEvent)
 	js.Global().Call("addEventListener", "keydown", keyEvent)
 	js.Global().Call("addEventListener", "keyup", keyEvent)
 	js.Global().Call("addEventListener", "keypress", keyEvent)
+
+	s.canvas.Call("addEventListener", "mousedown", mouseEvent)
+	s.canvas.Call("addEventListener", "mouseup", mouseEvent)
+	s.canvas.Call("addEventListener", "mousemove", mouseEvent)
+	s.canvas.Call("addEventListener", "contextmenu", mouseEvent)
+	s.canvas.Call("addEventListener", "wheel", mouseEvent)
+
+	s.canvas.Call("addEventListener", "touchstart", touchEvent)
+	s.canvas.Call("addEventListener", "touchmove", touchEvent)
+	s.canvas.Call("addEventListener", "touchcancel", touchEvent)
+	s.canvas.Call("addEventListener", "touchend", touchEvent)
 }
 
-func (s *wasmSystem) handleKeyEvent(t js.Value, args []js.Value) interface{} {
+func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) interface{} {
 	evt := args[0]
 
 	code := evt.Get("code").String()
@@ -167,74 +164,92 @@ func (s *wasmSystem) handleKeyEvent(t js.Value, args []js.Value) interface{} {
 
 	switch etype {
 	case "keydown":
-		s.input.SetKeyDown(ikey)
+		s.input.SetKeyState(ikey, input.ActionDown)
 	case "keyup":
-		s.input.SetKeyUp(ikey)
+		s.input.SetKeyState(ikey, input.ActionUp)
 	}
 
 	return nil
 }
 
-// TODO: pointers are currently relative to window, should be to canvas
-func (s *wasmSystem) handleEventPointer(t js.Value, args []js.Value) interface{} {
+func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) interface{} {
 	evt := args[0]
 	evt.Call("preventDefault")
 	etype := evt.Get("type").String()
 
-	cevt := input.EventPointer{}
-
-	switch {
-	case strings.HasPrefix(etype, "wheel"):
-		cevt.Type = input.MouseWheel
-		cevt.Pointers = map[int]input.PointerData{
-			0: {
-				DeltaZ: float32(evt.Get("deltaY").Float()),
-				Pos: m32.Vec2{
-					float32(evt.Get("pageX").Float() * s.CanvasResolution),
-					float32(evt.Get("pageY").Float() * s.CanvasResolution),
-				},
-			},
+	switch etype {
+	case "wheel":
+		// Maybe grab X too but this is about mousewheel
+		s.input.SetScrollDelta(float32(evt.Get("deltaY").Float()))
+	case "mousemove":
+		s.input.SetCursorPosition(
+			float32(evt.Get("pageX").Float()*s.CanvasResolution),
+			float32(evt.Get("pageY").Float()*s.CanvasResolution),
+		)
+	case "contextmenu":
+		s.input.SetMouseButtonState(input.MouseRight, input.ActionDown)
+	case "mousedown":
+		btn := evt.Get("button").Int()
+		gbtn, ok := mousebtnMap[btn]
+		if !ok {
+			log.Println("Mouse button not mapped:", gbtn)
 		}
-	case strings.HasPrefix(etype, "mouse"):
-		cevt.Type = evtMap[etype]
-		cevt.Pointers = map[int]input.PointerData{
-			0: {
-				Pos: m32.Vec2{
-					float32(evt.Get("pageX").Float() * s.CanvasResolution),
-					float32(evt.Get("pageY").Float() * s.CanvasResolution),
-				},
-			},
+		s.input.SetMouseButtonState(gbtn, input.ActionDown)
+	case "mouseup":
+		btn := evt.Get("button").Int()
+		gbtn, ok := mousebtnMap[btn]
+		if !ok {
+			log.Println("Mouse button not mapped:", gbtn)
 		}
-	case strings.HasPrefix(etype, "touch"):
-		cevt.Type = evtMap[etype]
-		pts := map[int]input.PointerData{}
-
-		touches := evt.Get("changedTouches")
-		for i := 0; i < touches.Length(); i++ {
-			t := touches.Index(i)
-			id := t.Get("identifier").Int()
-			pts[id] = input.PointerData{
-				Pos: m32.Vec2{
-					float32(t.Get("pageX").Float() * s.CanvasResolution),
-					float32(t.Get("pageY").Float() * s.CanvasResolution),
-				},
-			}
-		}
-		touches = evt.Get("touches")
-		for i := 0; i < touches.Length(); i++ {
-			t := touches.Index(i)
-			id := t.Get("identifier").Int()
-			pts[id] = input.PointerData{
-				Pos: m32.Vec2{
-					float32(t.Get("pageX").Float() * s.CanvasResolution),
-					float32(t.Get("pageY").Float() * s.CanvasResolution),
-				},
-			}
-		}
-		cevt.Pointers = pts
+		s.input.SetMouseButtonState(gbtn, input.ActionUp)
 	}
 
-	s.gorge.Trigger(cevt)
+	return nil
+}
 
+func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) interface{} {
+	evt := args[0]
+	evt.Call("preventDefault")
+	etype := evt.Get("type").String()
+
+	var gtyp input.PointerType
+	switch etype {
+	case "touchstart":
+		gtyp = input.PointerDown
+	case "touchmove":
+		gtyp = input.PointerMove
+	case "touchcancel":
+		gtyp = input.PointerCancel
+	case "touchend":
+		gtyp = input.PointerEnd
+	}
+	pts := map[int]input.PointerData{}
+
+	touches := evt.Get("changedTouches")
+	for i := 0; i < touches.Length(); i++ {
+		t := touches.Index(i)
+		id := t.Get("identifier").Int()
+		pts[id] = input.PointerData{
+			Pos: m32.Vec2{
+				float32(t.Get("pageX").Float() * s.CanvasResolution),
+				float32(t.Get("pageY").Float() * s.CanvasResolution),
+			},
+		}
+	}
+	touches = evt.Get("touches")
+	for i := 0; i < touches.Length(); i++ {
+		t := touches.Index(i)
+		id := t.Get("identifier").Int()
+		pts[id] = input.PointerData{
+			Pos: m32.Vec2{
+				float32(t.Get("pageX").Float() * s.CanvasResolution),
+				float32(t.Get("pageY").Float() * s.CanvasResolution),
+			},
+		}
+	}
+	s.gorge.Trigger(input.EventPointer{
+		Type:     gtyp,
+		Pointers: pts,
+	})
 	return nil
 }

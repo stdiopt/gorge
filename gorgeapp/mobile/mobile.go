@@ -30,6 +30,8 @@ func init() {
 	runtime.LockOSThread()
 }
 
+// update this to be similar to other platforms with a mobileSystem.
+
 // Start stars a mobile app
 func Run(opt Options, systems ...interface{}) error {
 	resourceFS := resource.MobileFS{}
@@ -85,6 +87,7 @@ func Run(opt Options, systems ...interface{}) error {
 		case mouse.Event:
 			switch e.Button {
 			case mouse.ButtonWheelUp:
+				in
 				g.Trigger(input.EventPointer{
 					Type: input.MouseWheel,
 					Pointers: map[int]input.PointerData{

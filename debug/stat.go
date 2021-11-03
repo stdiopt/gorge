@@ -67,15 +67,13 @@ func StatText(g *gorge.Context, glw *gl.Wrapper) error {
 			s.updateDuration = time.Since(preMark)
 		case render.EventStat:
 			s.rendererStat = e
-		case input.EventKey:
-			if e.Type == input.KeyStateUp {
-				switch e.Key {
-				case input.KeyF10:
-					s.txt.SetText(s.Update())
-				case input.KeyF9:
-					runtime.GC()
-					s.txt.SetText(s.Update())
-				}
+		case input.EventKeyUp:
+			switch e.Key {
+			case input.KeyF10:
+				s.txt.SetText(s.Update())
+			case input.KeyF9:
+				runtime.GC()
+				s.txt.SetText(s.Update())
 			}
 		}
 	})
@@ -157,15 +155,13 @@ func Stat(g *gorge.Context, rc *resource.Context, glw *gl.Wrapper) error {
 			s.updateDuration = time.Since(preMark)
 		case render.EventStat:
 			s.rendererStat = e
-		case input.EventKey:
-			if e.Type == input.KeyStateUp {
-				switch e.Key {
-				case input.KeyF10:
-					s.txt.SetText(s.Update())
-				case input.KeyF9:
-					runtime.GC()
-					s.txt.SetText(s.Update())
-				}
+		case input.EventKeyUp:
+			switch e.Key {
+			case input.KeyF10:
+				s.txt.SetText(s.Update())
+			case input.KeyF9:
+				runtime.GC()
+				s.txt.SetText(s.Update())
 			}
 		}
 	})

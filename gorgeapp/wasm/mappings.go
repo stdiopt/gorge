@@ -4,6 +4,14 @@ package wasm
 
 import "github.com/stdiopt/gorge/systems/input"
 
+var mousebtnMap = map[int]input.MouseButton{
+	0: input.MouseLeft,
+	1: input.MouseMiddle,
+	2: input.MouseRight,
+	3: input.MouseThumb1,
+	4: input.MouseThumb2,
+}
+
 var keyMap = map[string]input.Key{
 	"Space":        input.KeySpace,
 	"Quote":        input.KeyApostrophe,

@@ -14,7 +14,6 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 	"github.com/stdiopt/gorge/systems/resource"
 
-	// ogl "github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -48,12 +47,12 @@ func Run(opt Options, systems ...interface{}) error {
 	glw := &gl.Wrapper{}
 
 	// When running opengl "github.com/go-gl/gl/v4.6-core/gl"
-	/*if err := opengl.Init(); err != nil {
-		return err
-	}*/
+	// if err := ogl.Init(); err != nil {
+	// 	return err
+	// }
 
-	// ogl.Enable(opengl.MULTISAMPLE)
-	// ogl.Enable(opengl.PROGRAM_POINT_SIZE)
+	// ogl.Enable(ogl.MULTISAMPLE)
+	// ogl.Enable(ogl.PROGRAM_POINT_SIZE)
 	// ogl.Disable(opengl.LINE_SMOOTH)
 
 	// This brakes NV
@@ -133,60 +132,42 @@ func (s *glfwSystem) setupEvents() {
 	})
 
 	s.window.SetScrollCallback(
-		func(w *glfw.Window, _, yoff float64) {
-			x, y := w.GetCursorPos()
-			evt := input.EventPointer{
-				Type: input.MouseWheel,
-				Pointers: map[int]input.PointerData{
-					0: {
-						DeltaZ: -float32(yoff) * 6,
-						Pos:    m32.Vec2{float32(x), float32(y)},
-					},
-				},
-			}
-			s.gorge.Trigger(evt) // nolint: errcheck
+		func(_ *glfw.Window, _, yoff float64) {
+			s.input.SetScrollDelta(-float32(yoff) * 6)
 		},
 	)
 
 	s.window.SetMouseButtonCallback(
-		func(w *glfw.Window, button glfw.MouseButton, a glfw.Action, _ glfw.ModifierKey) {
-			var typ input.PointerType
+		func(_ *glfw.Window, button glfw.MouseButton, a glfw.Action, _ glfw.ModifierKey) {
+			gbtn, ok := mousebtnMap[button]
+			if !ok {
+				log.Println("Not mapped", button)
+			}
 			switch a {
+			case glfw.Press, glfw.Repeat:
+				s.input.SetMouseButtonState(gbtn, input.ActionDown)
 			case glfw.Release:
-				typ = input.MouseUp
-			case glfw.Press:
-				typ = input.MouseDown
+				s.input.SetMouseButtonState(gbtn, input.ActionUp)
 			default:
 				return
 			}
-			x, y := w.GetCursorPos()
-			evt := input.EventPointer{
-				Type:   typ,
-				Button: int(button),
-				Pointers: map[int]input.PointerData{
-					0: {Pos: m32.Vec2{float32(x), float32(y)}},
-				},
-			}
-			s.gorge.Trigger(evt) // nolint: errcheck
 		},
 	)
 
 	s.window.SetCursorPosCallback(func(_ *glfw.Window, x, y float64) {
-		typ := input.MouseMove
-		evt := input.EventPointer{
-			Type: typ,
-			Pointers: map[int]input.PointerData{
-				0: {Pos: m32.Vec2{float32(x), float32(y)}},
-			},
-		}
-		s.gorge.Trigger(evt) // nolint: errcheck
+		s.input.SetCursorPosition(float32(x), float32(y))
 	})
 
 	s.window.SetKeyCallback(func(_ *glfw.Window, k glfw.Key, _ int, a glfw.Action, _ glfw.ModifierKey) {
-		keyFn := s.input.SetKeyDown
-		if a == glfw.Release {
-			keyFn = s.input.SetKeyUp
+		gkey, ok := keyMap[k]
+		if !ok {
+			log.Println("Key not mapped:", k, gkey)
 		}
-		keyFn(keyMap[k])
+		switch a {
+		case glfw.Press, glfw.Repeat: // Maybe state hold?
+			s.input.SetKeyState(keyMap[k], input.ActionDown)
+		case glfw.Release:
+			s.input.SetKeyState(keyMap[k], input.ActionUp)
+		}
 	})
 }

@@ -10,9 +10,10 @@ import (
 // Epsilon float error stuff.
 const (
 	Epsilon   = 0.000001
-	MinNormal = float32(1.1754943508222875e-38) // 1 / 2**(127 - 1)
-	MinValue  = float32(math.SmallestNonzeroFloat32)
-	MaxValue  = float32(math.MaxFloat32)
+	MinNormal = 1.1754943508222875e-38 // 1 / 2**(127 - 1)
+	MinValue  = math.SmallestNonzeroFloat32
+	MaxValue  = math.MaxFloat32
+	Pi        = math.Pi
 )
 
 // values from math

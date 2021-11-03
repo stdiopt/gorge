@@ -80,10 +80,6 @@ func HasParent(e Entity, parent Entity) bool {
 	return hasParent
 }
 
-//type eventHandler interface {
-//	HandleUIEvent(Entity, event.Event)
-//}
-
 func triggerOn(e Entity, v event.Event) {
 	if h, ok := e.(event.Handler); ok {
 		h.HandleEvent(v)

@@ -7,6 +7,14 @@ import (
 	"github.com/stdiopt/gorge/systems/input"
 )
 
+var mousebtnMap = map[glfw.MouseButton]input.MouseButton{
+	glfw.MouseButton1: input.MouseLeft,
+	glfw.MouseButton2: input.MouseRight,
+	glfw.MouseButton3: input.MouseMiddle,
+	glfw.MouseButton4: input.MouseThumb1,
+	glfw.MouseButton5: input.MouseThumb2,
+}
+
 var keyMap = map[glfw.Key]input.Key{
 	glfw.KeyUnknown:      input.KeyUnknown,
 	glfw.KeySpace:        input.KeySpace,

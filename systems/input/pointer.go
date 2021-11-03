@@ -1,7 +1,7 @@
-// Package input normalizes inputs from systems
 package input
 
-import "github.com/stdiopt/gorge/m32"
+// Mouse still triggers Pointer events but this would be mainly used for touch
+// tbf more pointer devices are available so this can still be valid
 
 // PointerType pointer event type
 type PointerType int
@@ -41,16 +41,3 @@ const (
 	PointerEnd
 	PointerCancel
 )
-
-// PointerData common
-type PointerData struct {
-	DeltaZ float32 // for Wheel
-	Pos    m32.Vec2
-}
-
-// EventPointer on canvas
-type EventPointer struct {
-	Type     PointerType
-	Button   int // number of button or -1 for touch?
-	Pointers map[int]PointerData
-}
