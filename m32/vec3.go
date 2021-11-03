@@ -55,11 +55,20 @@ func (v Vec3) Vec4(w float32) Vec4 {
 }
 
 // Clamp returns a vec3 with the v elements clamped to min and max.
-func (v Vec3) Clamp(min, max float32) Vec3 {
+func (v Vec3) Clamp(min, max Vec3) Vec3 {
 	return Vec3{
-		Clamp(v[0], min, max),
-		Clamp(v[1], min, max),
-		Clamp(v[2], min, max),
+		Clamp(v[0], min[0], max[0]),
+		Clamp(v[1], min[1], max[1]),
+		Clamp(v[2], min[2], max[2]),
+	}
+}
+
+// Lerp Linear interpolation between 2 vecs
+func (v Vec3) Lerp(b Vec3, t float32) Vec3 {
+	return Vec3{
+		v[0] + t*(b[0]-v[0]),
+		v[1] + t*(b[1]-v[1]),
+		v[2] + t*(b[2]-v[2]),
 	}
 }
 
@@ -80,15 +89,6 @@ func Left() Vec3 { return Vec3{-1, 0, 0} }
 
 // Right returns a vector pointing left
 func Right() Vec3 { return Vec3{1, 0, 0} }
-
-// V3Lerp Linear interpolation between 2 vecs
-func V3Lerp(a, b Vec3, t float32) Vec3 {
-	return Vec3{
-		a[0] + t*(b[0]-a[0]),
-		a[1] + t*(b[1]-a[1]),
-		a[2] + t*(b[2]-a[2]),
-	}
-}
 
 // V3Rand returns a random vec3 with values in [0,1].
 func V3Rand() Vec3 {

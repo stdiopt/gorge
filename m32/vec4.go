@@ -53,13 +53,13 @@ func (v Vec4) Vec3() Vec3 {
 	return Vec3{v[0], v[1], v[2]}
 }
 
-// V4Lerp Linear interpolation between 2 vecs
-func V4Lerp(a, b Vec4, t float32) Vec4 {
+// Lerp Linear interpolation between 2 vecs
+func (v Vec4) Lerp(b Vec4, t float32) Vec4 {
 	return Vec4{
-		a[0] + t*(b[0]-a[0]),
-		a[1] + t*(b[1]-a[1]),
-		a[2] + t*(b[2]-a[2]),
-		a[3] + t*(b[3]-a[3]),
+		v[0] + t*(b[0]-v[0]),
+		v[1] + t*(b[1]-v[1]),
+		v[2] + t*(b[2]-v[2]),
+		v[3] + t*(b[3]-v[3]),
 	}
 }
 

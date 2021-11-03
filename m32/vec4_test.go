@@ -55,7 +55,7 @@ func TestVec4(t *testing.T) {
 
 		{
 			name: "V4Lerp",
-			in:   m32.V4Lerp(m32.Vec4{0, 0, 0, 0}, m32.Vec4{1, 1, 1, 1}, .5),
+			in:   m32.Vec4{0, 0, 0, 0}.Lerp(m32.Vec4{1, 1, 1, 1}, .5),
 			want: m32.Vec4{.5, .5, .5, .5},
 		},
 	}

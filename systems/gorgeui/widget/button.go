@@ -54,7 +54,7 @@ func (b *Button) HandleEvent(e event.Event) {
 		case b.state&ButtonStateHover != 0:
 			target = b.HighlightColor
 		}
-		color = m32.V4Lerp(color, target, e.DeltaTime()*b.FadeFactor)
+		color = color.Lerp(target, e.DeltaTime()*b.FadeFactor)
 		b.Entity.Colorable().SetColorv(color)
 
 	case gorgeui.EventPointerDown:

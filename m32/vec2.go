@@ -35,26 +35,26 @@ func (v Vec2) Vec4(z, w float32) Vec4 {
 	return Vec4{v[0], v[1], z, w}
 }
 
-// V2Abs returns the vec2 with abs values for each element.
-func V2Abs(a Vec2) Vec2 {
+// Clamp clamps the vec2 elements to specific min and max floats.
+func (v Vec2) Clamp(min, max Vec2) Vec2 {
 	return Vec2{
-		Abs(a[0]),
-		Abs(a[1]),
+		Clamp(v[0], min[0], max[0]),
+		Clamp(v[1], min[1], max[1]),
 	}
 }
 
-// V2Lerp Linear interpolation between 2 vecs2.
-func V2Lerp(a, b Vec2, t float32) Vec2 {
+// Abs returns the vec2 with abs values for each element.
+func (v Vec2) Abs() Vec2 {
 	return Vec2{
-		a[0] + t*(b[0]-a[0]),
-		a[1] + t*(b[1]-a[1]),
+		Abs(v[0]),
+		Abs(v[1]),
 	}
 }
 
-// V2Clamp clamps the vec2 elements to specific min and max floats.
-func V2Clamp(a Vec2, min, max float32) Vec2 {
+// Lerp Linear interpolation between 2 vecs2.
+func (v Vec2) Lerp(b Vec2, t float32) Vec2 {
 	return Vec2{
-		Clamp(a[0], min, max),
-		Clamp(a[1], min, max),
+		v[0] + t*(b[0]-v[0]),
+		v[1] + t*(b[1]-v[1]),
 	}
 }

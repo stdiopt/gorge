@@ -82,12 +82,7 @@ func (a *App) Options(opt ...AppFunc) {
 	}
 }
 
-// WasmOpt sets the wasm options.
-func WasmOpt(o WasmOptions) AppFunc {
-	return func(a *App) {
-		a.wasmOptions = o
-	}
-}
+// this needs to be here since the other files are build restricted.
 
 // GLFWOpt sets glfw options.
 func GLFWOpt(o GLFWOptions) AppFunc {
@@ -107,5 +102,12 @@ func GLFWSourcer(s fs.FS) AppFunc {
 func MobileOpt(o MobileOptions) AppFunc {
 	return func(a *App) {
 		a.mobileOptions = o
+	}
+}
+
+// WasmOpt sets the wasm options.
+func WasmOpt(o WasmOptions) AppFunc {
+	return func(a *App) {
+		a.wasmOptions = o
 	}
 }

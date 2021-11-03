@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -80,6 +81,20 @@ func Run(opt Options, systems ...interface{}) error {
 	ggArgs = append(ggArgs, systems...)
 
 	g := gorge.New(ggArgs...)
+
+	g.HandleFunc(func(e event.Event) {
+		switch v := e.(type) {
+		case gorge.EventCursorRelative:
+			s.cursorRelative = bool(v)
+		case gorge.EventCursorHidden:
+			if v {
+				s.window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+			} else {
+				s.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+			}
+		}
+	})
+
 	// bind stuff together
 	if err := g.Start(); err != nil {
 		return err
@@ -91,9 +106,9 @@ func Run(opt Options, systems ...interface{}) error {
 	// Ticker here
 	mark := glfw.GetTime()
 	lastFrame = mark
+
 	for !s.window.ShouldClose() {
 		glfw.PollEvents()
-
 		now := glfw.GetTime()
 		elapsed := now - mark
 		mark = now
@@ -117,6 +132,9 @@ type glfwSystem struct {
 
 	glctx  *gl.Wrapper
 	window *glfw.Window
+
+	// this should be in a common thing
+	cursorRelative bool
 }
 
 func (s *glfwSystem) System(g *gorge.Context, ic *input.Context) error {
@@ -154,8 +172,21 @@ func (s *glfwSystem) setupEvents() {
 		},
 	)
 
-	s.window.SetCursorPosCallback(func(_ *glfw.Window, x, y float64) {
-		s.input.SetCursorPosition(float32(x), float32(y))
+	// Start in center anyway
+	sx, sy := s.window.GetSize()
+	cx, cy := float64(sx/2), float64(sy/2)
+	s.window.SetCursorPos(cx, cy)
+	s.input.SetCursorPosition(m32.Vec2{float32(cx), float32(cy)})
+
+	s.window.SetCursorPosCallback(func(w *glfw.Window, x, y float64) {
+		if !s.cursorRelative {
+			s.input.SetCursorPosition(m32.Vec2{float32(x), float32(y)})
+			return
+		}
+		sx, sy := w.GetSize()
+		cx, cy := float64(sx/2), float64(sy/2)
+		s.input.SetCursorDelta(m32.Vec2{float32(x - cx), float32(y - cy)})
+		w.SetCursorPos(cx, cy)
 	})
 
 	s.window.SetKeyCallback(func(_ *glfw.Window, k glfw.Key, _ int, a glfw.Action, _ glfw.ModifierKey) {

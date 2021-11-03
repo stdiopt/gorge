@@ -30,7 +30,7 @@ func init() {
 	runtime.LockOSThread()
 }
 
-// update this to be similar to other platforms with a mobileSystem.
+// TODO: {lpf} update this to be similar to other platforms with a mobileSystem.
 
 // Start stars a mobile app
 func Run(opt Options, systems ...interface{}) error {
@@ -87,7 +87,6 @@ func Run(opt Options, systems ...interface{}) error {
 		case mouse.Event:
 			switch e.Button {
 			case mouse.ButtonWheelUp:
-				in
 				g.Trigger(input.EventPointer{
 					Type: input.MouseWheel,
 					Pointers: map[int]input.PointerData{
@@ -129,6 +128,7 @@ func Run(opt Options, systems ...interface{}) error {
 			bounds = e.Bounds()
 			g.SetScreenSize(m32.Vec2{float32(bounds.Dx()), float32(bounds.Dy())})
 		}
+		return true
 	})
 	<-done
 	log.Println("Exiting app")

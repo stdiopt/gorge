@@ -68,6 +68,7 @@ func Run(opt Options, systems ...interface{}) error {
 	ggArgs = append(ggArgs, systems...)
 
 	g := gorge.New(ggArgs...)
+	// Handle platform specific events here.
 
 	return g.Run()
 }

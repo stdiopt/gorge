@@ -28,7 +28,7 @@ func Vec3(v *m32.Vec3) InterpolatorFunc {
 		va := a.(m32.Vec3)
 		vb := b.(m32.Vec3)
 
-		*v = m32.V3Lerp(va, vb, dt)
+		*v = va.Lerp(vb, dt)
 	}
 }
 
@@ -38,6 +38,6 @@ func Quat(v *m32.Quat) InterpolatorFunc {
 		qa := a.(m32.Quat)
 		qb := b.(m32.Quat)
 
-		*v = m32.QSlerp(qa, qb, dt).Normalize()
+		*v = qa.Slerp(qb, dt).Normalize()
 	}
 }

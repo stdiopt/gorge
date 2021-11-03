@@ -34,9 +34,9 @@ func (c Context) IsDown(v interface{}) bool {
 func (c Context) IsUp(v interface{}) bool {
 	switch v := v.(type) {
 	case Key:
-		return c.getKey(v) == ActionDown
+		return c.getKey(v) == ActionUp
 	case MouseButton:
-		return c.getMouseButton(v) == ActionDown
+		return c.getMouseButton(v) == ActionUp
 	}
 	return false
 }

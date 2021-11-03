@@ -123,7 +123,7 @@ func (s *system) HandleEvent(v event.Event) {
 				Target:    hit,
 			}
 			ui := RootUI(s.pointDown)
-			d := m32.V2Abs(s.curMouse.Sub(s.pointDownPos))
+			d := s.curMouse.Sub(s.pointDownPos).Abs()
 			if d[0] > ui.DragThreshold || d[1] > ui.DragThreshold {
 				EachParent(hit, func(e Entity) bool {
 					if !e.Element().DragEvents {
@@ -329,12 +329,13 @@ func (s *system) debugRects() {
 		v3 := m.MulV4(m32.Vec4{rect[2], rect[3], 0, 1}).Vec3()
 		s.dbg.AddRect(v0, v1, v3, v2)
 
-		wp := t.WorldPosition()
-		s.dbg.AddPoint(m32.Vec3{
-			wp[0] + rect[0] + (rect[2]-rect[0])*t.Pivot[0],
-			wp[1] + rect[1] + (rect[3]-rect[1])*t.Pivot[1],
+		dot := m32.Vec4{
+			rect[0] + (t.Dim[0])*t.Pivot[0],
+			rect[1] + (t.Dim[1])*t.Pivot[1],
 			0,
-		})
+			1,
+		}
+		s.dbg.AddPoint(m.MulV4(dot).Vec3())
 	}
 }
 

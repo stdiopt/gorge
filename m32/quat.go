@@ -100,6 +100,47 @@ func (q Quat) Mat4() Mat4 {
 	}
 }
 
+// Slerp spherical linear interpolation between two quat
+// https://github.com/toji/gl-matrix/blob/6c0268c89f30090b17bcadade9e7feb7205b85c5/src/quat.js#L296
+func (q Quat) Slerp(b Quat, t float32) Quat {
+	ax := q[0]
+	ay := q[1]
+	az := q[2]
+	aw := q[3]
+
+	bx := b[0]
+	by := b[1]
+	bz := b[2]
+	bw := b[3]
+
+	var omega, cosom, sinom, scale0, scale1 float32
+
+	cosom = ax*bx + ay*by + az*bz + aw*bw
+	if cosom < 0.0 {
+		cosom = -cosom
+		bx = -bx
+		by = -by
+		bz = -bz
+		bw = -bw
+	}
+
+	if 1.0-cosom > Epsilon {
+		omega = Cos(cosom)
+		sinom = Sin(omega)
+		scale0 = Sin((1-t)*omega) / sinom
+		scale1 = Sin(t*omega) / sinom
+	} else {
+		scale0 = 1.0 - t
+		scale1 = t
+	}
+	return Quat{
+		scale0*ax + scale1*bx,
+		scale0*ay + scale1*by,
+		scale0*az + scale1*bz,
+		scale0*aw + scale1*bw,
+	}
+}
+
 // QFromAngles returns a rotation quaternion based on the angles.
 func QFromAngles(a1, a2, a3 float32, order RotationOrder) Quat {
 	var s [3]float64
@@ -286,45 +327,4 @@ func QAxisAngle(v3 Vec3, rad float32) Quat {
 		v3[2] * s,
 		c,
 	}.Normalize()
-}
-
-// QSlerp spherical linear interpolation between two quat
-// https://github.com/toji/gl-matrix/blob/6c0268c89f30090b17bcadade9e7feb7205b85c5/src/quat.js#L296
-func QSlerp(a, b Quat, t float32) Quat {
-	ax := a[0]
-	ay := a[1]
-	az := a[2]
-	aw := a[3]
-
-	bx := b[0]
-	by := b[1]
-	bz := b[2]
-	bw := b[3]
-
-	var omega, cosom, sinom, scale0, scale1 float32
-
-	cosom = ax*bx + ay*by + az*bz + aw*bw
-	if cosom < 0.0 {
-		cosom = -cosom
-		bx = -bx
-		by = -by
-		bz = -bz
-		bw = -bw
-	}
-
-	if 1.0-cosom > Epsilon {
-		omega = Cos(cosom)
-		sinom = Sin(omega)
-		scale0 = Sin((1-t)*omega) / sinom
-		scale1 = Sin(t*omega) / sinom
-	} else {
-		scale0 = 1.0 - t
-		scale1 = t
-	}
-	return Quat{
-		scale0*ax + scale1*bx,
-		scale0*ay + scale1*by,
-		scale0*az + scale1*bz,
-		scale0*aw + scale1*bw,
-	}
 }

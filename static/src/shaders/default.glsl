@@ -40,7 +40,7 @@ layout(std140) uniform Camera {
 		Normal = normalize(vec3(a_NormalTransform * vec4(a_Normal, 0.0)));
 		TexCoords = a_UV1;
 
-		gl_PointSize = 7.0;
+		gl_PointSize = 5.0;
 		gl_Position = VP * vec4(FragPos,1.0);
 	}
 #endif

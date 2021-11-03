@@ -43,10 +43,10 @@ func (m *mouseManager) SetScrollDelta(delta float32) {
 	m.gorge.Trigger(evt) // nolint: errcheck
 }
 
-func (m *mouseManager) SetCursorPosition(x, y float32) {
-	p := m32.Vec2{x, y}
+func (m *mouseManager) SetCursorPosition(p m32.Vec2) {
 	m.deltaPos = m.mpos.Sub(p)
-	m.mpos = p
+	screenSize := m.gorge.ScreenSize()
+	m.mpos = p.Clamp(m32.Vec2{}, screenSize)
 
 	// Legacy
 	evt := EventPointer{
@@ -57,6 +57,11 @@ func (m *mouseManager) SetCursorPosition(x, y float32) {
 	}
 	m.gorge.Trigger(evt) // nolint: errcheck*/
 	// Trigger position event
+}
+
+// SetCursorDelta sets cursor position by delta.
+func (m *mouseManager) SetCursorDelta(d m32.Vec2) {
+	m.SetCursorPosition(m.mpos.Add(d))
 }
 
 func (m *mouseManager) SetMouseButtonState(b MouseButton, s ActionState) {

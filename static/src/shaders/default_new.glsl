@@ -368,7 +368,7 @@ void main() {
 	v_Color = a_Color;
 #endif
 
-	gl_PointSize = 7.0;
+	gl_PointSize = 5.0;
 	gl_Position = VP * pos;
 }
 #endif

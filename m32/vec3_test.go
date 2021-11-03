@@ -54,12 +54,12 @@ func TestVec3(t *testing.T) {
 		},
 		{
 			name: "V3Lerp",
-			in:   m32.V3Lerp(m32.Vec3{0, 0, 0}, m32.Vec3{1, 1, 1}, .5),
+			in:   m32.Vec3{0, 0, 0}.Lerp(m32.Vec3{1, 1, 1}, .5),
 			want: m32.Vec3{.5, .5, .5},
 		},
 		{
 			name: "V3Clamp",
-			in:   m32.Vec3{-2, 2, 1}.Clamp(0, 1),
+			in:   m32.Vec3{-2, 2, 1}.Clamp(m32.Vec3{}, m32.Vec3{1, 1, 1}),
 			want: m32.Vec3{0, 1, 1},
 		},
 	}

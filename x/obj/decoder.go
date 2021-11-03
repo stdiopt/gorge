@@ -247,7 +247,7 @@ func (m *MeshDataPTN) Add(p m32.Vec3, t m32.Vec2, n m32.Vec3) {
 
 // Data returns the mesh data
 func (m *MeshDataPTN) Data() *gorge.MeshData {
-	const max = ^uint32(0)
+	const max = ^uint16(0)
 	vsize := 3 + 2 + 3
 
 	sz := len(m.Vertices) * vsize
