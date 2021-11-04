@@ -88,11 +88,11 @@ func NewSlider() *Slider {
 	// var sliderw *widget.W
 
 	sliderTrack := New()
-	sliderTrack.SetAnchor(0, 1)
-	sliderTrack.SetPivot(.5)
-	sliderTrack.SetRect(0)
+	sliderTrack.SetAnchor(0, 0, 1, 1)
+	sliderTrack.SetPivot(0, .5)
+	sliderTrack.SetRect(0, 0, 0, 0)
 	entity := NewPanel()
-	entity.SetAnchor(0, 1)
+	entity.SetAnchor(0, 0, 1, 1)
 
 	gorgeui.AddChildrenTo(entity, sliderTrack)
 
@@ -135,6 +135,7 @@ func (s *Slider) HandlerSize() float32 {
 }
 
 // SetHandler sets the handler widget.
+// maybe SetThumb
 func (s *Slider) SetHandler(h W) {
 	s.handler = h
 	gorgeui.AddChildrenTo(s.track, h)

@@ -22,9 +22,13 @@ func Build(fn func(b *Builder)) *Widget {
 				background: m32.Vec4{0, 0, 0, 0.2},
 				color:      m32.Vec4{1, 1, 1, 1},
 				dim:        m32.Vec2{20, 5},
+				spacing:    float32(1),
 			},
 		},
 	}
+	// Defaults to full screen?
+	root.SetAnchor(0, 0, 0, 0)
+	root.SetRect(0, 0, 20, 0)
 	fn(&b)
 	return root
 }
@@ -36,6 +40,7 @@ type cursorStyle struct {
 	dim        m32.Vec2
 	background m32.Vec4
 	color      m32.Vec4
+	spacing    float32
 }
 
 // BuilderStyle manages the styles of the widget builder.
@@ -66,6 +71,9 @@ func (b *BuilderStyle) edit() *cursorStyle {
 
 // Once returns BuilderStyle with once set.
 func (b *BuilderStyle) Once() *BuilderStyle {
+	if b.once != nil {
+		return b
+	}
 	s := *b.cur() // copy
 	b.once = &s
 	return b
@@ -92,26 +100,27 @@ func (b *BuilderStyle) Reset() {
 
 // SetColor sets the next widget colors.
 func (b *BuilderStyle) SetColor(c ...float32) {
-	s := b.edit()
-	s.color = v4Color(c...)
+	b.edit().color = v4Color(c...)
 }
 
 // SetBackground sets next widgets background color.
 func (b *BuilderStyle) SetBackground(c ...float32) {
-	s := b.edit()
-	s.background = v4Color(c...)
+	b.edit().background = v4Color(c...)
 }
 
 // SetWidth sets next widgets width.
 func (b *BuilderStyle) SetWidth(w float32) {
-	s := b.edit()
-	s.dim[0] = w
+	b.edit().dim[0] = w
 }
 
 // SetHeight sets next widgets height.
 func (b *BuilderStyle) SetHeight(h float32) {
-	s := b.edit()
-	s.dim[1] = h
+	b.edit().dim[1] = h
+}
+
+// SetSpacing of the next widget.
+func (b *BuilderStyle) SetSpacing(s float32) {
+	b.edit().spacing = s
 }
 
 type curEntity struct {
@@ -140,12 +149,13 @@ func (b *Builder) cur() *curEntity {
 // Add adds a widget.
 func (b *Builder) add(w W, s *cursorStyle) {
 	c := b.cur()
-	w.Widget().SetAnchor(0, 0, 0, 0)
+	w.Widget().SetAnchor(0, 0, 1, 0)
 	w.Widget().SetPivot(0)
+
 	// Used with anchor 0,0,1,0, with will set content to the built height
 	// w.Widget().SetRect(1+cur.pos[0], 1+cur.pos[1], 1, cur.height)
-	w.Widget().SetRect(1+c.pos[0], 1+c.pos[1], s.dim[0], s.dim[1])
-	c.pos[1] += s.dim[1] + 1
+	w.Widget().SetRect(1, 1+c.pos[1], 1, s.dim[1])
+	c.pos[1] += s.dim[1] + s.spacing
 
 	gorgeui.AddChildrenTo(c.widget, w)
 
@@ -171,6 +181,11 @@ func (b *Builder) pop() *curEntity {
 	return e
 }
 
+func (b *Builder) begin(w W, s *cursorStyle) {
+	b.add(w, s)
+	b.push(w)
+}
+
 // Style returns the style manager.
 func (b *Builder) Style() *BuilderStyle {
 	return &b.style
@@ -188,25 +203,28 @@ func (b *Builder) Add(w W) {
 
 // Begin Pushes widget onto the stack, the next widgets will be added as childs
 // of w.
-func (b *Builder) Begin(w W) {
+/*func (b *Builder) Begin(w W) {
 	b.add(w, b.style.cur())
 	b.push(w)
-}
+}*/
 
 // End pops a widget from stack.
 func (b *Builder) End() {
 	e := b.pop()
-	cur := b.cur()
+	_ = e
+	// Change cursor to whatever it is
+	// cur := b.cur()
 
 	// e.widget.RectTransform().Dim[1] = e.pos[1] + 1
-	cur.pos[1] = e.widget.RectTransform().Dim[1] + 1
+	// cur.pos[1] = e.widget.RectTransform().Dim[1] + 1
 }
 
 // BeginPanel starts a panel, the next widgets will be added as childs to panel.
 func (b *Builder) BeginPanel(d ...ListDirection) *Panel {
 	// cur := b.cur()
-	s := b.style.cur()
+	s := b.style.cur() // this won't pop 'once'
 	panel := NewPanel()
+	panel.SetColor(s.background[:]...)
 
 	/*
 
@@ -223,12 +241,12 @@ func (b *Builder) BeginPanel(d ...ListDirection) *Panel {
 
 	// resize := AutoHeight(1)
 	// if dir == ListHorizontal {
-	panel.HandleFunc(AutoHeight(panel, 1))
+	// panel.Handle(ResizeToContent(panel, 1))
+	// panel.HandleFunc(AutoHeight(panel, 1))
 	// } else {
-	panel.HandleFunc(AutoWidth(panel, 1))
+	// panel.HandleFunc(AutoWidth(panel, 1))
 	// }
-	b.Begin(panel)
-	panel.SetColor(s.background[:]...)
+	b.begin(panel, s)
 
 	return panel
 }
@@ -309,7 +327,7 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 	gorgeui.AddChildrenTo(btn, lbl)
 
 	var v interface{}
-	if len(args) == 0 {
+	if len(args) == 0 || args[0] == nil {
 		var f float32
 		v = &f
 	} else {
@@ -352,7 +370,7 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 			*v = int(t)
 			lbl.SetText(fmt.Sprintf("%d", *v))
 		default:
-			lbl.SetText("err")
+			lbl.SetText(fmt.Sprintf("err %T", v))
 		}
 	})
 	b.add(slider, s)
@@ -374,7 +392,7 @@ func (b *Builder) BeginList(dir ...ListDirection) W {
 	// Improve this
 	w.HandleFunc(AutoHeight(w, 1))
 
-	b.Begin(w)
+	b.begin(w, b.style.cur())
 	return w
 }
 

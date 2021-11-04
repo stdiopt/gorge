@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/stdiopt/gorge/gorgeapp/glfw"
-	"github.com/stdiopt/gorge/gorgeapp/mobile"
 	"github.com/stdiopt/gorge/gorgeapp/wasm"
 	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -22,8 +21,6 @@ type (
 	WasmOptions = wasm.Options
 	// GLFWOptions glfw options.
 	GLFWOptions = glfw.Options
-	// MobileOptions mobile options.
-	MobileOptions = mobile.Options
 )
 
 // AppFunc func to be used in options.
@@ -33,9 +30,8 @@ type AppFunc func(p *App)
 type App struct {
 	inits []interface{}
 
-	wasmOptions   wasm.Options
-	glfwOptions   glfw.Options
-	mobileOptions mobile.Options
+	wasmOptions wasm.Options
+	glfwOptions glfw.Options
 }
 
 // New creates a new App.
@@ -51,7 +47,6 @@ func New(inits ...interface{}) *App {
 		glfwOptions: glfw.Options{
 			FS: resource.FileFS{BasePath: "."},
 		},
-		mobileOptions: mobile.Options{},
 	}
 
 	// define default rendering pipeline
@@ -95,13 +90,6 @@ func GLFWOpt(o GLFWOptions) AppFunc {
 func GLFWSourcer(s fs.FS) AppFunc {
 	return func(a *App) {
 		a.glfwOptions.FS = s
-	}
-}
-
-// MobileOpt sets the mobile opt.
-func MobileOpt(o MobileOptions) AppFunc {
-	return func(a *App) {
-		a.mobileOptions = o
 	}
 }
 

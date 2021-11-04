@@ -80,11 +80,11 @@ func (h ResizeToContentHandler) HandleEvent(e event.Event) {
 		}
 		r := rt.RectTransform()
 		// find Max and Min
-		left := r.Position[0] // Left most
-		right := left + r.Dim[0]
+		// left := r.Position[0] // Left most
+		right := r.Dim[0]
 
-		top := r.Position[1]
-		bottom := top + r.Dim[1]
+		// top := r.Position[1]
+		bottom := r.Dim[1]
 
 		dim[0] = m32.Max(right+h.extra, dim[0])
 		dim[1] = m32.Max(bottom+h.extra, dim[1])

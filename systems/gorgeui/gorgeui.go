@@ -27,7 +27,7 @@ type cameraEntity interface {
 
 // Entity every entity should implement this interface.
 type Entity interface {
-	Transform() *gorge.TransformComponent
+	gorge.Transformer
 	RectTransform() *RectComponent
 	Element() *ElementComponent
 }
@@ -38,13 +38,18 @@ func RootUI(e gorge.Entity) *UI {
 	if !ok {
 		return nil
 	}
-
-	cur := gorge.Transformer(uiEnt.RectTransform())
+	cur, ok := uiEnt.(gorge.ParentGetter)
+	if !ok {
+		return nil
+	}
 	for cur != nil {
 		if u, ok := cur.(*UI); ok {
 			return u
 		}
-		cur = cur.Transform().Parent()
+		cur, ok = cur.Parent().(gorge.ParentGetter)
+		if !ok {
+			return nil
+		}
 	}
 	return nil
 }

@@ -20,8 +20,9 @@ func (p *Panel) HandleEvent(e event.Event) {
 		return
 	}
 	r := p.Rect()
-	p.Entity.Position[0] = r[0]
-	p.Entity.Position[1] = r[1] // bottom
+	// log.Println("EVENT Current rect:", r)
+	// p.Entity.Position[0] = r[0]
+	// p.Entity.Position[1] = r[1] // bottom
 	p.Entity.Scale[0] = r[2] - r[0]
 	p.Entity.Scale[1] = r[3] - r[1]
 	p.Entity.SetColorv(p.Color)

@@ -45,10 +45,10 @@ func AddChildrenTo(parent Entity, ents ...gorge.Entity) {
 		switch t := cc.(type) {
 		case gorge.ParentSetter:
 			t.SetParent(parent)
-		case rectTransformer:
-			t.RectTransform().SetParent(parent)
-		case transformer:
-			t.Transform().SetParent(parent)
+			// case rectTransformer:
+			//	t.RectTransform().SetParent(parent)
+			// case transformer:
+			//	t.Transform().SetParent(parent)
 		}
 		parent.Element().Add(cc)
 	}

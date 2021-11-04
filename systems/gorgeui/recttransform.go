@@ -13,114 +13,197 @@ import (
 // RectComponent data component based on transform with fields specific for UI
 // elements.
 type RectComponent struct {
-	gorge.TransformComponent // local transform
-	// Anchor Rect
-	// Container gorge.TransformComponent // parent offset transform
+	parent   gorge.Transformer
+	Rotation m32.Quat
+	Position m32.Vec3
+	Scale    m32.Vec3
 
 	Dim    m32.Vec2
 	Anchor m32.Vec4 // left, bottom, right, top
 
 	Pivot m32.Vec2
+
+	// Anchor relative rect
+	t1 gorge.TransformComponent // parent offset transform
+	t2 gorge.TransformComponent // local transform
 }
 
 // RectIdent returns a identity rect transform.
 func RectIdent() RectComponent {
-	// parent := gorge.TransformIdent()
-	// parent.SetPosition(2, 0, 0)
-	transform := gorge.TransformIdent()
+	// to be able to work with anchors.
 	rc := RectComponent{
-		TransformComponent: transform,
-		// Container:          parent,
+		t1:       gorge.TransformIdent(),
+		t2:       gorge.TransformIdent(),
+		Rotation: m32.QIdent(),
+		Scale:    m32.Vec3{1, 1, 1},
+
 		Anchor: m32.Vec4{0, 0, 1, 1},
 		Dim:    m32.Vec2{0, 0},
 		Pivot:  m32.Vec2{.5, .5},
 	}
-	// rc.TransformComponent.SetParent(&rc.Container)
+	rc.Transform() // rebuild transform
+	// rc.TransformComponent.SetParent(rc.container)
 	return rc
 }
 
 // NewRectComponent returns a new Rect Transform.
 func NewRectComponent() *RectComponent {
-	r := RectIdent()
-	return &r
+	c := RectIdent()
+	return &c
 }
 
 // RectTransform implements the RectTransform and returns self
-func (r *RectComponent) RectTransform() *RectComponent { return r }
+func (c *RectComponent) RectTransform() *RectComponent { return c }
 
-/*
 // SetParent experiment to relativize anchor.
-func (r *RectComponent) SetParent(t gorge.Transformer) {
-	log.Println("Sub Set parent")
-	r.Container.SetParent(t)
+func (c *RectComponent) SetParent(t gorge.Transformer) {
+	c.parent = t
 }
 
 // Parent returns parent sub transform.
-func (r *RectComponent) Parent() gorge.Transformer {
-	return &r.Container
+func (c *RectComponent) Parent() gorge.Transformer {
+	return c.parent
 }
-*/
 
-// SetRect sets the rect.
-func (r *RectComponent) SetRect(v ...float32) {
-	v4 := v4f(v...)
-	r.Position[0] = v4[0]
-	r.Position[1] = v4[1]
+// Transform calculates transform and return it.
+func (c *RectComponent) Transform() *gorge.TransformComponent {
+	// This is heavy.
+	c.t1 = gorge.TransformIdent()
+	c.t1.SetParent(c.parent)
+	c.t1.Rotation = c.Rotation
+	c.t1.Scale = c.Scale
+	// This should be parent based on parent Rect position
+	rect := c.parentRect() // Parent Dim
+	anchor := m32.Vec2{
+		(rect[2] - rect[0]) * c.Anchor[0],
+		(rect[3] - rect[1]) * c.Anchor[1],
+	}
+	c.t1.Position = c.Position.Add(anchor.Vec3(0))
+	c.t2 = gorge.TransformIdent()
+	c.t2.SetParent(&c.t1)
+	// This DIM might differ from the parent rect.
+	// the t2 position should be based on pivot
+	c.t2.Position[0] = -c.Dim[0] * c.Pivot[0]
+	c.t2.Position[1] = -c.Dim[1] * c.Pivot[1]
 
-	r.Dim[0] = v4[2]
-	r.Dim[1] = v4[3]
+	// Returns the child most transform?
+	return &c.t2
+}
+
+// Mat4 returns 4x4 transform matrix.
+func (c *RectComponent) Mat4() m32.Mat4 {
+	return c.Transform().Mat4()
+}
+
+// WorldPosition returns the world position.
+func (c *RectComponent) WorldPosition() m32.Vec3 {
+	return c.Mat4().Col(3).Vec3()
+}
+
+// SetRect with position x,y and dimensions w,h
+func (c *RectComponent) SetRect(vs ...float32) {
+	v := v4f(vs...)
+	c.Position[0] = v[0]
+	c.Position[1] = v[1]
+
+	c.Dim[0] = v[2]
+	c.Dim[1] = v[3]
 }
 
 // SetAnchor sets anchor.
-func (r *RectComponent) SetAnchor(v ...float32) {
-	v4 := v4f(v...)
-	// Grab parent
-	// r.ParentTransform.SetPosition(v4[0], v4[1], 0)
-	r.Anchor = v4
+func (c *RectComponent) SetAnchor(v ...float32) {
+	switch len(v) {
+	case 1:
+		c.Anchor = m32.Vec4{v[0], v[0], v[0], v[0]}
+	case 2:
+		c.Anchor = m32.Vec4{v[0], v[1], v[0], v[1]}
+	case 3:
+		c.Anchor = m32.Vec4{v[0], v[1], v[2], v[1]}
+	case 4:
+		c.Anchor = m32.Vec4(*(*[4]float32)(v))
+	default:
+		panic("wrong number of params")
+
+	}
 }
 
 // SetPivot sets the pivot.
-func (r *RectComponent) SetPivot(v ...float32) {
-	r.Pivot = v2f(v...)
+func (c *RectComponent) SetPivot(v ...float32) {
+	c.Pivot = v2f(v...)
+}
+
+// SetScale sets the scale.
+func (c *RectComponent) SetScale(sz ...float32) {
+	switch len(sz) {
+	case 1:
+		c.Scale[0], c.Scale[1], c.Scale[2] = sz[0], sz[0], sz[0]
+	case 2, 3:
+		copy(c.Scale[:], sz)
+	default:
+		panic("wrong number of params")
+	}
+}
+
+// SetPosition sets the position.
+func (c *RectComponent) SetPosition(x, y, z float32) {
+	c.Position = m32.Vec3{x, y, z}
+}
+
+// SetRotation sets the rotation.
+func (c *RectComponent) SetRotation(q m32.Quat) {
+	c.Rotation = q
+}
+
+// Rotate axis
+func (c *RectComponent) Rotate(x, y, z float32) {
+	c.Rotation = c.Rotation.Mul(m32.QFromAngles(
+		x, y, z,
+		m32.XYZ,
+	))
+}
+
+// Translate translates the entity.
+func (c *RectComponent) Translate(x, y, z float32) {
+	c.Position = c.Position.Add(m32.Vec3{x, y, z})
 }
 
 // Rect calculate and returns the rect.
-func (r *RectComponent) Rect() m32.Vec4 {
+func (c *RectComponent) Rect() m32.Vec4 {
+	return c.RelativeRect(c.parentRect())
+}
+
+// RelativeRect calculate rect based on other.
+func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
+	var left, top, right, bottom float32
+	// We might discard rect
+	left = 0 // c.Position[0] // parentRect[0] //+ c.Anchor[0]*parentW
+	top = 0  // c.Position[1]  // parentRect[1]  //+ c.Anchor[1]*parentH
+
+	right = c.Dim[0]
+	bottom = c.Dim[1]
+	// If anchor min and max are the same we use pivot
+	if c.Anchor[0] != c.Anchor[2] {
+		w := parentRect[2] // parentRect[0] is always 0 now
+		// reduce rect by the relative anchor from both sides
+		w -= w*(1-c.Anchor[2]) + w*(c.Anchor[0])
+		right = w - c.Dim[0] - c.Position[0]
+	}
+
+	if c.Anchor[1] != c.Anchor[3] {
+		w := parentRect[3]
+		w -= w*(1-c.Anchor[3]) + w*(c.Anchor[1])
+		// reduce rect by the relative anchor from both sides
+		bottom = w - c.Dim[1] - c.Position[1]
+	}
+	return m32.Vec4{left, top, right, bottom}
+}
+
+func (c *RectComponent) parentRect() m32.Vec4 {
 	parentRect := m32.Vec4{}
-	if p := r.Parent(); p != nil {
+	if p := c.parent; p != nil {
 		if c, ok := p.(interface{ Rect() m32.Vec4 }); ok {
 			parentRect = c.Rect()
 		}
 	}
-	return r.RelativeRect(parentRect)
-}
-
-// RelativeRect calculate rect based on other.
-func (r *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
-	parentW := parentRect[2] - parentRect[0]
-	parentH := parentRect[3] - parentRect[1]
-
-	var left, top, right, bottom float32
-
-	left = parentRect[0] + r.Anchor[0]*parentW
-	bottom = parentRect[1] + r.Anchor[1]*parentH
-
-	// If anchor min and max are the same we use pivot
-	if r.Anchor[0] == r.Anchor[2] {
-		w := r.Dim[0]
-		left -= r.Pivot[0] * w
-		right = left + w
-	} else {
-		right = -r.Dim[0] + parentRect[0] + r.Anchor[2]*parentW - r.Position[0]
-	}
-
-	if r.Anchor[1] == r.Anchor[3] {
-		h := r.Dim[1]
-		bottom -= r.Pivot[1] * h
-		top = bottom + h
-	} else {
-		top = -r.Dim[1] + parentRect[1] + r.Anchor[3]*parentH - r.Position[1]
-	}
-
-	return m32.Vec4{left, bottom, right, top}
+	return parentRect
 }

@@ -40,3 +40,8 @@ func (c Context) IsUp(v interface{}) bool {
 	}
 	return false
 }
+
+// IsPressed alias to IsUp.
+func (c Context) IsPressed(v interface{}) bool {
+	return c.IsUp(v)
+}

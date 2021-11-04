@@ -16,7 +16,12 @@ type (
 	// ParentSetter interface that Sets a parent.
 	ParentSetter interface{ SetParent(Transformer) }
 	// Transformer interface for the transform component implementer.
-	Transformer interface{ Transform() *TransformComponent }
+	Transformer interface {
+		// Mat4() m32.Mat4
+		Transform() *TransformComponent
+		Parent() Transformer
+		SetParent(Transformer)
+	}
 )
 
 // TransformComponent component
@@ -62,7 +67,7 @@ func NewTransformComponent() *TransformComponent {
 // Transform component
 func (c *TransformComponent) Transform() *TransformComponent { return c }
 
-// Updated returns true if the transform or relative parents were uddated.
+// Updated returns true if the transform or relative parents were updated.
 func (c *TransformComponent) Updated() bool {
 	// Should force update if it is 0
 	if c.updates == 0 {

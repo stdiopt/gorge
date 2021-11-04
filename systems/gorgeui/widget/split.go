@@ -40,9 +40,9 @@ func (s *Split) HandleEvent(e event.Event) {
 			return
 		}
 		rt := r.RectTransform()
-		rt.SetAnchor(0, 1)
+		rt.SetAnchor(0, 0, 1, 1)
 		rt.SetPivot(.5)
-		rt.SetRect(0)
+		rt.SetRect(0, 0, 0, 0)
 	}
 }
 

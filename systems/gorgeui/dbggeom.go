@@ -103,6 +103,16 @@ func (dg *debugLines) AddLine(p1 m32.Vec3, p2 m32.Vec3) {
 	dg.lines.Updates++
 }
 
+// AddCross draws a cross sized as off
+func (dg *debugLines) AddCross(p1 m32.Vec3, sz ...float32) {
+	off := v3f(sz...)
+	dg.AddLine(p1.Add(m32.Vec3{-off[0], 0, 0}), p1.Add(m32.Vec3{off[0], 0, 0}))
+	dg.AddLine(p1.Add(m32.Vec3{0, -off[1], 0}), p1.Add(m32.Vec3{0, off[1], 0}))
+	if off[2] != 0 {
+		dg.AddLine(p1.Add(m32.Vec3{0, 0, -off[2]}), p1.Add(m32.Vec3{0, 0, off[2]}))
+	}
+}
+
 // AddRect3 adds a rect based on 3 points and the current color.
 func (dg *debugLines) AddRect3(p1, p2, p3 m32.Vec3) {
 	e1 := p2.Sub(p1)

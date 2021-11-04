@@ -27,6 +27,19 @@ func v2f(v ...float32) m32.Vec2 {
 	}
 }
 
+func v3f(v ...float32) m32.Vec3 {
+	switch len(v) {
+	case 0:
+		return m32.Vec3{}
+	case 1:
+		return m32.Vec3{v[0], v[0], v[0]}
+	case 2: // could be v[0],v[1],v[0],v[1]
+		return m32.Vec3{v[0], v[1], 0}
+	default: // Odd case should not be used
+		return m32.Vec3{v[0], v[1], v[2]}
+	}
+}
+
 func v4f(v ...float32) m32.Vec4 {
 	switch len(v) {
 	case 0:

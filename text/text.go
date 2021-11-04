@@ -303,19 +303,20 @@ func (m *Mesh) updateFlow() {
 		}
 		w := m.measureWidth(line)
 		cut := 1
-		if m.Overflow == OverflowWordWrap { // And wrap
-			for ; w > m.Boundary[0]; w = m.measureWidth(line) {
+		switch m.Overflow {
+		case OverflowWordWrap: // And wrap
+			for ; len(line) > 1 && w > m.Boundary[0]; w = m.measureWidth(line) {
 				line = discardLastWord(line)
 				cut = 0
 				if len(line) <= 1 {
 					break
 				}
 			}
-		}
+
 		// TODO: {lpf} Not very efficient? as it is looking backward
 		// might be better looking forward?
-		if m.Overflow == OverflowBreakWord {
-			for ; w > m.Boundary[0]; w = m.measureWidth(line) {
+		case OverflowBreakWord:
+			for ; len(line) > 1 && w > m.Boundary[0]; w = m.measureWidth(line) {
 				line = line[:len(line)-1]
 				cut = 0
 				if len(line) <= 1 {

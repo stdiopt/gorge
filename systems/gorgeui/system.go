@@ -305,6 +305,12 @@ func (s *system) rayTest(pointerPos m32.Vec2) (Entity, ray.Result) {
 func (s *system) debugRects() {
 	// Delete everytime for each update
 	rs := rand.New(rand.NewSource(1))
+
+	for ui := range s.uis {
+		s.dbg.SetColor(1, 0, 0, 1)
+		s.dbg.AddCross(ui.Position, 5)
+	}
+
 	for _, el := range s.elems {
 		t := el.RectTransform()
 		rect := t.Rect()
@@ -327,9 +333,20 @@ func (s *system) debugRects() {
 		s.dbg.AddLine(planePos, planePos.Add(planeNorm))
 
 		// Position cross
-		s.dbg.SetColor(1, 1, 0, 1)
-		s.dbg.AddLine(t.Position.Add(m32.Vec3{-1, 0, 0}), t.Position.Add(m32.Vec3{1, 0, 0}))
-		s.dbg.AddLine(t.Position.Add(m32.Vec3{0, -1, 0}), t.Position.Add(m32.Vec3{0, 1, 0}))
+		// s.dbg.SetColor(1, 1, 0, 1)
+		// s.dbg.AddLine(t.Position.Add(m32.Vec3{-1, 0, 0}), t.Position.Add(m32.Vec3{1, 0, 0}))
+		// s.dbg.AddLine(t.Position.Add(m32.Vec3{0, -1, 0}), t.Position.Add(m32.Vec3{0, 1, 0}))
+		{
+			t.Transform() // this updates transforms anyway
+			pos := t.t1.WorldPosition()
+			s.dbg.SetColor(1, 0, 0, 1)
+			s.dbg.AddCross(pos, .5)
+		}
+		{
+			pos := t.t2.WorldPosition()
+			s.dbg.SetColor(0, 1, 0, 1)
+			s.dbg.AddCross(pos, .5)
+		}
 
 		s.dbg.SetColor(.5+rs.Float32()*.5, rs.Float32(), rs.Float32(), 1)
 		v3 := m.MulV4(m32.Vec4{rect[2], rect[3], 0, 1}).Vec3()
