@@ -74,17 +74,37 @@ func (c *RectComponent) Transform() *gorge.TransformComponent {
 	c.t1.Scale = c.Scale
 	// This should be parent based on parent Rect position
 	rect := c.parentRect() // Parent Dim
+
 	anchor := m32.Vec2{
 		(rect[2] - rect[0]) * c.Anchor[0],
 		(rect[3] - rect[1]) * c.Anchor[1],
 	}
 	c.t1.Position = c.Position.Add(anchor.Vec3(0))
+
 	c.t2 = gorge.TransformIdent()
 	c.t2.SetParent(&c.t1)
+	// T2 position  should only be valid if we don't have the anchor? else should be always .5?
+	pivot := m32.Vec2{
+		-c.Dim[0] * c.Pivot[0],
+		-c.Dim[1] * c.Pivot[1],
+	}
+	if c.Anchor[0] != c.Anchor[2] {
+		anchor[0] -= pivot[0]
+		// c.t2.Position[0] = pivot[0]
+	} else {
+		c.t2.Position[0] = pivot[0]
+	}
+	// c.t2.Position[0] = pivot[0]
+	if c.Anchor[1] != c.Anchor[3] {
+		anchor[1] -= pivot[1]
+		// c.t2.Position[1] = pivot[1]
+	} else {
+		c.t2.Position[1] = pivot[1]
+	}
+
 	// This DIM might differ from the parent rect.
 	// the t2 position should be based on pivot
-	c.t2.Position[0] = -c.Dim[0] * c.Pivot[0]
-	c.t2.Position[1] = -c.Dim[1] * c.Pivot[1]
+	// but if anchor is that thing it should be based on other stuff?
 
 	// Returns the child most transform?
 	return &c.t2

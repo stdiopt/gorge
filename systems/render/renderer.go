@@ -317,7 +317,7 @@ func (r *Render) SetupShader(
 	// This is new since I don't have any a_Attribute left
 	// Pick only the first
 	re := group.Front()
-	modelMat4 := re.Transform().Mat4()
+	modelMat4 := re.Mat4()
 
 	for k, u := range shader.uniforms {
 		if u.sampler {

@@ -40,7 +40,7 @@ func PrepareCamera(r *render.Context, next render.PassFunc) render.PassFunc {
 		// Defaults for default material
 		p.Lights = r.Lights
 
-		mat := p.Camera.Transform().Mat4()
+		mat := p.Camera.Mat4()
 		p.Projection = cam.ProjectionWithAspect(width / height)
 		p.View = mat.Inv()
 		p.CamPos = mat.Col(3).Vec3()

@@ -150,8 +150,10 @@ func PrepareLights(r *render.Context, next render.PassFunc) render.PassFunc {
 			lightDepthIndex := -1
 			light := r.Lights[ti]
 			l := light.Light()
-			t := light.Transform()
-			mat4 := t.Mat4()
+			// t := light.Transform()
+			mat4 := light.Mat4()
+			dir := mat4.MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+			pos := mat4.Col(3).Vec3()
 
 			switch l.Type {
 			case gorge.LightDirectional:
@@ -176,8 +178,8 @@ func PrepareLights(r *render.Context, next render.PassFunc) render.PassFunc {
 				// Same as Directional but with a projection tex
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(2))
 			}
-			lightsUBO.WriteOffset(lightNames[ti].Position, t.WorldPosition())
-			lightsUBO.WriteOffset(lightNames[ti].Direction, t.Forward())
+			lightsUBO.WriteOffset(lightNames[ti].Position, pos)
+			lightsUBO.WriteOffset(lightNames[ti].Direction, dir)
 			lightsUBO.WriteOffset(lightNames[ti].Color, l.Color)
 			lightsUBO.WriteOffset(lightNames[ti].Intensity, l.Intensity)
 			lightsUBO.WriteOffset(lightNames[ti].Range, l.Range)
@@ -197,7 +199,7 @@ func PrepareLights(r *render.Context, next render.PassFunc) render.PassFunc {
 // This render a depth cube based on light to target DepthIndex
 func (s *lights) processDepthCube(ri *render.Pass, light render.Light, di int) {
 	// Check cached light and render if needed
-	pos := light.Transform().WorldPosition()
+	pos := light.Mat4().Col(3).Vec3()
 	farPlane := light.Light().Range
 	lightMat := []m32.Mat4{
 		m32.LookAt(pos, pos.Add(m32.Vec3{1, 0, 0}), m32.Vec3{0, -1, 0}),
@@ -248,10 +250,14 @@ func (s *lights) processDepthCube(ri *render.Pass, light render.Light, di int) {
 
 // Returns the mat4 used to render stuff
 func (s *lights) processDepth2D(ri *render.Pass, light render.Light, di int) m32.Mat4 {
-	camTrans := ri.Camera.Transform()
+	m4 := ri.Camera.Mat4()
+	camPos := m4.Col(3).Vec3()
+	camForward := m4.MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+	dir := light.Mat4().MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+
 	trans := gorge.TransformIdent()
-	trans.LookDir(light.Transform().Forward(), m32.Up())
-	trans.SetPositionv(camTrans.Position.Add(camTrans.Forward().Mul(3)))
+	trans.LookDir(dir, m32.Up())
+	trans.SetPositionv(camPos.Add(camForward).Mul(3))
 
 	// Depends on light
 	proj := m32.Ortho(-20, 20, -20, 20, dirNearPlane, dirFarPlane)

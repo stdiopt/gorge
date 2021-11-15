@@ -118,7 +118,7 @@ func (rg *RenderableGroup) Update(p *Pass) {
 	for e := rg.Instances.Front(); e != nil; e = e.Next() {
 		mesh := e.Value.(Renderable)
 		// Do the transformations
-		m := mesh.Transform().Mat4()
+		m := mesh.Mat4()
 		um := m.Inv().Transpose() // New: Normal Matrix
 		color := m32.Vec4{1, 1, 1, 1}
 		if v, ok := mesh.(interface{ GetColor() m32.Vec4 }); ok {
