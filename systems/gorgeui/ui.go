@@ -31,9 +31,9 @@ func New(g gorger) *UI {
 		gorge:         g.Gorge(),
 		CullMask:      gorge.MaskUI, // default
 	}
-	e.SetRect(0, 0, 100, 100)
 	e.SetAnchor(0)
-	// UI inverse
+	// e.SetPivot(.5)
+	// UI inverse, might be better elsewhere
 	e.SetScale(1, -1, 1)
 	return e
 }
@@ -61,36 +61,12 @@ func (w *UI) SetDragThreshold(v float32) {
 
 // Rect return the rect for UI if camera is Ortho it will use camera as parent
 // rect.
-/*func (w *UI) Rect() m32.Vec4 {
-	cam := w.Camera.Camera()
-	if cam.ProjectionType != gorge.ProjectionOrtho {
-		return w.RectComponent.Rect()
-	}
-	// ScreenSize
-	vp := cam.CalcViewport(w.ScreenSize())
-	aspectRatio := cam.AspectRatio
-	if aspectRatio == 0 {
-		// ss := gorge.ScreenSize()
-		aspectRatio = vp[2] / vp[3]
-	}
-
-	halfV := cam.OrthoSize * .5
-	halfH := cam.OrthoSize * .5 * aspectRatio
-
-	camRect := m32.Vec4{-halfH, -halfV, halfH, halfV}
-
-	return w.RelativeRect(camRect)
-	// World rect
-}*/
-
-// Rect return the rect for UI if camera is Ortho it will use camera as parent
-// rect.
 func (w *UI) Rect() m32.Vec4 {
 	// The ui must have a base rect or use the camera one
 	// so it should be probably positioned from 0,0 of the screen
 	cam := w.Camera.Camera()
 	if cam.ProjectionType != gorge.ProjectionOrtho {
-		return w.RectComponent.Rect()
+		return m32.Vec4{0, 0, w.Dim[0], w.Dim[1]}
 	}
 	// ScreenSize
 	vp := cam.CalcViewport(w.ScreenSize())
@@ -99,33 +75,12 @@ func (w *UI) Rect() m32.Vec4 {
 		// ss := gorge.ScreenSize()
 		aspectRatio = vp[2] / vp[3]
 	}
-
-	// halfV := cam.OrthoSize * .5
-	// halfH := cam.OrthoSize * .5 * aspectRatio
-
-	// camRect := m32.Vec4{-halfH, -halfV, halfH, halfV}
-	camRect := m32.Vec4{0, 0, cam.OrthoSize * aspectRatio, cam.OrthoSize}
-
-	// Default maybe
-	w.Pivot[0] = .5
-	w.Pivot[1] = .5
-	w.Dim[0] = cam.OrthoSize * aspectRatio
-	w.Dim[1] = cam.OrthoSize
-
-	// camRect := m32.Vec4{0, 0, cam.OrthoSize, cam.OrthoSize * aspectRatio}
-	// camRect := m32.Vec4{0, 0, halfH, halfV}
-	// Should not change these since user can write these?
-	// w.Position[0] = -halfH
-	// w.Position[1] = halfV
-
-	// camRect := m32.Vec4{0, 0, cam.OrthoSize, cam.OrthoSize * aspectRatio}
-	// log.Println("returning camRect:", camRect)
-	// w.Dim[0] = cam.OrthoSize
-	// w.Dim[1] = cam.OrthoSize * aspectRatio
-
-	// return camRect
-	return w.RelativeRect(camRect)
-	// World rect
+	halfH := cam.OrthoSize * aspectRatio / 2
+	halfV := cam.OrthoSize / 2
+	return m32.Vec4{
+		-halfH + w.Position[0], -halfV + w.Position[1],
+		halfH + w.Dim[0], halfV + w.Dim[1],
+	}
 }
 
 // ScreenSize returns the screensize.

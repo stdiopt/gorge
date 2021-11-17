@@ -4,6 +4,7 @@ package widget
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
@@ -29,6 +30,7 @@ func Build(fn func(b *Builder)) *Widget {
 	// Defaults to full screen?
 	root.SetAnchor(0, 0, 0, 0)
 	root.SetRect(0, 0, 20, 0)
+	root.SetPivot(0)
 	fn(&b)
 	return root
 }
@@ -123,9 +125,23 @@ func (b *BuilderStyle) SetSpacing(s float32) {
 	b.edit().spacing = s
 }
 
+// Widget builder flow
+type Direction int
+
+// Directions
+const (
+	// Vertical widgets will be anchored to parent vertically.
+	Vertical Direction = iota
+	// Horizontal widgets will be anchored to parent horizontally.
+	Horizontal
+	// Free widgets will not be anchored.
+	Free
+)
+
 type curEntity struct {
 	// cursor position
 	pos    m32.Vec2
+	dir    Direction
 	widget W
 }
 
@@ -149,13 +165,26 @@ func (b *Builder) cur() *curEntity {
 // Add adds a widget.
 func (b *Builder) add(w W, s *cursorStyle) {
 	c := b.cur()
-	w.Widget().SetAnchor(0, 0, 1, 0)
 	w.Widget().SetPivot(0)
 
 	// Used with anchor 0,0,1,0, with will set content to the built height
 	// w.Widget().SetRect(1+cur.pos[0], 1+cur.pos[1], 1, cur.height)
-	w.Widget().SetRect(1, 1+c.pos[1], 1, s.dim[1])
-	c.pos[1] += s.dim[1] + s.spacing
+	switch c.dir {
+	case Free:
+		w.Widget().SetAnchor(0)
+		w.Widget().SetRect(c.pos[0], c.pos[1], s.dim[0], s.dim[1])
+		c.pos[1] += s.dim[1] + s.spacing
+	case Vertical:
+		w.Widget().SetAnchor(0, 0, 1, 0)
+		w.Widget().SetRect(1, s.spacing+c.pos[1], 1, s.dim[1])
+		c.pos[1] += s.dim[1] + s.spacing
+	case Horizontal:
+		log.Println("Going horizontal")
+		w.Widget().SetAnchor(0, 0, 0, 1)
+		w.Widget().SetRect(1+c.pos[0], 1, s.dim[0], 1)
+		c.pos[0] += s.dim[0] + s.spacing
+		log.Println("Pos:", c.pos)
+	}
 
 	gorgeui.AddChildrenTo(c.widget, w)
 
@@ -169,6 +198,7 @@ func (b *Builder) push(w W) *curEntity {
 	e := &curEntity{
 		// cursorData: cur.cursorData,
 		pos:    m32.Vec2{0, 0},
+		dir:    b.cur().dir,
 		widget: w,
 	}
 	b.stack = append(b.stack, e)
@@ -184,6 +214,12 @@ func (b *Builder) pop() *curEntity {
 func (b *Builder) begin(w W, s *cursorStyle) {
 	b.add(w, s)
 	b.push(w)
+}
+
+// SetDirection container direction.
+func (b *Builder) SetDirection(d Direction) {
+	c := b.cur()
+	c.dir = d
 }
 
 // Style returns the style manager.
@@ -226,17 +262,15 @@ func (b *Builder) BeginPanel(d ...ListDirection) *Panel {
 	panel := NewPanel()
 	panel.SetColor(s.background[:]...)
 
-	/*
-
-		dir := ListVertical
-		if len(d) > 0 {
-			dir = d[0]
-		}
-		list := ListController(panel)
-		list.SetDirection(dir)
-		list.SetSizeMode(ListSizeOriginal)
-		list.SetSpacing(1)
-		list.SetPadding(1, 1)
+	/*dir := ListVertical
+	if len(d) > 0 {
+		dir = d[0]
+	}
+	list := ListController(panel)
+	list.SetDirection(dir)
+	list.SetSizeMode(ListSizeOriginal)
+	list.SetSpacing(1)
+	list.SetPadding(1, 1)
 	*/
 
 	// resize := AutoHeight(1)

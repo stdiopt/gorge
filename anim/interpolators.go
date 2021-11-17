@@ -32,6 +32,16 @@ func Vec3(v *m32.Vec3) InterpolatorFunc {
 	}
 }
 
+// Vec4 interpolate a vec4 pointer
+func Vec4(v *m32.Vec4) InterpolatorFunc {
+	return func(a, b interface{}, dt float32) {
+		va := a.(m32.Vec4)
+		vb := b.(m32.Vec4)
+
+		*v = va.Lerp(vb, dt)
+	}
+}
+
 // Quat spherical interpolates a Quat
 func Quat(v *m32.Quat) InterpolatorFunc {
 	return func(a, b interface{}, dt float32) {

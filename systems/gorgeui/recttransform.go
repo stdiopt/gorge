@@ -66,6 +66,10 @@ func (c *RectComponent) Parent() gorge.Transformer {
 }
 
 // Transform calculates transform and return it.
+// TODO: {lpf} we should rename transforms
+// anchor Transform/Pivot transform
+// but this might be on Mat4 anyway
+// - Measuring Dim should be based on parent?j
 func (c *RectComponent) Transform() *gorge.TransformComponent {
 	// This is heavy.
 	c.t1 = gorge.TransformIdent()
@@ -74,10 +78,9 @@ func (c *RectComponent) Transform() *gorge.TransformComponent {
 	c.t1.Scale = c.Scale
 	// This should be parent based on parent Rect position
 	rect := c.parentRect() // Parent Dim
-
 	anchor := m32.Vec2{
-		(rect[2] - rect[0]) * c.Anchor[0],
-		(rect[3] - rect[1]) * c.Anchor[1],
+		rect[0] + (rect[2]-rect[0])*c.Anchor[0],
+		rect[1] + (rect[3]-rect[1])*c.Anchor[1],
 	}
 	c.t1.Position = c.Position.Add(anchor.Vec3(0))
 
@@ -88,25 +91,16 @@ func (c *RectComponent) Transform() *gorge.TransformComponent {
 		-c.Dim[0] * c.Pivot[0],
 		-c.Dim[1] * c.Pivot[1],
 	}
-	if c.Anchor[0] != c.Anchor[2] {
-		anchor[0] -= pivot[0]
-		// c.t2.Position[0] = pivot[0]
-	} else {
+	// Calculate anchored Dimension
+	// And do pivot based on that?
+	if c.Anchor[0] == c.Anchor[2] {
 		c.t2.Position[0] = pivot[0]
 	}
 	// c.t2.Position[0] = pivot[0]
-	if c.Anchor[1] != c.Anchor[3] {
-		anchor[1] -= pivot[1]
-		// c.t2.Position[1] = pivot[1]
-	} else {
+	if c.Anchor[1] == c.Anchor[3] {
 		c.t2.Position[1] = pivot[1]
 	}
 
-	// This DIM might differ from the parent rect.
-	// the t2 position should be based on pivot
-	// but if anchor is that thing it should be based on other stuff?
-
-	// Returns the child most transform?
 	return &c.t2
 }
 
@@ -196,34 +190,38 @@ func (c *RectComponent) Rect() m32.Vec4 {
 func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
 	var left, top, right, bottom float32
 	// We might discard rect
-	left = 0 // c.Position[0] // parentRect[0] //+ c.Anchor[0]*parentW
-	top = 0  // c.Position[1]  // parentRect[1]  //+ c.Anchor[1]*parentH
+	left = 0 // parentRect[0] //+ c.Anchor[0]*parentW
+	top = 0  // parentRect[1]  //+ c.Anchor[1]*parentH
 
 	right = c.Dim[0]
 	bottom = c.Dim[1]
 	// If anchor min and max are the same we use pivot
 	if c.Anchor[0] != c.Anchor[2] {
-		w := parentRect[2] // parentRect[0] is always 0 now
+		w := parentRect[2] - parentRect[0] // parentRect[0] is always 0 now
 		// reduce rect by the relative anchor from both sides
 		w -= w*(1-c.Anchor[2]) + w*(c.Anchor[0])
 		right = w - c.Dim[0] - c.Position[0]
 	}
 
 	if c.Anchor[1] != c.Anchor[3] {
-		w := parentRect[3]
-		w -= w*(1-c.Anchor[3]) + w*(c.Anchor[1])
+		h := parentRect[3] - parentRect[1]
+		h -= h*(1-c.Anchor[3]) + h*(c.Anchor[1])
 		// reduce rect by the relative anchor from both sides
-		bottom = w - c.Dim[1] - c.Position[1]
+		bottom = h - c.Dim[1] - c.Position[1]
 	}
 	return m32.Vec4{left, top, right, bottom}
 }
 
 func (c *RectComponent) parentRect() m32.Vec4 {
 	parentRect := m32.Vec4{}
-	if p := c.parent; p != nil {
+	if p, ok := c.parent.(interface{ Rect() m32.Vec4 }); ok {
+		return p.Rect()
+	}
+
+	/*if p := c.parent; p != nil {
 		if c, ok := p.(interface{ Rect() m32.Vec4 }); ok {
 			parentRect = c.Rect()
 		}
-	}
+	}*/
 	return parentRect
 }
