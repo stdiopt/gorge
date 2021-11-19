@@ -87,8 +87,8 @@ func (w *UI) Rect() m32.Vec4 {
 func (w *UI) ScreenSize() m32.Vec2 { return w.gorge.ScreenSize() }
 
 type parenter interface {
-	SetParent(gorge.Transformer)
-	Parent() gorge.Transformer
+	SetParent(gorge.Matrixer)
+	Parent() gorge.Matrixer
 }
 
 // Add alias to add entities to gorge.

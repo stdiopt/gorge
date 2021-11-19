@@ -100,7 +100,7 @@ func Run(opt Options, systems ...interface{}) error {
 		return err
 	}
 
-	triggerPerFrame := float64(1) / 60 // target fps, usually 60
+	triggerPerFrame := float64(1) / 240 // target fps, usually 60
 	frameTimeLeft := float64(0)
 	lastFrame := float64(0)
 	// Ticker here

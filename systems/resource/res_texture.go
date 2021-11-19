@@ -84,7 +84,8 @@ func ReadTexture(rd io.Reader) (*gorge.TextureData, error) {
 
 // TextureDataFromImage converts a go image.Image to gorge.TextureData.
 func TextureDataFromImage(im image.Image) (*gorge.TextureData, error) {
-	const max = ^uint16(0)
+	const max = ^uint32(0)
+
 	dim := im.Bounds()
 	var format gorge.TextureFormat
 	var pixData []byte

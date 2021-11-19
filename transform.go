@@ -12,15 +12,16 @@ var (
 
 type (
 	// ParentGetter interface for a parent getter.
-	ParentGetter interface{ Parent() Transformer }
+	ParentGetter interface{ Parent() Matrixer }
 	// ParentSetter interface that Sets a parent.
-	ParentSetter interface{ SetParent(Transformer) }
+	ParentSetter interface{ SetParent(Matrixer) }
 	// Transformer interface for the transform component implementer.
-	Transformer interface {
-		// Mat4() m32.Mat4
-		Transform() *TransformComponent
-		Parent() Transformer
-		SetParent(Transformer)
+	transformer interface {
+		Mat4() m32.Mat4
+	}
+	// Matrixer interface to mat4
+	Matrixer interface {
+		Mat4() m32.Mat4
 	}
 )
 
@@ -35,7 +36,7 @@ type affine struct {
 // TransformComponent Thing
 type TransformComponent struct {
 	affine
-	parent Transformer
+	parent Matrixer
 
 	cached         affine
 	cachedWorldMat m32.Mat4
@@ -76,14 +77,17 @@ func (c *TransformComponent) Updated() bool {
 	if c.cached != c.affine {
 		return true
 	}
-	if c.parent != nil {
-		t := c.parent.Transform()
+	switch v := c.parent.(type) {
+	case interface{ Transform() *TransformComponent }:
+		t := v.Transform()
 		if t.Updated() {
 			return true
 		}
 		if c.parentUpdate != t.Updates() {
 			return true
 		}
+	case Matrixer:
+		return true
 	}
 	return false
 }
@@ -94,7 +98,7 @@ func (c *TransformComponent) Updates() int {
 }
 
 // Parent returns the current parent.
-func (c *TransformComponent) Parent() Transformer {
+func (c *TransformComponent) Parent() Matrixer {
 	return c.parent
 }
 
@@ -114,9 +118,12 @@ func (c *TransformComponent) Mat4() m32.Mat4 {
 	c.cachedWorldMat = c.cachedWorldMat.Mul(c.Rotation.Mat4())
 	c.cachedWorldMat = c.cachedWorldMat.Mul(m32.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
 	if c.parent != nil {
-		t := c.parent.Transform()
-		c.cachedWorldMat = t.Mat4().Mul(c.cachedWorldMat)
-		c.parentUpdate = t.Updates()
+		// t := c.parent.Transform()
+		c.cachedWorldMat = c.parent.Mat4().Mul(c.cachedWorldMat)
+
+		if t, ok := c.parent.(interface{ Updates() int }); ok {
+			c.parentUpdate = t.Updates()
+		}
 	}
 	c.cached = c.affine
 	c.updates++
@@ -137,7 +144,7 @@ func (c *TransformComponent) SetMat4Decompose(m m32.Mat4) {
 }
 
 // SetParent of the transform
-func (c *TransformComponent) SetParent(p Transformer) {
+func (c *TransformComponent) SetParent(p Matrixer) {
 	c.parent = p
 }
 
@@ -198,13 +205,14 @@ func (c *TransformComponent) SetScalev(scale m32.Vec3) {
 
 // LookAt resets the local rotation to lookAt
 // if 1 param is used, we will Use default m32.Up() +Y vector
-func (c *TransformComponent) LookAt(target Transformer, v ...m32.Vec3) {
+func (c *TransformComponent) LookAt(target Matrixer, v ...m32.Vec3) {
 	up := m32.Vec3{0, 1, 0}
 	if len(v) > 1 {
 		up = v[0]
 	}
+	pos := target.Mat4().Col(3)
 
-	dir := c.Position.Sub(target.Transform().Position).Normalize()
+	dir := c.Position.Sub(pos.Vec3()).Normalize()
 	c.SetRotation(m32.QLookAt(dir, up))
 }
 

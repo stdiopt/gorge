@@ -13,7 +13,7 @@ import (
 // RectComponent data component based on transform with fields specific for UI
 // elements.
 type RectComponent struct {
-	parent   gorge.Transformer
+	parent   gorge.Matrixer
 	Rotation m32.Quat
 	Position m32.Vec3
 	Scale    m32.Vec3
@@ -56,12 +56,12 @@ func NewRectComponent() *RectComponent {
 func (c *RectComponent) RectTransform() *RectComponent { return c }
 
 // SetParent experiment to relativize anchor.
-func (c *RectComponent) SetParent(t gorge.Transformer) {
+func (c *RectComponent) SetParent(t gorge.Matrixer) {
 	c.parent = t
 }
 
 // Parent returns parent sub transform.
-func (c *RectComponent) Parent() gorge.Transformer {
+func (c *RectComponent) Parent() gorge.Matrixer {
 	return c.parent
 }
 

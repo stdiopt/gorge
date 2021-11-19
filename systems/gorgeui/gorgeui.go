@@ -27,7 +27,7 @@ type cameraEntity interface {
 
 // Entity every entity should implement this interface.
 type Entity interface {
-	gorge.Transformer
+	gorge.Matrixer
 	RectTransform() *RectComponent
 	Element() *ElementComponent
 }
