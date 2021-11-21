@@ -4,6 +4,7 @@ package gorgeui
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
+	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/text"
 )
 
@@ -22,6 +23,7 @@ const (
 // cameraEntity camera composition used in UI system.
 type cameraEntity interface {
 	Transform() *gorge.TransformComponent
+	Mat4() m32.Mat4
 	Camera() *gorge.CameraComponent
 }
 

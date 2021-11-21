@@ -114,6 +114,9 @@ func (c *TransformComponent) Mat4() m32.Mat4 {
 	}
 
 	TransformBuilds++
+
+	// TODO: {lpf} Could have a local matrix cache as well instead of recalculating
+
 	c.cachedWorldMat = m32.Translate3D(c.Position[0], c.Position[1], c.Position[2])
 	c.cachedWorldMat = c.cachedWorldMat.Mul(c.Rotation.Mat4())
 	c.cachedWorldMat = c.cachedWorldMat.Mul(m32.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))

@@ -65,6 +65,7 @@ func (r *CameraRig) HandleEvent(ee event.Event) {
 
 type cameraEntity interface {
 	Transform() *gorge.TransformComponent
+	Mat4() m32.Mat4
 	Camera() *gorge.CameraComponent
 }
 

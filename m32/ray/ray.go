@@ -26,14 +26,14 @@ func (r Ray) GetPoint(d float32) m32.Vec3 {
 
 // if we want to use Ray within gorge logic, might be better to move this to gorge
 type cameraEntity interface {
-	Transform() *gorge.TransformComponent
+	gorge.Matrixer
 	Camera() *gorge.CameraComponent
 }
 
 // FromScreen returns a ray from screen position through Camera camEnt.
 func FromScreen(screenSize m32.Vec2, camEnt cameraEntity, pos m32.Vec2) Ray {
 	cam := camEnt.Camera()
-	t := camEnt.Transform()
+	t := camEnt.Mat4()
 
 	vp := cam.CalcViewport(screenSize)
 	width, height := vp[2], vp[3]
@@ -51,12 +51,12 @@ func FromScreen(screenSize m32.Vec2, camEnt cameraEntity, pos m32.Vec2) Ray {
 	if cam.ProjectionType == gorge.ProjectionOrtho {
 		return Ray{
 			Position:  dir,
-			Direction: t.Forward(),
+			Direction: t.MulV4(m32.Forward().Vec4(0)).Vec3(),
 		}
 	}
 	// Ray from camera Entity func somewhere
 	return Ray{
-		Position:  t.WorldPosition(),
+		Position:  t.Col(3).Vec3(),
 		Direction: dir,
 	}
 }

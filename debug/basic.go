@@ -80,12 +80,13 @@ func (b *Basic) HandleEvent(v event.Event) {
 	b.camRot *= .92
 
 	cam := b.CamRig.Camera.Camera()
-	camTransform := b.CamRig.Camera.Transform()
 
 	if b.input.KeyDown(input.KeyW) {
+		camTransform := b.CamRig.Camera.Transform()
 		b.camVec = b.camVec.Add(camTransform.Forward().Mul(power))
 	}
 	if b.input.KeyDown(input.KeyS) {
+		camTransform := b.CamRig.Camera.Transform()
 		b.camVec = b.camVec.Add(camTransform.Backward().Mul(power))
 	}
 	// Ambient control

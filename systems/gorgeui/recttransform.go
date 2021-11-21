@@ -18,22 +18,20 @@ type RectComponent struct {
 	Position m32.Vec3
 	Scale    m32.Vec3
 
-	Dim    m32.Vec2
-	Anchor m32.Vec4 // left, bottom, right, top
+	Dim m32.Vec2
 
-	Pivot m32.Vec2
+	Anchor m32.Vec4 // left, bottom, right, top
+	Pivot  m32.Vec2
 
 	// Anchor relative rect
-	t1 gorge.TransformComponent // parent offset transform
-	t2 gorge.TransformComponent // local transform
+	// t1 gorge.TransformComponent // parent offset transform
+	// t2 gorge.TransformComponent // local transform
 }
 
 // RectIdent returns a identity rect transform.
 func RectIdent() RectComponent {
 	// to be able to work with anchors.
 	rc := RectComponent{
-		t1:       gorge.TransformIdent(),
-		t2:       gorge.TransformIdent(),
 		Rotation: m32.QIdent(),
 		Scale:    m32.Vec3{1, 1, 1},
 
@@ -41,7 +39,7 @@ func RectIdent() RectComponent {
 		Dim:    m32.Vec2{0, 0},
 		Pivot:  m32.Vec2{.5, .5},
 	}
-	rc.Transform() // rebuild transform
+	// rc.Transform() // rebuild transform
 	// rc.TransformComponent.SetParent(rc.container)
 	return rc
 }
@@ -65,48 +63,37 @@ func (c *RectComponent) Parent() gorge.Matrixer {
 	return c.parent
 }
 
-// Transform calculates transform and return it.
-// TODO: {lpf} we should rename transforms
-// anchor Transform/Pivot transform
-// but this might be on Mat4 anyway
-// - Measuring Dim should be based on parent?j
-func (c *RectComponent) Transform() *gorge.TransformComponent {
-	// This is heavy.
-	c.t1 = gorge.TransformIdent()
-	c.t1.SetParent(c.parent)
-	c.t1.Rotation = c.Rotation
-	c.t1.Scale = c.Scale
-	// This should be parent based on parent Rect position
+// Mat4 returns 4x4 transform matrix.
+func (c *RectComponent) Mat4() m32.Mat4 {
 	rect := c.parentRect() // Parent Dim
 	anchor := m32.Vec2{
 		rect[0] + (rect[2]-rect[0])*c.Anchor[0],
 		rect[1] + (rect[3]-rect[1])*c.Anchor[1],
 	}
-	c.t1.Position = c.Position.Add(anchor.Vec3(0))
-
-	c.t2 = gorge.TransformIdent()
-	c.t2.SetParent(&c.t1)
-	// T2 position  should only be valid if we don't have the anchor? else should be always .5?
-	pivot := m32.Vec2{
-		-c.Dim[0] * c.Pivot[0],
-		-c.Dim[1] * c.Pivot[1],
-	}
-	// Calculate anchored Dimension
-	// And do pivot based on that?
+	pivot := m32.Vec2{}
 	if c.Anchor[0] == c.Anchor[2] {
-		c.t2.Position[0] = pivot[0]
+		pivot[0] = -c.Dim[0] * c.Pivot[0]
+		//} else {
+		//	pivot[0] = -c.Dim[0] * 0.5
 	}
-	// c.t2.Position[0] = pivot[0]
 	if c.Anchor[1] == c.Anchor[3] {
-		c.t2.Position[1] = pivot[1]
+		pivot[1] = -c.Dim[1] * c.Pivot[1]
+		//} else {
+		//pivot[1] = -c.Dim[1] * 0.5
 	}
 
-	return &c.t2
-}
+	pos := c.Position.Add(anchor.Vec3(0))
+	m := m32.Translate3D(pos[0], pos[1], pos[2])
 
-// Mat4 returns 4x4 transform matrix.
-func (c *RectComponent) Mat4() m32.Mat4 {
-	return c.Transform().Mat4()
+	m = m.Mul(c.Rotation.Mat4())
+	m = m.Mul(m32.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
+
+	m = m.Mul(m32.Translate3D(pivot[0], pivot[1], 0))
+
+	if c.parent != nil {
+		return c.parent.Mat4().Mul(m)
+	}
+	return m
 }
 
 // WorldPosition returns the world position.
@@ -213,15 +200,8 @@ func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
 }
 
 func (c *RectComponent) parentRect() m32.Vec4 {
-	parentRect := m32.Vec4{}
 	if p, ok := c.parent.(interface{ Rect() m32.Vec4 }); ok {
 		return p.Rect()
 	}
-
-	/*if p := c.parent; p != nil {
-		if c, ok := p.(interface{ Rect() m32.Vec4 }); ok {
-			parentRect = c.Rect()
-		}
-	}*/
-	return parentRect
+	return m32.Vec4{}
 }
