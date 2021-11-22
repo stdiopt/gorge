@@ -45,8 +45,7 @@ func (m *mouseManager) SetScrollDelta(delta float32) {
 
 func (m *mouseManager) SetCursorPosition(p m32.Vec2) {
 	m.deltaPos = m.mpos.Sub(p)
-	screenSize := m.gorge.ScreenSize()
-	m.mpos = p.Clamp(m32.Vec2{}, screenSize)
+	m.mpos = p
 
 	// Legacy
 	evt := EventPointer{
