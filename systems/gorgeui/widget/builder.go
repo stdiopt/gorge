@@ -11,13 +11,43 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-// Build calls fn to build a widget and returns the widget.
-func Build(fn func(b *Builder)) *Widget {
-	root := New()
-	b := Builder{
-		root: curEntity{
-			widget: root,
+type builder interface {
+	W
+	Build(b *Builder)
+}
+
+// Build builds a widget.
+func Build(b builder) {
+	//*b.RectTransform() = gorgeui.RectIdent()
+	ctx := Builder{
+		root: curEntity{widget: b},
+		style: BuilderStyle{
+			def: cursorStyle{
+				background: m32.Vec4{0, 0, 0, 0.2},
+				color:      m32.Vec4{1, 1, 1, 1},
+				dim:        m32.Vec2{20, 5},
+				spacing:    float32(1),
+			},
 		},
+	}
+	// b.Widget().SetAnchor(0)
+	// b.Widget().SetRect(0, 0, 20, 0)
+	// b.Widget().SetPivot(0)
+	// Defaults to full screen?
+	// root.SetAnchor(0, 0, 0, 0)
+	// root.SetRect(0, 0, 20, 0)
+	// root.SetPivot(0)
+	b.Build(&ctx)
+}
+
+// BuildFunc calls fn to build a widget and returns the widget.
+func BuildFunc(fn func(b *Builder)) *Widget {
+	root := New()
+	root.SetAnchor(0, 0, 0, 0)
+	root.SetRect(0, 0, 20, 0)
+	root.SetPivot(0)
+	b := Builder{
+		root: curEntity{widget: root},
 		style: BuilderStyle{
 			def: cursorStyle{
 				background: m32.Vec4{0, 0, 0, 0.2},
@@ -28,9 +58,6 @@ func Build(fn func(b *Builder)) *Widget {
 		},
 	}
 	// Defaults to full screen?
-	root.SetAnchor(0, 0, 0, 0)
-	root.SetRect(0, 0, 20, 0)
-	root.SetPivot(0)
 	fn(&b)
 	return root
 }
@@ -310,6 +337,16 @@ func (b *Builder) Label(v interface{}) *Label {
 				label.SetText(*v)
 			}
 		})
+	case func() string:
+		label.HandleFunc(func(e event.Event) {
+			if _, ok := e.(gorgeui.EventUpdate); !ok {
+				return
+			}
+			txt := v()
+			if label.Text != txt {
+				label.SetText(txt)
+			}
+		})
 	}
 	b.add(label, s)
 
@@ -433,4 +470,9 @@ func (b *Builder) BeginList(dir ...ListDirection) W {
 // EndList finishes a list previously called with BeginList().
 func (b *Builder) EndList() {
 	b.End()
+}
+
+// Root returns the root widget of the builder.
+func (b *Builder) Root() *Widget {
+	return b.root.widget.(*Widget)
 }
