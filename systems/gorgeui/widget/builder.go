@@ -4,7 +4,6 @@ package widget
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
@@ -18,7 +17,7 @@ type builder interface {
 
 // Build builds a widget.
 func Build(b builder) {
-	//*b.RectTransform() = gorgeui.RectIdent()
+	// *b.RectTransform() = gorgeui.RectIdent()
 	ctx := Builder{
 		root: curEntity{widget: b},
 		style: BuilderStyle{
@@ -47,13 +46,18 @@ func BuildFunc(fn func(b *Builder)) *Widget {
 	root.SetRect(0, 0, 20, 0)
 	root.SetPivot(0)
 	b := Builder{
-		root: curEntity{widget: root},
+		root: curEntity{
+			layout: layoutVertical(),
+			widget: root,
+		},
 		style: BuilderStyle{
 			def: cursorStyle{
 				background: m32.Vec4{0, 0, 0, 0.2},
 				color:      m32.Vec4{1, 1, 1, 1},
 				dim:        m32.Vec2{20, 5},
 				spacing:    float32(1),
+				fontSize:   2,
+				textAlign:  [2]AlignType{AlignCenter, AlignCenter},
 			},
 		},
 	}
@@ -62,113 +66,26 @@ func BuildFunc(fn func(b *Builder)) *Widget {
 	return root
 }
 
-// cursorData is stacked data
-// This could probably contain a map with custom props
-type cursorStyle struct {
-	// could be Stacked options
-	dim        m32.Vec2
-	background m32.Vec4
-	color      m32.Vec4
-	spacing    float32
-}
-
-// BuilderStyle manages the styles of the widget builder.
-type BuilderStyle struct {
-	def   cursorStyle
-	stack []*cursorStyle
-	once  *cursorStyle
-}
-
-func (b *BuilderStyle) cur() *cursorStyle {
-	cur := b.edit()
-	if b.once != nil {
-		b.once = nil
-	}
-	return cur
-}
-
-// edit same as cur but doesn't remove the once.
-func (b *BuilderStyle) edit() *cursorStyle {
-	if b.once != nil {
-		return b.once
-	}
-	if len(b.stack) == 0 {
-		return &b.def
-	}
-	return b.stack[len(b.stack)-1]
-}
-
-// Once returns BuilderStyle with once set.
-func (b *BuilderStyle) Once() *BuilderStyle {
-	if b.once != nil {
-		return b
-	}
-	s := *b.cur() // copy
-	b.once = &s
-	return b
-}
-
-// Save saves the current style, previous style can be restored with Restore().
-func (b *BuilderStyle) Save() {
-	s := *b.cur() // copy
-	b.stack = append(b.stack, &s)
-}
-
-// Restore restores the previous style.
-func (b *BuilderStyle) Restore() {
-	if len(b.stack) == 0 {
-		return
-	}
-	b.stack = b.stack[:len(b.stack)-1]
-}
-
-// Reset resets the style to the root style.
-func (b *BuilderStyle) Reset() {
-	b.stack = b.stack[:0]
-}
-
-// SetColor sets the next widget colors.
-func (b *BuilderStyle) SetColor(c ...float32) {
-	b.edit().color = v4Color(c...)
-}
-
-// SetBackground sets next widgets background color.
-func (b *BuilderStyle) SetBackground(c ...float32) {
-	b.edit().background = v4Color(c...)
-}
-
-// SetWidth sets next widgets width.
-func (b *BuilderStyle) SetWidth(w float32) {
-	b.edit().dim[0] = w
-}
-
-// SetHeight sets next widgets height.
-func (b *BuilderStyle) SetHeight(h float32) {
-	b.edit().dim[1] = h
-}
-
-// SetSpacing of the next widget.
-func (b *BuilderStyle) SetSpacing(s float32) {
-	b.edit().spacing = s
-}
-
-// Widget builder flow
+// Direction widget builder flow
 type Direction int
 
 // Directions
 const (
 	// Vertical widgets will be anchored to parent vertically.
-	Vertical Direction = iota
+	DirectionVertical Direction = iota
 	// Horizontal widgets will be anchored to parent horizontally.
-	Horizontal
+	DirectionHorizontal
 	// Free widgets will not be anchored.
-	Free
+	DirectionFree
 )
 
+type layoutFunc func(w *Component, s *cursorStyle)
+
 type curEntity struct {
+	layout layoutFunc
 	// cursor position
-	pos    m32.Vec2
-	dir    Direction
+	// pos    m32.Vec2
+	// dir    Direction
 	widget W
 }
 
@@ -196,22 +113,26 @@ func (b *Builder) add(w W, s *cursorStyle) {
 
 	// Used with anchor 0,0,1,0, with will set content to the built height
 	// w.Widget().SetRect(1+cur.pos[0], 1+cur.pos[1], 1, cur.height)
-	switch c.dir {
-	case Free:
+
+	c.layout(w.Widget(), s)
+	// TODO: This should be controlled by the parent With a default
+	// although it couldn't be the widget it self controlling this but rather
+	// having a position controller or something
+	/*switch c.dir {
+	case DirectionFree:
 		w.Widget().SetAnchor(0)
 		w.Widget().SetRect(c.pos[0], c.pos[1], s.dim[0], s.dim[1])
+		c.pos[0] = 0
 		c.pos[1] += s.dim[1] + s.spacing
-	case Vertical:
+	case DirectionVertical:
 		w.Widget().SetAnchor(0, 0, 1, 0)
-		w.Widget().SetRect(1, s.spacing+c.pos[1], 1, s.dim[1])
+		w.Widget().SetRect(s.spacing, s.spacing+c.pos[1], s.spacing, s.dim[1])
 		c.pos[1] += s.dim[1] + s.spacing
-	case Horizontal:
-		log.Println("Going horizontal")
+	case DirectionHorizontal:
 		w.Widget().SetAnchor(0, 0, 0, 1)
-		w.Widget().SetRect(1+c.pos[0], 1, s.dim[0], 1)
+		w.Widget().SetRect(s.spacing+c.pos[0], s.spacing, s.dim[0], s.spacing)
 		c.pos[0] += s.dim[0] + s.spacing
-		log.Println("Pos:", c.pos)
-	}
+	}*/
 
 	gorgeui.AddChildrenTo(c.widget, w)
 
@@ -220,12 +141,16 @@ func (b *Builder) add(w W, s *cursorStyle) {
 	}
 }
 
-func (b *Builder) push(w W) *curEntity {
+func (b *Builder) push(w W, lfn layoutFunc) *curEntity {
 	// cur := b.cur()
+	if lfn == nil {
+		lfn = layoutVertical()
+	}
 	e := &curEntity{
+		layout: lfn,
 		// cursorData: cur.cursorData,
-		pos:    m32.Vec2{0, 0},
-		dir:    b.cur().dir,
+		// pos:    m32.Vec2{0, 0},
+		// dir:    b.cur().dir,
 		widget: w,
 	}
 	b.stack = append(b.stack, e)
@@ -238,16 +163,16 @@ func (b *Builder) pop() *curEntity {
 	return e
 }
 
-func (b *Builder) begin(w W, s *cursorStyle) {
+func (b *Builder) begin(w W, lfn layoutFunc, s *cursorStyle) {
 	b.add(w, s)
-	b.push(w)
+	b.push(w, lfn)
 }
 
 // SetDirection container direction.
-func (b *Builder) SetDirection(d Direction) {
-	c := b.cur()
-	c.dir = d
-}
+//func (b *Builder) SetDirection(d Direction) {
+//	c := b.cur()
+// c.dir = d
+//}
 
 // Style returns the style manager.
 func (b *Builder) Style() *BuilderStyle {
@@ -307,7 +232,7 @@ func (b *Builder) BeginPanel(d ...ListDirection) *Panel {
 	// } else {
 	// panel.HandleFunc(AutoWidth(panel, 1))
 	// }
-	b.begin(panel, s)
+	b.begin(panel, layoutVertical(), s)
 
 	return panel
 }
@@ -323,6 +248,8 @@ func (b *Builder) Label(v interface{}) *Label {
 	s := b.style.cur()
 	label := NewLabel()
 	label.SetColor(s.color[:]...)
+	label.SetFontScale(s.fontSize)
+	label.SetAlign(s.textAlign[:]...)
 
 	switch v := v.(type) {
 	case string:
@@ -358,6 +285,7 @@ func (b *Builder) TextButton(t string, click func()) *Button {
 	s := b.style.cur()
 	btnLabel := NewLabel()
 	btnLabel.SetText(t)
+	btnLabel.SetFontScale(s.fontSize)
 	btnLabel.SetColor(s.color[:]...)
 
 	button := NewButton()
@@ -395,6 +323,7 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 	slider.SetHandler(btn)
 
 	lbl := NewLabel()
+	lbl.SetFontScale(s.fontSize)
 	gorgeui.AddChildrenTo(btn, lbl)
 
 	var v interface{}
@@ -448,8 +377,58 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 	return slider
 }
 
+// SpinnerVec3 adds and returns a vec3 spinner.
+func (b *Builder) SpinnerVec3(v *m32.Vec3) *SpinnerVec3 {
+	s := b.style.cur()
+	if v == nil {
+		v = &m32.Vec3{}
+	}
+	w := NewSpinnerVec3(*v)
+	w.x.label.SetFontScale(s.fontSize)
+	w.x.valueLabel.SetFontScale(s.fontSize)
+	w.y.label.SetFontScale(s.fontSize)
+	w.y.valueLabel.SetFontScale(s.fontSize)
+	w.z.label.SetFontScale(s.fontSize)
+	w.z.valueLabel.SetFontScale(s.fontSize)
+
+	b.add(w, s)
+	return w
+}
+
+// SpinnerVec3 adds and returns a vec3 spinner.
+func (b *Builder) Spinner(l string, f *float32) *Spinner {
+	s := b.style.cur()
+	if f == nil {
+		f = new(float32)
+	}
+	w := NewSpinner(l, *f)
+	b.add(w, s)
+	return w
+}
+
+// BeginHFlex starts a flex layout where items will be placed horizontally.
+func (b *Builder) BeginHFlex(sz ...float32) *Widget {
+	w := New()
+	b.begin(w, layoutFlex(DirectionHorizontal, sz...), b.style.cur())
+	return w
+}
+
+// BeginVFlex starts a vertical flex layout.
+func (b *Builder) BeginVFlex(sz ...float32) *Widget {
+	w := New()
+	b.begin(w, layoutFlex(DirectionVertical, sz...), b.style.cur())
+	return w
+}
+
+// Begin starts an empty widget group.
+func (b *Builder) Begin() *Widget {
+	w := New()
+	b.begin(w, layoutVertical(), b.style.cur())
+	return w
+}
+
 // BeginList starts a list.
-func (b *Builder) BeginList(dir ...ListDirection) W {
+/*func (b *Builder) BeginList(dir ...ListDirection) W {
 	d := ListVertical
 	if len(dir) > 0 {
 		d = dir[0]
@@ -470,7 +449,7 @@ func (b *Builder) BeginList(dir ...ListDirection) W {
 // EndList finishes a list previously called with BeginList().
 func (b *Builder) EndList() {
 	b.End()
-}
+}*/
 
 // Root returns the root widget of the builder.
 func (b *Builder) Root() *Widget {

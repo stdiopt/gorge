@@ -155,7 +155,7 @@ func (l *Label) SetAlign(a ...AlignType) {
 			AlignStart,
 		}
 	case 1:
-		l.Alignment = [2]AlignType{a[0], a[0]}
+		l.Alignment[0] = a[0]
 	default:
 		l.Alignment = [2]AlignType{a[0], a[1]}
 	}
