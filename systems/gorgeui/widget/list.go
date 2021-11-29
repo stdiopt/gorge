@@ -1,7 +1,6 @@
 package widget
 
 import (
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -73,7 +72,7 @@ func (l *List) SetPadding(v ...float32) {
 }
 
 // HandleEvent implements event.Handler
-func (l *List) HandleEvent(e event.Event) {
+func (l *List) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
 	_, ok := e.(gorgeui.EventUpdate)
 	if !ok {
 		return

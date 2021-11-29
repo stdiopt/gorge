@@ -1,15 +1,18 @@
 package widget
 
 import (
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // AutoWidth sets a auto width resize handler that resizes based on children.
-func AutoWidth(w W, extra float32) event.HandlerFunc {
-	return func(e event.Event) {
+func AutoWidth(extra float32) gorgeui.HandlerFunc {
+	return func(ent gorgeui.Entity, e gorgeui.Event) {
 		_, ok := e.(gorgeui.EventUpdate)
+		if !ok {
+			return
+		}
+		w, ok := ent.(W)
 		if !ok {
 			return
 		}
@@ -33,9 +36,13 @@ func AutoWidth(w W, extra float32) event.HandlerFunc {
 }
 
 // AutoHeight sets an auto height resizer that resizes based on children.
-func AutoHeight(w W, extra float32) event.HandlerFunc {
-	return func(e event.Event) {
+func AutoHeight(extra float32) gorgeui.HandlerFunc {
+	return func(ent gorgeui.Entity, e gorgeui.Event) {
 		_, ok := e.(gorgeui.EventUpdate)
+		if !ok {
+			return
+		}
+		w, ok := ent.(W)
 		if !ok {
 			return
 		}
@@ -60,19 +67,22 @@ func AutoHeight(w W, extra float32) event.HandlerFunc {
 
 // ResizeToContentHandler will resize a rect to children content.
 type ResizeToContentHandler struct {
-	w     W
 	extra float32
 }
 
 // HandleEvent handles gorge events.
-func (h ResizeToContentHandler) HandleEvent(e event.Event) {
+func (h ResizeToContentHandler) HandleEvent(ent gorgeui.Entity, e gorgeui.Event) {
 	_, ok := e.(gorgeui.EventUpdate)
+	if !ok {
+		return
+	}
+	w, ok := ent.(W)
 	if !ok {
 		return
 	}
 
 	dim := m32.Vec2{}
-	container := h.w.Element().GetEntities()
+	container := w.Element().GetEntities()
 	for _, c := range container {
 		rt, ok := c.(rectTransformer)
 		if !ok {
@@ -90,11 +100,11 @@ func (h ResizeToContentHandler) HandleEvent(e event.Event) {
 		dim[1] = m32.Max(bottom+h.extra, dim[1])
 
 	}
-	h.w.RectTransform().Dim[0] = dim[0]
-	h.w.RectTransform().Dim[1] = dim[1]
+	w.RectTransform().Dim[0] = dim[0]
+	w.RectTransform().Dim[1] = dim[1]
 }
 
 // ResizeToContent only works if anchors are relative?
-func ResizeToContent(w W, extra float32) *ResizeToContentHandler {
-	return &ResizeToContentHandler{w, extra}
+func ResizeToContent(extra float32) *ResizeToContentHandler {
+	return &ResizeToContentHandler{extra}
 }

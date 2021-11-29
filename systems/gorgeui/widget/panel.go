@@ -1,7 +1,6 @@
 package widget
 
 import (
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -15,7 +14,7 @@ type Panel struct {
 }
 
 // HandleEvent handles gorgeui events.
-func (p *Panel) HandleEvent(e event.Event) {
+func (p *Panel) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
 	if _, ok := e.(gorgeui.EventUpdate); !ok {
 		return
 	}

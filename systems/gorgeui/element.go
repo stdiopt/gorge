@@ -2,7 +2,6 @@ package gorgeui
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 )
 
 type (
@@ -17,7 +16,7 @@ type (
 // ElementComponent is a base widget for UI things
 // it contains some state
 type ElementComponent struct {
-	event.Bus
+	eventBus
 	gorge.Container
 	DragEvents     bool
 	DisableRaycast bool
@@ -42,13 +41,8 @@ func (c *ElementComponent) SetDisableRaycast(b bool) {
 // attached.
 func AddChildrenTo(parent Entity, ents ...gorge.Entity) {
 	for _, cc := range ents {
-		switch t := cc.(type) {
-		case gorge.ParentSetter:
+		if t, ok := cc.(gorge.ParentSetter); ok {
 			t.SetParent(parent)
-			// case rectTransformer:
-			//	t.RectTransform().SetParent(parent)
-			// case transformer:
-			//	t.Transform().SetParent(parent)
 		}
 		parent.Element().Add(cc)
 	}

@@ -5,7 +5,6 @@ package widget
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -169,10 +168,10 @@ func (b *Builder) begin(w W, lfn layoutFunc, s *cursorStyle) {
 }
 
 // SetDirection container direction.
-//func (b *Builder) SetDirection(d Direction) {
+// func (b *Builder) SetDirection(d Direction) {
 //	c := b.cur()
-// c.dir = d
-//}
+//	c.dir = d
+// }
 
 // Style returns the style manager.
 func (b *Builder) Style() *BuilderStyle {
@@ -256,7 +255,7 @@ func (b *Builder) Label(v interface{}) *Label {
 		label.SetText(v)
 	case *string:
 		// Is this a good idea?
-		label.HandleFunc(func(e event.Event) {
+		label.HandleFunc(func(_ gorgeui.Entity, e gorgeui.Event) {
 			if _, ok := e.(gorgeui.EventUpdate); !ok {
 				return
 			}
@@ -265,7 +264,7 @@ func (b *Builder) Label(v interface{}) *Label {
 			}
 		})
 	case func() string:
-		label.HandleFunc(func(e event.Event) {
+		label.HandleFunc(func(_ gorgeui.Entity, e gorgeui.Event) {
 			if _, ok := e.(gorgeui.EventUpdate); !ok {
 				return
 			}
@@ -290,7 +289,7 @@ func (b *Builder) TextButton(t string, click func()) *Button {
 
 	button := NewButton()
 	if click != nil {
-		button.HandleFunc(func(e event.Event) {
+		button.HandleFunc(func(_ gorgeui.Entity, e gorgeui.Event) {
 			if _, ok := e.(EventClick); !ok {
 				return
 			}
@@ -353,7 +352,7 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 		lbl.SetText(fmt.Sprintf("%.2f", def))
 	}
 
-	slider.HandleFunc(func(ee event.Event) {
+	slider.HandleFunc(func(_ gorgeui.Entity, ee gorgeui.Event) {
 		e, ok := ee.(EventValueChanged)
 		if !ok {
 			return

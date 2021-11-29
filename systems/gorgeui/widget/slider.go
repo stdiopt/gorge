@@ -51,7 +51,7 @@ func (s *Slider) HandleEvent(e event.Event) {
 		val = m32.Clamp(val, 0, 1)
 		if val != s.Value {
 			s.Value = val
-			s.Trigger(EventValueChanged{val})
+			gorgeui.TriggerOn(s, EventValueChanged{val})
 		}
 	case gorgeui.EventDrag:
 		s.dragging = true
@@ -75,7 +75,7 @@ func (s *Slider) HandleEvent(e event.Event) {
 
 		if val != s.Value {
 			s.Value = val
-			s.Trigger(EventValueChanged{val})
+			gorgeui.TriggerOn(s, EventValueChanged{val})
 		}
 	case gorgeui.EventDragEnd:
 		s.dragging = false

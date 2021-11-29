@@ -36,7 +36,7 @@ func (w *Spinner) HandleEvent(ee event.Event) {
 		}
 	case gorgeui.EventDrag:
 		w.Value += e.Delta[0] * 0.01
-		w.Trigger(EventSpin(w.Value))
+		gorgeui.TriggerOn(w, EventSpin(w.Value))
 	}
 }
 

@@ -2,7 +2,6 @@ package widget
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -36,7 +35,7 @@ type Button struct {
 }
 
 // HandleEvent handles gorgeui events.
-func (b *Button) HandleEvent(e event.Event) {
+func (b *Button) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
 	switch e := e.(type) {
 	case gorgeui.EventUpdate:
 		rect := b.Rect()
@@ -63,7 +62,7 @@ func (b *Button) HandleEvent(e event.Event) {
 	case gorgeui.EventPointerUp:
 		b.state &= ^ButtonStatePressed
 		if gorgeui.HasParent(e.Target, b) {
-			b.Trigger(EventClick{b})
+			gorgeui.TriggerOn(b, EventClick{b})
 		}
 
 	case gorgeui.EventPointerEnter:
