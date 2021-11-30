@@ -8,6 +8,4 @@ type EventClick struct {
 }
 
 // EventValueChanged triggers on certain widdgets a value change.
-type EventValueChanged struct {
-	Value float32
-}
+type EventValueChanged float32

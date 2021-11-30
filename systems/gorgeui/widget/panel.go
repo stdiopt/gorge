@@ -14,8 +14,8 @@ type Panel struct {
 }
 
 // HandleEvent handles gorgeui events.
-func (p *Panel) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
-	if _, ok := e.(gorgeui.EventUpdate); !ok {
+func (p *Panel) HandleEvent(e gorgeui.Event) {
+	if _, ok := e.Value.(gorgeui.EventUpdate); !ok {
 		return
 	}
 	r := p.Rect()

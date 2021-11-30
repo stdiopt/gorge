@@ -6,18 +6,26 @@ import (
 	"sync"
 )
 
-// Event anything
-type Event interface{}
+// Event base event for the thing.
+type Event struct {
+	Entity          Entity
+	Value           interface{}
+	stopPropagation bool
+}
 
 // HandlerFunc type of func to handle an event
-type HandlerFunc func(e Entity, event Event)
+type HandlerFunc func(Event)
 
 // HandleEvent implements the Handler interface.
-func (fn HandlerFunc) HandleEvent(e Entity, v Event) { fn(e, v) }
+func (fn HandlerFunc) HandleEvent(e Event) { fn(e) }
 
 // Handler event Handler interface.
 type Handler interface {
-	HandleEvent(e Entity, event Event)
+	HandleEvent(Event)
+}
+
+type trigger interface {
+	trigger(Event)
 }
 
 // eventBus eventBus
@@ -78,6 +86,15 @@ func (b *eventBus) remove(h Handler) {
 			t[len(t)-1] = nil // remove last one as it was copied
 			return
 		}
+	}
+}
+
+func (b *eventBus) trigger(e Event) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	for _, h := range b.listeners {
+		h.HandleEvent(e)
 	}
 }
 

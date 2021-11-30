@@ -33,8 +33,8 @@ type Label struct {
 }
 
 // HandleEvent handles events for label.
-func (l *Label) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
-	_, ok := e.(gorgeui.EventUpdate) // Change to PreUpdate?
+func (l *Label) HandleEvent(e gorgeui.Event) {
+	_, ok := e.Value.(gorgeui.EventUpdate) // Change to PreUpdate?
 	if !ok {
 		return
 	}

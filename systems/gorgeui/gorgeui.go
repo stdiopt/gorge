@@ -3,7 +3,6 @@ package gorgeui
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/text"
 )
 
@@ -21,8 +20,8 @@ const (
 
 // cameraEntity camera composition used in UI system.
 type cameraEntity interface {
+	gorge.Matrixer
 	Transform() *gorge.TransformComponent
-	Mat4() m32.Mat4
 	Camera() *gorge.CameraComponent
 }
 
@@ -86,20 +85,20 @@ func HasParent(e Entity, parent Entity) bool {
 	return hasParent
 }
 
-func triggerOn(e Entity, v Event) bool {
+func triggerOn(e Entity, v interface{}) bool {
+	evt := Event{Entity: e, Value: v}
 	if h, ok := e.(Handler); ok {
-		h.HandleEvent(e, v)
+		// Direct on thing
+		h.HandleEvent(evt)
 	}
-	/*
-		if h, ok := e.(event.Trigger); ok {
-			h.Trigger(v)
-		}*/
+
+	if h, ok := e.(trigger); ok {
+		h.trigger(evt)
+	}
 	return true
 }
 
 // TriggerOn triggers an event on entity and its parents.
-func TriggerOn(e Entity, v Event) {
-	EachParent(e, func(e Entity) bool {
-		return triggerOn(e, v)
-	})
+func TriggerOn(e Entity, v interface{}) {
+	triggerOn(e, v)
 }

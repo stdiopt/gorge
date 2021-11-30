@@ -255,8 +255,8 @@ func (b *Builder) Label(v interface{}) *Label {
 		label.SetText(v)
 	case *string:
 		// Is this a good idea?
-		label.HandleFunc(func(_ gorgeui.Entity, e gorgeui.Event) {
-			if _, ok := e.(gorgeui.EventUpdate); !ok {
+		label.HandleFunc(func(e gorgeui.Event) {
+			if _, ok := e.Value.(gorgeui.EventUpdate); !ok {
 				return
 			}
 			if label.Text != *v {
@@ -264,8 +264,8 @@ func (b *Builder) Label(v interface{}) *Label {
 			}
 		})
 	case func() string:
-		label.HandleFunc(func(_ gorgeui.Entity, e gorgeui.Event) {
-			if _, ok := e.(gorgeui.EventUpdate); !ok {
+		label.HandleFunc(func(e gorgeui.Event) {
+			if _, ok := e.Value.(gorgeui.EventUpdate); !ok {
 				return
 			}
 			txt := v()
@@ -289,8 +289,8 @@ func (b *Builder) TextButton(t string, click func()) *Button {
 
 	button := NewButton()
 	if click != nil {
-		button.HandleFunc(func(_ gorgeui.Entity, e gorgeui.Event) {
-			if _, ok := e.(EventClick); !ok {
+		button.HandleFunc(func(e gorgeui.Event) {
+			if _, ok := e.Value.(EventClick); !ok {
 				return
 			}
 			click()
@@ -352,12 +352,12 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 		lbl.SetText(fmt.Sprintf("%.2f", def))
 	}
 
-	slider.HandleFunc(func(_ gorgeui.Entity, ee gorgeui.Event) {
-		e, ok := ee.(EventValueChanged)
+	slider.HandleFunc(func(ee gorgeui.Event) {
+		e, ok := ee.Value.(EventValueChanged)
 		if !ok {
 			return
 		}
-		t := min + e.Value*(rng)
+		t := min + float32(e)*(rng)
 		switch v := v.(type) {
 		case func(float32):
 			v(t)

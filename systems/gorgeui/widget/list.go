@@ -72,8 +72,8 @@ func (l *List) SetPadding(v ...float32) {
 }
 
 // HandleEvent implements event.Handler
-func (l *List) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
-	_, ok := e.(gorgeui.EventUpdate)
+func (l *List) HandleEvent(e gorgeui.Event) {
+	_, ok := e.Value.(gorgeui.EventUpdate)
 	if !ok {
 		return
 	}

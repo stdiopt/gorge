@@ -35,8 +35,8 @@ type Button struct {
 }
 
 // HandleEvent handles gorgeui events.
-func (b *Button) HandleEvent(_ gorgeui.Entity, e gorgeui.Event) {
-	switch e := e.(type) {
+func (b *Button) HandleEvent(e gorgeui.Event) {
+	switch e := e.Value.(type) {
 	case gorgeui.EventUpdate:
 		rect := b.Rect()
 		et := b.Entity.Transform()

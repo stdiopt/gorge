@@ -7,12 +7,12 @@ import (
 
 // AutoWidth sets a auto width resize handler that resizes based on children.
 func AutoWidth(extra float32) gorgeui.HandlerFunc {
-	return func(ent gorgeui.Entity, e gorgeui.Event) {
-		_, ok := e.(gorgeui.EventUpdate)
+	return func(e gorgeui.Event) {
+		_, ok := e.Value.(gorgeui.EventUpdate)
 		if !ok {
 			return
 		}
-		w, ok := ent.(W)
+		w, ok := e.Entity.(W)
 		if !ok {
 			return
 		}
@@ -37,12 +37,12 @@ func AutoWidth(extra float32) gorgeui.HandlerFunc {
 
 // AutoHeight sets an auto height resizer that resizes based on children.
 func AutoHeight(extra float32) gorgeui.HandlerFunc {
-	return func(ent gorgeui.Entity, e gorgeui.Event) {
-		_, ok := e.(gorgeui.EventUpdate)
+	return func(e gorgeui.Event) {
+		_, ok := e.Value.(gorgeui.EventUpdate)
 		if !ok {
 			return
 		}
-		w, ok := ent.(W)
+		w, ok := e.Entity.(W)
 		if !ok {
 			return
 		}
@@ -71,12 +71,12 @@ type ResizeToContentHandler struct {
 }
 
 // HandleEvent handles gorge events.
-func (h ResizeToContentHandler) HandleEvent(ent gorgeui.Entity, e gorgeui.Event) {
-	_, ok := e.(gorgeui.EventUpdate)
+func (h ResizeToContentHandler) HandleEvent(e gorgeui.Event) {
+	_, ok := e.Value.(gorgeui.EventUpdate)
 	if !ok {
 		return
 	}
-	w, ok := ent.(W)
+	w, ok := e.Entity.(W)
 	if !ok {
 		return
 	}
