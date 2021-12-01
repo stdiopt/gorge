@@ -13,7 +13,8 @@ type cursorStyle struct {
 	color      m32.Vec4
 	fontSize   float32
 	textAlign  [2]AlignType
-	spacing    float32
+	// Could be called margin somehow
+	spacing m32.Vec4
 }
 
 // BuilderStyle manages the styles of the widget builder.
@@ -92,8 +93,20 @@ func (b *BuilderStyle) SetHeight(h float32) {
 }
 
 // SetSpacing of the next widget.
-func (b *BuilderStyle) SetSpacing(s float32) {
-	b.edit().spacing = s
+func (b *BuilderStyle) SetSpacing(s ...float32) {
+	switch len(s) {
+	case 0:
+		b.edit().spacing = m32.Vec4{}
+	case 1:
+		b.edit().spacing = m32.Vec4{s[0], s[0], s[0], s[0]}
+	case 2:
+		b.edit().spacing = m32.Vec4{s[0], s[1], s[0], s[1]}
+	case 3:
+		b.edit().spacing = m32.Vec4{s[0], s[1], s[2], s[1]}
+	default:
+		b.edit().spacing = m32.Vec4{s[0], s[1], s[2], s[3]}
+
+	}
 }
 
 // SetFontSize sets the font size for next wiget.
@@ -122,8 +135,8 @@ func layoutVertical() layoutFunc {
 	var pos m32.Vec2
 	return func(w *Component, s *cursorStyle) {
 		w.SetAnchor(0, 0, 1, 0)
-		w.SetRect(s.spacing, s.spacing+pos[1], s.spacing, s.dim[1])
-		pos[1] += s.dim[1] + s.spacing
+		w.SetRect(s.spacing[0], s.spacing[1]+pos[1], s.spacing[2], s.dim[1])
+		pos[1] += s.dim[1] + s.spacing[3]
 	}
 }
 
@@ -143,11 +156,10 @@ func layoutFlex(dir Direction, sz ...float32) layoutFunc {
 		switch dir {
 		case DirectionHorizontal:
 			w.SetAnchor(start, 0, end, 1)
-			w.SetRect(s.spacing)
 		case DirectionVertical:
 			w.SetAnchor(0, start, 1, end)
-			w.SetRect(s.spacing)
 		}
+		w.SetRect(s.spacing[0], s.spacing[1], s.spacing[2], s.spacing[3])
 		start = end
 		list = append(list, w)
 	}

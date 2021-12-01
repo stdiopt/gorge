@@ -3,7 +3,6 @@ package widget
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -25,8 +24,8 @@ type Spinner struct {
 }
 
 // HandleEvent handles events.
-func (w *Spinner) HandleEvent(ee event.Event) {
-	switch e := ee.(type) {
+func (w *Spinner) HandleEvent(ee gorgeui.Event) {
+	switch e := ee.Value.(type) {
 	case gorgeui.EventUpdate:
 		if w.valueLabel != nil {
 			w.valueLabel.SetText(fmt.Sprintf("%.2f", w.Value))
@@ -49,18 +48,17 @@ func NewSpinner(label string, val float32) *Spinner {
 	p.SetRect(0)
 	p.SetAnchor(0, 0, 1, 1)
 	// p.SetParent(s)
-	lblPanel := NewPanel()
-	lblPanel.SetColor(.7)
-	lblPanel.SetRect(0)
-	lblPanel.SetAnchor(0, 0, split, 1)
-	gorgeui.AddChildrenTo(p, lblPanel)
+	lblBg := NewPanel()
+	lblBg.SetColor(.2)
+	lblBg.SetAnchor(0, 0, split, 1)
+	gorgeui.AddChildrenTo(p, lblBg)
 	// lp.SetParent(p)
 
 	lbl := NewLabel(label) // needs to update
 	lbl.SetColor(1)
 	lbl.SetRect(0)
 	lbl.SetAnchor(0, 0, 1, 1)
-	gorgeui.AddChildrenTo(lblPanel, lbl)
+	gorgeui.AddChildrenTo(lblBg, lbl)
 
 	valLbl := NewLabel()
 	valLbl.SetColor(1)
@@ -76,7 +74,7 @@ func NewSpinner(label string, val float32) *Spinner {
 		Value:     val,
 
 		panel:      p,
-		labelBg:    lblPanel,
+		labelBg:    lblBg,
 		label:      lbl,
 		valueLabel: valLbl,
 	}
@@ -101,6 +99,12 @@ func NewSpinnerX(label string, val float32) *Spinner {
 // SetColor set spinner color.
 func (w *Spinner) SetColor(c m32.Vec4) {
 	w.Color = c
+}
+
+// SetLabelColor sets the background label color.
+func (w *Spinner) SetLabelColor(f ...float32) {
+	w.labelBg.SetColor(f...)
+	// Updated Layout
 }
 
 // Build func

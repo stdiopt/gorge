@@ -24,7 +24,7 @@ func Build(b builder) {
 				background: m32.Vec4{0, 0, 0, 0.2},
 				color:      m32.Vec4{1, 1, 1, 1},
 				dim:        m32.Vec2{20, 5},
-				spacing:    float32(1),
+				spacing:    m32.Vec4{1, 1, 1, 1},
 			},
 		},
 	}
@@ -54,7 +54,7 @@ func BuildFunc(fn func(b *Builder)) *Widget {
 				background: m32.Vec4{0, 0, 0, 0.2},
 				color:      m32.Vec4{1, 1, 1, 1},
 				dim:        m32.Vec2{20, 5},
-				spacing:    float32(1),
+				spacing:    m32.Vec4{1, 1, 1, 1},
 				fontSize:   2,
 				textAlign:  [2]AlignType{AlignCenter, AlignCenter},
 			},
@@ -163,8 +163,14 @@ func (b *Builder) pop() *curEntity {
 }
 
 func (b *Builder) begin(w W, lfn layoutFunc, s *cursorStyle) {
+	b.style.Save()
 	b.add(w, s)
 	b.push(w, lfn)
+}
+
+func (b *Builder) end() {
+	b.style.Restore()
+	b.pop()
 }
 
 // SetDirection container direction.
@@ -197,8 +203,7 @@ func (b *Builder) Add(w W) {
 
 // End pops a widget from stack.
 func (b *Builder) End() {
-	e := b.pop()
-	_ = e
+	b.end()
 	// Change cursor to whatever it is
 	// cur := b.cur()
 
@@ -394,13 +399,16 @@ func (b *Builder) SpinnerVec3(v *m32.Vec3) *SpinnerVec3 {
 	return w
 }
 
-// SpinnerVec3 adds and returns a vec3 spinner.
+// Spinner adds and returns a vec3 spinner.
 func (b *Builder) Spinner(l string, f *float32) *Spinner {
 	s := b.style.cur()
 	if f == nil {
 		f = new(float32)
 	}
 	w := NewSpinner(l, *f)
+	w.label.SetFontScale(s.fontSize)
+	w.valueLabel.SetFontScale(s.fontSize)
+	w.labelBg.SetColor(s.color[:]...)
 	b.add(w, s)
 	return w
 }
