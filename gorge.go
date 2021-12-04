@@ -20,7 +20,7 @@ type tcore = core.Core
 type Gorge struct {
 	tcore
 	// screenSize since this is shared between places
-	// Maybe create Device/Dysplay so we can even use multiple displays
+	// Maybe create Device/Display so we can even use multiple displays
 	screenSize m32.Vec2
 
 	fnch chan syncFunc

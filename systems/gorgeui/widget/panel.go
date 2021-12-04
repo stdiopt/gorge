@@ -34,7 +34,7 @@ func NewPanel() *Panel {
 		Color:     m32.Vec4{0, 0, 0, .5},
 		Entity:    QuadEntity(),
 	}
-	gorgeui.AddChildrenTo(p, p.Entity)
+	gorgeui.AddGraphicTo(p, p.Entity)
 	return p
 }
 

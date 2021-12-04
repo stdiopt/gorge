@@ -46,7 +46,7 @@ type system struct {
 	font  *text.Font
 
 	uis   map[*UI]struct{}
-	elems []Entity // This could be upthere?
+	elems []Entity
 
 	// Should have these per pointer
 	// meaning mouse button[0-5], touch{1...}
@@ -153,6 +153,14 @@ func (s *system) HandleEvent(v event.Event) {
 	case gorge.EventPostUpdate:
 		for _, el := range s.elems {
 			triggerOn(el, EventUpdate(e.DeltaTime()))
+		}
+
+		// XXX: {lpf} new automatic layout per update
+		// (this should be called once a layout relevante state is changed)
+		for _, el := range s.elems {
+			if lfn := el.Element().LayoutFunc; lfn != nil {
+				lfn(el)
+			}
 		}
 
 		if s.Debug&DebugRects != 0 {

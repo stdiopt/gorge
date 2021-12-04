@@ -109,7 +109,7 @@ func (b *BuilderStyle) SetSpacing(s ...float32) {
 	}
 }
 
-// SetFontSize sets the font size for next wiget.
+// SetFontSize sets the font size for next widget.
 func (b *BuilderStyle) SetFontSize(s float32) {
 	b.edit().fontSize = s
 }
