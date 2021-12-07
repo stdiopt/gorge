@@ -1,6 +1,7 @@
 package widget
 
 import (
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -14,8 +15,8 @@ type Panel struct {
 }
 
 // HandleEvent handles gorgeui events.
-func (p *Panel) HandleEvent(e gorgeui.Event) {
-	if _, ok := e.Value.(gorgeui.EventUpdate); !ok {
+func (p *Panel) HandleEvent(e event.Event) {
+	if _, ok := e.(gorgeui.EventUpdate); !ok {
 		return
 	}
 	r := p.Rect()
@@ -34,7 +35,7 @@ func NewPanel() *Panel {
 		Color:     m32.Vec4{0, 0, 0, .5},
 		Entity:    QuadEntity(),
 	}
-	gorgeui.AddGraphicTo(p, p.Entity)
+	gorgeui.AddElementTo(p, p.Entity)
 	return p
 }
 

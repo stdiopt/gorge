@@ -2,6 +2,7 @@ package gorgeui
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 )
 
 // TODO:
@@ -18,7 +19,7 @@ type (
 // ElementComponent is a base widget for UI things
 // it contains some state
 type ElementComponent struct {
-	eventBus
+	event.Bus
 
 	static   []gorge.Entity
 	children []gorge.Entity
@@ -42,6 +43,11 @@ func (c *ElementComponent) SetDragEvents(b bool) {
 // SetDisableRaycast disable or enable ray casting on this element.
 func (c *ElementComponent) SetDisableRaycast(b bool) {
 	c.DisableRaycast = b
+}
+
+// SetLayoutFunc sets the layout func.
+func (c *ElementComponent) SetLayoutFunc(fn LayoutFunc) {
+	c.LayoutFunc = fn
 }
 
 // GetEntities implements the gorge.EntityContainer interface.
@@ -103,8 +109,8 @@ func AddChildrenTo(parent Entity, ents ...gorge.Entity) {
 	}
 }
 
-// AddGraphicTo adds static element.
-func AddGraphicTo(parent Entity, ents ...gorge.Entity) {
+// AddElementTo adds static element.
+func AddElementTo(parent Entity, ents ...gorge.Entity) {
 	for _, cc := range ents {
 		if t, ok := cc.(gorge.ParentSetter); ok {
 			t.SetParent(parent)
@@ -116,31 +122,3 @@ func AddGraphicTo(parent Entity, ents ...gorge.Entity) {
 		ui.Add(ents...)
 	}
 }
-
-// Container gorgeui container handles both structural UI and hierarchical elements.
-/*type Container struct {
-	graphic  []gorge.Entity
-	children []gorge.Entity
-
-	all []gorge.Entity
-}
-
-// GetEntities implements gorge container
-func (c Container) GetEntities() []gorge.Entity {
-	return c.all
-}
-
-// Children returns the children.
-func (c Container) Children() []gorge.Entity {
-	return c.children
-}
-
-func (c *Container) add(ents ...gorge.Entity) {
-	c.all = append(c.all, ents...)
-	c.graphic = append(c.graphic, ents...)
-}
-
-func (c *Container) addChildren(ents ...gorge.Entity) {
-	c.all = append(c.all, ents...)
-	c.children = append(c.children, ents...)
-}*/

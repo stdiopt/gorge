@@ -14,14 +14,14 @@ import (
 	"strings"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/layerfs"
 	"github.com/stdiopt/gorge/static"
-	"github.com/stdiopt/layerfs"
 )
 
 const gorgeStatic = "_gorge/"
 
 // System gorge system initializer func.
-func System(g *gorge.Context /*, s PropSource*/) {
+func System(g *gorge.Context) {
 	log.Println("Initializing system")
 
 	lfs := layerfs.FS{}

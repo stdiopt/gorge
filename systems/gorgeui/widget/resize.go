@@ -1,12 +1,7 @@
 package widget
 
-import (
-	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/systems/gorgeui"
-)
-
 // AutoWidth sets a auto width resize handler that resizes based on children.
-func AutoWidth(extra float32) gorgeui.HandlerFunc {
+/*func AutoWidth(extra float32) gorgeui.HandlerFunc {
 	return func(e gorgeui.Event) {
 		_, ok := e.Value.(gorgeui.EventUpdate)
 		if !ok {
@@ -108,3 +103,4 @@ func (h ResizeToContentHandler) HandleEvent(e gorgeui.Event) {
 func ResizeToContent(extra float32) *ResizeToContentHandler {
 	return &ResizeToContentHandler{extra}
 }
+*/

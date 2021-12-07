@@ -5,7 +5,6 @@ package glfw
 
 import (
 	"log"
-	"os"
 	"runtime"
 
 	"github.com/stdiopt/gorge"
@@ -68,7 +67,7 @@ func Run(opt Options, systems ...interface{}) error {
 
 	resourceFS := opt.FS
 	if resourceFS == nil {
-		resourceFS = os.DirFS(".")
+		resourceFS = RootFS{}
 	}
 
 	ggArgs := []interface{}{

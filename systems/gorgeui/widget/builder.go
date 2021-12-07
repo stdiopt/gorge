@@ -5,6 +5,7 @@ package widget
 import (
 	"fmt"
 
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -212,10 +213,13 @@ func (b *Builder) End() {
 }
 
 // BeginPanel starts a panel, the next widgets will be added as childs to panel.
-func (b *Builder) BeginPanel(d ...ListDirection) *Panel {
+func (b *Builder) BeginPanel(d ...gorgeui.LayoutFunc) *Panel {
 	// cur := b.cur()
 	s := b.style.cur() // this won't pop 'once'
 	panel := NewPanel()
+	if len(d) > 0 {
+		panel.SetLayoutFunc(gorgeui.MultiLayout(d...))
+	}
 	panel.SetColor(s.background[:]...)
 
 	/*dir := ListVertical
@@ -260,8 +264,8 @@ func (b *Builder) Label(v interface{}) *Label {
 		label.SetText(v)
 	case *string:
 		// Is this a good idea?
-		label.HandleFunc(func(e gorgeui.Event) {
-			if _, ok := e.Value.(gorgeui.EventUpdate); !ok {
+		label.HandleFunc(func(e event.Event) {
+			if _, ok := e.(gorgeui.EventUpdate); !ok {
 				return
 			}
 			if label.Text != *v {
@@ -269,8 +273,8 @@ func (b *Builder) Label(v interface{}) *Label {
 			}
 		})
 	case func() string:
-		label.HandleFunc(func(e gorgeui.Event) {
-			if _, ok := e.Value.(gorgeui.EventUpdate); !ok {
+		label.HandleFunc(func(e event.Event) {
+			if _, ok := e.(gorgeui.EventUpdate); !ok {
 				return
 			}
 			txt := v()
@@ -294,8 +298,8 @@ func (b *Builder) TextButton(t string, click func()) *Button {
 
 	button := NewButton()
 	if click != nil {
-		button.HandleFunc(func(e gorgeui.Event) {
-			if _, ok := e.Value.(EventClick); !ok {
+		button.HandleFunc(func(e event.Event) {
+			if _, ok := e.(EventClick); !ok {
 				return
 			}
 			click()
@@ -357,8 +361,8 @@ func (b *Builder) Slider(min, max float32, args ...interface{}) *Slider {
 		lbl.SetText(fmt.Sprintf("%.2f", def))
 	}
 
-	slider.HandleFunc(func(ee gorgeui.Event) {
-		e, ok := ee.Value.(EventValueChanged)
+	slider.HandleFunc(func(ee event.Event) {
+		e, ok := ee.(EventValueChanged)
 		if !ok {
 			return
 		}

@@ -1,6 +1,7 @@
 package widget
 
 import (
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -26,8 +27,8 @@ type Slider struct {
 }
 
 // HandleEvent handles gorgeui events.
-func (s *Slider) HandleEvent(e gorgeui.Event) {
-	switch e := e.Value.(type) {
+func (s *Slider) HandleEvent(e event.Event) {
+	switch e := e.(type) {
 	case gorgeui.EventUpdate:
 		if s.handler != nil {
 			s.handler.Widget().SetPivot(.5)
@@ -50,7 +51,7 @@ func (s *Slider) HandleEvent(e gorgeui.Event) {
 		val = m32.Clamp(val, 0, 1)
 		if val != s.Value {
 			s.Value = val
-			gorgeui.TriggerOn(s, EventValueChanged(val))
+			s.Trigger(EventValueChanged(val))
 		}
 	case gorgeui.EventDrag:
 		s.dragging = true
@@ -74,7 +75,7 @@ func (s *Slider) HandleEvent(e gorgeui.Event) {
 
 		if val != s.Value {
 			s.Value = val
-			gorgeui.TriggerOn(s, EventValueChanged(val))
+			s.Trigger(EventValueChanged(val))
 		}
 	case gorgeui.EventDragEnd:
 		s.dragging = false

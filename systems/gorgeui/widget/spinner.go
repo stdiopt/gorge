@@ -3,6 +3,7 @@ package widget
 import (
 	"fmt"
 
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -24,8 +25,8 @@ type Spinner struct {
 }
 
 // HandleEvent handles events.
-func (w *Spinner) HandleEvent(ee gorgeui.Event) {
-	switch e := ee.Value.(type) {
+func (w *Spinner) HandleEvent(ee event.Event) {
+	switch e := ee.(type) {
 	case gorgeui.EventUpdate:
 		if w.valueLabel != nil {
 			w.valueLabel.SetText(fmt.Sprintf("%.2f", w.Value))
@@ -35,7 +36,7 @@ func (w *Spinner) HandleEvent(ee gorgeui.Event) {
 		}
 	case gorgeui.EventDrag:
 		w.Value += e.Delta[0] * 0.01
-		gorgeui.TriggerOn(w, EventSpin(w.Value))
+		w.Trigger(EventSpin(w.Value))
 	}
 }
 

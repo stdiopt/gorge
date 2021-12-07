@@ -5,6 +5,14 @@ import (
 	"github.com/stdiopt/gorge/m32/ray"
 )
 
+/*
+type Event struct {
+	Entity          Entity
+	Value           interface{}
+	stopPropagation bool
+}
+*/
+
 // Events used by widgets.
 type (
 	// EventPointerEnter triggers when a pointer enters the widget rect.

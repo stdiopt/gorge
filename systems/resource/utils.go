@@ -1,6 +1,8 @@
 package resource
 
-import "math"
+import (
+	"math"
+)
 
 func nearestPowerOf2(n int) int {
 	if isPowerOf2(n) {

@@ -2,6 +2,7 @@ package widget
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -33,8 +34,8 @@ type Label struct {
 }
 
 // HandleEvent handles events for label.
-func (l *Label) HandleEvent(e gorgeui.Event) {
-	_, ok := e.Value.(gorgeui.EventUpdate) // Change to PreUpdate?
+func (l *Label) HandleEvent(e event.Event) {
+	_, ok := e.(gorgeui.EventUpdate) // Change to PreUpdate?
 	if !ok {
 		return
 	}

@@ -3,6 +3,7 @@ package gorgeui
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/text"
 )
 
@@ -86,19 +87,13 @@ func HasParent(e Entity, parent Entity) bool {
 }
 
 func triggerOn(e Entity, v interface{}) bool {
-	evt := Event{Entity: e, Value: v}
-	if h, ok := e.(Handler); ok {
+	if h, ok := e.(event.Handler); ok {
 		// Direct on thing
-		h.HandleEvent(evt)
+		h.HandleEvent(v)
 	}
 
-	if h, ok := e.(trigger); ok {
-		h.trigger(evt)
+	if h, ok := e.(event.Trigger); ok {
+		h.Trigger(v)
 	}
 	return true
-}
-
-// TriggerOn triggers an event on entity and its parents.
-func TriggerOn(e Entity, v interface{}) {
-	triggerOn(e, v)
 }
