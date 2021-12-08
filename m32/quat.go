@@ -89,6 +89,30 @@ func (q Quat) Add(q2 Quat) Quat {
 	}
 }
 
+// ToEuler quaternion to euler angles.
+func (q Quat) ToEuler() Vec3 {
+	ret := Vec3{}
+
+	q = q.Normalize()
+
+	sinRCosP := 2 * (q[3]*q[0] + q[1]*q[2])
+	cosRCosP := 1 - 2*(q[0]*q[0]+q[1]*q[1])
+	ret[0] = Atan2(sinRCosP, cosRCosP)
+
+	sinP := 2 * (q[3]*q[1] - q[2]*q[0])
+	if Abs(sinP) >= 1 {
+		ret[1] = Copysign(math.Pi/2, sinP)
+	} else {
+		ret[1] = Asin(sinP)
+	}
+
+	sinYCosP := 2 * (q[3]*q[2] + q[0]*q[1])
+	cosYCosP := 1 - 2*(q[1]*q[1]+q[2]*q[2])
+	ret[2] = Atan2(sinYCosP, cosYCosP)
+
+	return ret
+}
+
 // Mat4 returns a 4x4 matrix from the quaternion.
 func (q Quat) Mat4() Mat4 {
 	x, y, z, w := q[0], q[1], q[2], q[3]

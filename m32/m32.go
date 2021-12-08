@@ -90,6 +90,23 @@ func Atan2(y, x float32) float32 {
 	return float32(math.Atan2(float64(y), float64(x)))
 }
 
+// Asin returns the arcsine, in radians, of x.
+//
+// Special cases are:
+//	Asin(±0) = ±0
+//	Asin(x) = NaN if x < -1 or x > 1
+func Asin(x float32) float32 {
+	return float32(math.Asin(float64(x)))
+}
+
+// Acos returns the arccosine, in radians, of x.
+//
+// Special case is:
+//	Acos(x) = NaN if x < -1 or x > 1
+func Acos(x float32) float32 {
+	return float32(math.Acos(float64(x)))
+}
+
 // Tan returns the tangent of the radian argument x.
 func Tan(x float32) float32 {
 	return float32(math.Tan(float64(x)))

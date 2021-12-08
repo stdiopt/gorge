@@ -80,6 +80,9 @@ func FlexHorizontal(sizes ...float32) LayoutFunc {
 	return Flex(DirectionHorizontal, sizes...)
 }
 
+// TODO: {lpf} Transform this to am interface{} as we might want to change size
+// params live.
+
 // Flex layout
 func Flex(dir Direction, sizes ...float32) LayoutFunc {
 	var sum float32

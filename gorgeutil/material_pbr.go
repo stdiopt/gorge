@@ -100,7 +100,7 @@ func (m *PBRMaterial) SetHDR(b bool) {
 }
 
 // SetBaseColor sets the base color factor.
-func (m *PBRMaterial) SetBaseColor(v m32.Color) {
+func (m *PBRMaterial) SetBaseColor(v m32.Vec4) {
 	m.Set("u_BaseColorFactor", v)
 }
 

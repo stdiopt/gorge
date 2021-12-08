@@ -9,8 +9,29 @@ type (
 	// Vec4 float32 array of size 4 with vector operation methods.
 	Vec4 [4]float32
 	// Color alias of vec4
-	Color = Vec4
 )
+
+// Color returns a vec4 with the colors value
+// if the number of params is:
+// 0 - returns a zero Vec4
+// 1 - returns a Vec4 with all 3 elements set to param 0 and alpha 1
+// 2 - returns a Vec4 with all 3 elements set to param 0 and alpha to param 1
+// 3 - returns a Vec4 with all 3 elements set to params and alpha 1
+// 4 - returns a Vec4 with all 4 elements set to params.
+func Color(v ...float32) Vec4 {
+	switch len(v) {
+	case 0:
+		return Vec4{}
+	case 1:
+		return Vec4{v[0], v[0], v[0], 1}
+	case 2:
+		return Vec4{v[0], v[0], v[0], v[1]}
+	case 3:
+		return Vec4{v[0], v[1], v[2], 1}
+	default:
+		return Vec4{v[0], v[1], v[2], v[3]}
+	}
+}
 
 // Len returns the length of the vec4.
 func (v Vec4) Len() float32 {
