@@ -13,24 +13,24 @@ func Spinner(lbl string) BuildFunc {
 	return func(b *Builder) {
 		var val float32 = -1
 
-		b.Set("fontScale", Prop("fontScale", 2))
+		b.Set("fontScale", b.Prop("fontScale", 2))
 		root := b.Root()
 		b.Layout(gorgeui.FlexHorizontal(1, 2))
-		b.Begin(Panel())
+		b.BeginPanel()
 		{
 
-			b.Set("color", Prop("labelColor", m32.Color(1)))
+			b.Set("color", b.Prop("labelColor", m32.Color(1)))
 			b.Begin(Panel())
 			{
-				b.Set("color", Prop("labelTextColor", m32.Color(1)))
-				b.Add(Label(lbl))
+				b.Set("color", b.Prop("labelTextColor", m32.Color(1)))
+				b.Label(lbl)
 			}
 			b.End()
 		}
-		b.Set("color", Prop("textColor", m32.Color(1)))
+		b.Set("color", b.Prop("textColor", m32.Color(1)))
 
-		l := b.Add(Label(""))
-		b.End()
+		l := b.Label("")
+		b.EndPanel()
 
 		b.Observe("value", func(v float32) {
 			if val == v {
@@ -55,6 +55,6 @@ func Spinner(lbl string) BuildFunc {
 }
 
 // Spinner add a spinner to the child.
-func (b *Builder) Spinner(t string) *Element {
+func (b *Builder) Spinner(t string) *Entity {
 	return b.Add(Spinner(t))
 }

@@ -7,9 +7,6 @@ import (
 	"github.com/stdiopt/gorge/text"
 )
 
-// EventClick is trigger when an event is clicked.
-type EventClick struct{} // need more info
-
 // TextButton creates a text button.
 func TextButton(t string, clickfn func()) BuildFunc {
 	return func(b *Builder) {
@@ -26,11 +23,12 @@ func TextButton(t string, clickfn func()) BuildFunc {
 		b.Set("color", normal)
 		p := b.BeginPanel()
 		{
-			b.Set("alignment", []text.AlignType{text.AlignCenter, text.AlignCenter})
-			// This part is amazing, forwarding a property
-			b.Set("text", Prop("text"))
-			b.Set("fontScale", Prop("fontScale"))
-			b.Set("textColor", Prop("textColor", m32.Color(0)))
+			b.SetProps(Props{
+				"alignment": []text.AlignType{text.AlignCenter, text.AlignCenter},
+				"text":      b.Prop("text", t),
+				"fontScale": b.Prop("fontScale", 2),
+				"textColor": b.Prop("textColor", m32.Color(0)),
+			})
 			b.Label(t)
 		}
 		b.EndPanel()
@@ -73,11 +71,11 @@ func TextButton(t string, clickfn func()) BuildFunc {
 
 			}
 		})
-		root.Set("text", t)
+		// root.Set("text", t)
 	}
 }
 
 // TextButton add a text button child.
-func (b *Builder) TextButton(t string, clickfn func()) *Element {
+func (b *Builder) TextButton(t string, clickfn func()) *Entity {
 	return b.Add(TextButton(t, clickfn))
 }

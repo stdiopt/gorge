@@ -17,8 +17,8 @@ func Slider(min, max float32) BuildFunc {
 		var val float32
 		var handlerSize float32 = 4
 
-		var track *Element
-		var handler *Element
+		var track *Entity
+		var handler *Entity
 
 		root := b.Root()
 
@@ -35,8 +35,8 @@ func Slider(min, max float32) BuildFunc {
 				track.SetRect(0)
 				track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 
-				b.Set("textColor", Prop("textColor"))
-				b.Set("fontScale", Prop("fontScale", 2))
+				b.Set("textColor", b.Prop("textColor"))
+				b.Set("fontScale", b.Prop("fontScale", 2))
 				handler = b.TextButton("0", nil)
 				handler.SetPivot(.5)
 				handler.SetRect(0, 0, handlerSize, 0)
@@ -108,6 +108,6 @@ func Slider(min, max float32) BuildFunc {
 }
 
 // Slider adds a slider to current element.
-func (b *Builder) Slider(min, max float32) *Element {
+func (b *Builder) Slider(min, max float32) *Entity {
 	return b.Add(Slider(min, max))
 }

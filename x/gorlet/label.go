@@ -88,6 +88,6 @@ func Label(t string) BuildFunc {
 }
 
 // Label creates a label on builder.
-func (b *Builder) Label(t string) *Element {
+func (b *Builder) Label(t string) *Entity {
 	return b.Add(Label(t))
 }

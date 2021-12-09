@@ -11,8 +11,8 @@ type (
 	}
 )
 
-// Element is a gui component
-type Element struct {
+// Entity is a gui component
+type Entity struct {
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
 
@@ -21,32 +21,50 @@ type Element struct {
 }
 
 // Attached implements the Attacher interface
-func (g *Element) Attached(e gorgeui.Entity) {
+func (e *Entity) Attached(ent gorgeui.Entity) {
 	// Sounds bad
-	for _, c := range g.GetEntities() {
+	for _, c := range e.GetEntities() {
 		if r, ok := c.(renderabler); ok {
-			if ui := gorgeui.RootUI(g); ui != nil {
+			if ui := gorgeui.RootUI(e); ui != nil {
 				r.Renderable().CullMask = ui.CullMask
 			}
 		}
 	}
 }
 
-// Set sets a property on the guilet.
-func (g *Element) Set(name string, value interface{}) {
-	if g.props == nil {
+// Set invoke any observer attached to the named propery.
+func (e *Entity) Set(name string, value interface{}) {
+	if e.props == nil {
 		return
 	}
-	if fns, ok := g.props[name]; ok {
+	if fns, ok := e.props[name]; ok {
 		for _, fn := range fns {
 			fn(value)
 		}
 	}
 }
 
-func (g *Element) observe(k string, fn interface{}) {
-	if g.props == nil {
-		g.props = map[string][]func(interface{}){}
+func (e *Entity) observe(k string, fn interface{}) {
+	if e.props == nil {
+		e.props = map[string][]func(interface{}){}
 	}
-	g.props[k] = append(g.props[k], makePropFunc(fn))
+	e.props[k] = append(e.props[k], makePropFunc(fn))
+}
+
+// Add adds a children to entity.
+func (e *Entity) Add(children ...*Entity) {
+	for _, c := range children {
+		gorgeui.AddChildrenTo(e, c)
+	}
+	// Relayout
+	if e.LayoutFunc != nil {
+		e.LayoutFunc(e)
+	}
+}
+
+// AddElement adds an UI element to entity.
+func (e *Entity) AddElement(children ...*Entity) {
+	for _, c := range children {
+		gorgeui.AddElementTo(e, c)
+	}
 }

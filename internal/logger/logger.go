@@ -109,7 +109,10 @@ func (w *Writer) writeLine(b []byte) error {
 	}
 
 	pkgMethod := tname[strings.LastIndex(tname, "/")+1:]
-	pkg := pkgMethod[:strings.Index(pkgMethod, ".")]
+	pkg := pkgMethod
+	if n := strings.Index(pkg, "."); n != -1 {
+		pkg = pkg[:n]
+	}
 	fname := file[strings.LastIndex(file, "/")+1:]
 
 	timeDiff := time.Since(w.lastTime)

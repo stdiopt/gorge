@@ -47,9 +47,12 @@ func NewSpinnerVec3(value m32.Vec3) *SpinnerVec3 {
 	return s
 }
 
+// HandleEvent implements event.Handler
 func (s *SpinnerVec3) HandleEvent(e event.Event) {
 	switch e := e.(type) {
 	case EventSpin:
 		_ = e
+	default:
+
 	}
 }

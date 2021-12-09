@@ -31,7 +31,7 @@ func Panel() BuildFunc {
 }
 
 // BeginPanel begins a panel.
-func (b *Builder) BeginPanel() *Element {
+func (b *Builder) BeginPanel() *Entity {
 	return b.Begin(Panel())
 }
 

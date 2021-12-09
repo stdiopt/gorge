@@ -56,7 +56,8 @@ func List(dir Direction, spacing float32) LayoutFunc {
 			case DirectionVertical:
 				rt.SetAnchor(0, 0, 1, 0)
 				rt.SetPivot(0, 0)
-				size = rt.Dim[1]
+				rect := rt.Rect()
+				size = rect[3] - rect[0]
 				rt.SetRect(padding[0], cur, padding[1], size)
 			case DirectionHorizontal:
 				rt.SetAnchor(0, 0, 0, 1)

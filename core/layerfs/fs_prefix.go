@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// Prefixa returns a fs.FS implementation that will prefix all paths with a
+// Prefix returns a fs.FS implementation that will prefix all paths with a
 // given string.
 func Prefix(prefix string, fs fs.FS) fs.FS {
 	prefix = strings.Trim(prefix, "/")
