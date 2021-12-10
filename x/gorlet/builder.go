@@ -9,9 +9,6 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-// Props to set multiple properties at once.
-type Props map[string]interface{}
-
 // ForwardProp to be used to forward properties.
 type ForwardProp struct {
 	prop string
@@ -19,7 +16,7 @@ type ForwardProp struct {
 }
 
 // PlacementFunc will be used in a container and will define clients rect.
-type PlacementFunc func(w *Entity)
+type PlacementFunc func(w *Entity) // OnAdd in the Entity
 
 type curEntity struct {
 	placement PlacementFunc

@@ -16,8 +16,8 @@ type (
 	// ParentSetter interface that Sets a parent.
 	ParentSetter interface{ SetParent(Matrixer) }
 	// Transformer interface for the transform component implementer.
-	transformer interface {
-		Mat4() m32.Mat4
+	Transformer interface {
+		Transform() *TransformComponent
 	}
 	// Matrixer interface to mat4
 	Matrixer interface {
