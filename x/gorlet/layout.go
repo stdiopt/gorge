@@ -1,6 +1,8 @@
 package gorlet
 
 import (
+	"log"
+
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -58,5 +60,19 @@ func Flex(dir gorgeui.Direction, sizes ...float32) gorgeui.LayoutFunc {
 			r.SetRect(spacing[0], spacing[1], spacing[2], spacing[3])
 			start = end
 		}
+	}
+}
+
+// Placement
+
+// Vertical placement
+func Vertical(spacing m32.Vec4, dim m32.Vec2) PlacementFunc {
+	var pos m32.Vec2
+	return func(w *Entity) {
+		w.SetAnchor(0, 0, 1, 0)
+		w.SetRect(spacing[0], spacing[1]+pos[1], spacing[2], dim[1])
+		w.SetPivot(0)
+		pos[1] += dim[1] + spacing[3]
+		log.Println("Setting:", w.Rect())
 	}
 }

@@ -39,6 +39,11 @@ func AutoHeight(spacing float32) LayoutFunc {
 	}
 }
 
+// ListVertical returns a layoutfunc that will arrange children vertically.
+func ListVertical(spacing float32) LayoutFunc {
+	return List(DirectionVertical, spacing)
+}
+
 // List automatically layout children vertically.
 func List(dir Direction, spacing float32) LayoutFunc {
 	padding := m32.Vec4{spacing, spacing, spacing, spacing}

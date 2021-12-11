@@ -20,7 +20,7 @@ func Spinner(lbl string) BuildFunc {
 		{
 
 			b.Set("color", b.Prop("labelColor", m32.Color(1)))
-			b.Begin(Panel())
+			b.BeginPanel()
 			{
 				b.Set("color", b.Prop("labelTextColor", m32.Color(1)))
 				b.Label(lbl)

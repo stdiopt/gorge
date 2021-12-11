@@ -2,10 +2,8 @@ package gorlet
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
-	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -57,7 +55,9 @@ type Builder struct {
 
 	stack []*curEntity
 	root  *curEntity
-	props propStack
+
+	// Save Restore SetProp stuff and all that.
+	propStack propStack
 }
 
 // SetAddMode set Entity add mode.
@@ -72,6 +72,9 @@ func (b *Builder) Placement(fn PlacementFunc) {
 
 // Layout set next widget layout.
 func (b *Builder) Layout(fns ...gorgeui.LayoutFunc) {
+	if len(fns) == 0 {
+		return
+	}
 	b.layout = gorgeui.MultiLayout(fns...)
 }
 
@@ -82,12 +85,12 @@ func (b *Builder) Root() *Entity {
 
 // Set a property for the next widget.
 func (b *Builder) Set(k string, v interface{}) {
-	b.props.cur().Set(k, v)
+	b.propStack.cur().Set(k, v)
 }
 
 // SetProps a property for the next widget.
 func (b *Builder) SetProps(p Props) {
-	cur := b.props.cur()
+	cur := b.propStack.cur()
 	for k, v := range p {
 		cur.Set(k, v)
 	}
@@ -102,7 +105,15 @@ func (b *Builder) Prop(k string, v ...interface{}) ForwardProp {
 	return ForwardProp{prop: k, def: def}
 }
 
-// Observe adds a function to observe a property.
+// UseProps set props, if an entity is passed it will set only on entity and return the entity.
+// else it will set on builder.
+func (b *Builder) UseProps(k string, e *Entity) *Entity {
+	props := b.propStack.cur().Select(k)
+	b.setupProps(props, e)
+	return e
+}
+
+// Observe adds a function to observe a property in the root Entity.
 func (b Builder) Observe(k string, fn interface{}) {
 	b.root.elem.observe(k, fn)
 }
@@ -111,7 +122,7 @@ func (b Builder) Observe(k string, fn interface{}) {
 // NOTE: it does not add to the current container.
 func (b *Builder) Create(fn BuildFunc) *Entity {
 	w := Create(fn)
-	b.setupProps(w)
+	b.setupProps(b.propStack.cur(), w)
 	return w
 }
 
@@ -157,32 +168,31 @@ func (b *Builder) AddEntity(e *Entity) *Entity {
 func (b *Builder) Begin(fn BuildFunc) *Entity {
 	w := b.Add(fn)
 	b.push(w)
-	b.props.Save()
+	b.propStack.Save()
 	return w
 }
 
 // End pops the current guilet from the stack.
 func (b *Builder) End() {
-	b.props.Restore()
+	b.propStack.Restore()
 	b.pop()
 }
 
-func (b *Builder) setupProps(w *Entity) {
-	p := b.props.cur()
-	for k, v := range p {
-		pk, ok := v.(ForwardProp)
-		if !ok {
-			w.Set(k, v)
-			continue
-		}
-		k := k // shadow
-		b.Observe(pk.prop, func(v interface{}) {
-			w.Set(k, v)
-		})
-		if pk.def != nil { // Set the default value
-			w.Set(k, pk.def)
-		}
-		continue
+func (b *Builder) setProp(e *Entity, k string, v interface{}) {
+	pk, ok := v.(ForwardProp)
+	if !ok {
+		e.Set(k, v)
+		return
+	}
+	b.Observe(pk.prop, func(v interface{}) { e.Set(k, v) })
+	if pk.def != nil { // Set the default value
+		e.Set(k, pk.def)
+	}
+}
+
+func (b *Builder) setupProps(props Props, e *Entity) {
+	for k, v := range props {
+		b.setProp(e, k, v)
 	}
 }
 
@@ -228,17 +238,5 @@ func makePropFunc(fn interface{}) func(interface{}) {
 		}
 		// Type check somewhere
 		fnVal.Call([]reflect.Value{arg})
-	}
-}
-
-// Vertical placement
-func Vertical(spacing m32.Vec4, dim m32.Vec2) PlacementFunc {
-	var pos m32.Vec2
-	return func(w *Entity) {
-		w.SetAnchor(0, 0, 1, 0)
-		w.SetRect(spacing[0], spacing[1]+pos[1], spacing[2], dim[1])
-		w.SetPivot(0)
-		pos[1] += dim[1] + spacing[3]
-		log.Println("Setting:", w.Rect())
 	}
 }
