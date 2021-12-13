@@ -16,7 +16,6 @@ type Entity struct {
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
 
-	// Maybe an array of funcs for multiple observers.
 	props map[string][]func(interface{})
 }
 
@@ -48,7 +47,7 @@ func (e *Entity) observe(k string, fn interface{}) {
 	if e.props == nil {
 		e.props = map[string][]func(interface{}){}
 	}
-	e.props[k] = append(e.props[k], makePropFunc(fn))
+	e.props[k] = append(e.props[k], makePropFunc(k, fn))
 }
 
 // Add adds a children to entity.
@@ -63,8 +62,23 @@ func (e *Entity) Add(children ...*Entity) {
 }
 
 // AddElement adds an UI element to entity.
-func (e *Entity) AddElement(children ...*Entity) {
-	for _, c := range children {
+func (e *Entity) AddElement(els ...gorge.Entity) {
+	for _, c := range els {
 		gorgeui.AddElementTo(e, c)
 	}
+}
+
+// RemoveElement removes element from entity and resets elements parent,
+// if the element is attached it will trigger gorge remove event.
+func (e *Entity) RemoveElement(els ...gorge.Entity) {
+	for _, c := range els {
+		gorgeui.RemoveElementFrom(e, c)
+	}
+}
+
+// Rect helper
+
+func (e *Entity) FillParent(n float32) {
+	e.SetAnchor(0, 0, 1, 1)
+	e.SetRect(n)
 }

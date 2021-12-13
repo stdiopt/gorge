@@ -35,8 +35,10 @@ func Slider(min, max float32) BuildFunc {
 				track.SetRect(0)
 				track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 
+				// this will be stuck forever :/
 				b.Set("textColor", b.Prop("textColor"))
 				b.Set("fontScale", b.Prop("fontScale", 2))
+				// b.Set("color", b.Prop("handlerColor"))
 				handler = b.TextButton("0", nil)
 				handler.SetPivot(.5)
 				handler.SetRect(0, 0, handlerSize, 0)
@@ -46,8 +48,19 @@ func Slider(min, max float32) BuildFunc {
 		}
 		b.End()
 
-		var dragging bool
+		b.Observe("handlerColor", func(c m32.Vec4) {
+			handler.Set("color", c)
+		})
+		b.Observe("handler", func(e *Entity) {
+			// Need to remove Element first :/
+			track.RemoveElement(handler)
+			handler = e
+			track.AddElement(handler)
 
+			handler.SetPivot(.5)
+			handler.SetRect(0, 0, handlerSize, 0)
+			handler.SetAnchor(val, 0, val, 1)
+		})
 		b.Observe("value", func(v float32) {
 			if val == v {
 				return
@@ -55,7 +68,7 @@ func Slider(min, max float32) BuildFunc {
 			val = v
 			root.Trigger(EventValueChanged{val})
 			handler.SetAnchor(val, 0, val, 1)
-			handler.Set("text", fmt.Sprintf("%.2f", val))
+			handler.Set("text", fmt.Sprintf("%.2f", min+(val*(max-min))))
 		})
 		b.Observe("handlerSize", func(f float32) {
 			handlerSize = f
@@ -63,6 +76,7 @@ func Slider(min, max float32) BuildFunc {
 			track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 		})
 
+		var dragging bool
 		root.HandleFunc(func(e event.Event) {
 			switch e := e.(type) {
 			case gorgeui.EventPointerUp:

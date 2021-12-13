@@ -1,14 +1,9 @@
 package gorlet
 
-import "strings"
-
-// Props to set multiple properties at once.
+// Props represents a k.v with some methods
 type Props map[string]interface{}
 
-func (p Props) Set(k string, v interface{}) {
-	p[k] = v
-}
-
+// Clone properties returns a new map with all keys from previous.
 func (p Props) Clone() Props {
 	cp := Props{}
 	for k, v := range p {
@@ -17,29 +12,9 @@ func (p Props) Clone() Props {
 	return cp
 }
 
-func (p Props) Select(prefix string) Props {
-	prefix += "."
-	solve := map[string]string{}
-	for k := range p {
-		pre := ""
-		key := k
-		if n := strings.LastIndex(k, "."); n > 0 {
-			pre = k[:n]
-			key = k[n+1:]
-		}
-		// log.Println("Has prefix:", prefix, pre, strings.HasPrefix(prefix, pre))
-		if !strings.HasPrefix(prefix, pre) { // discard non prefix ones
-			continue
-		}
-		if full, ok := solve[key]; !ok || len(full) < len(k) {
-			solve[key] = k
-		}
-	}
-	r := Props{}
-	for k, fullK := range solve {
-		r[k] = p[fullK]
-	}
-	return r
+// Set a property to props.
+func (p Props) Set(k string, v interface{}) {
+	p[k] = v
 }
 
 type propStack struct {
@@ -68,5 +43,36 @@ func (p *propStack) Restore() {
 	p.stack = p.stack[:len(p.stack)-1]
 }
 
-// PropGroup used to apply props to an entity
-type PropGroup map[string]Props
+/*
+type propSetter interface {
+	Set(string, interface{})
+}
+
+type PropsGroup map[string]interface{}
+
+// Apply props to thing.
+func (p PropsGroup) Apply(prefix string, s propSetter) {
+	if p == nil {
+		return
+	}
+	solve := map[string]string{}
+	prefix += "."
+	for k := range p {
+		pre := ""
+		key := k
+		if n := strings.LastIndex(k, "."); n > 0 {
+			pre = k[:n]
+			key = k[n+1:]
+		}
+		if !strings.HasPrefix(prefix, pre) { // discard non prefix ones
+			continue
+		}
+		if full, ok := solve[key]; !ok || len(full) < len(k) {
+			solve[key] = k
+		}
+	}
+
+	for k, fullK := range solve {
+		s.Set(k, p[fullK])
+	}
+}*/

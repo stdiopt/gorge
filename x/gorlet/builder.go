@@ -24,19 +24,6 @@ type curEntity struct {
 // BuildFunc to build a guilet
 type BuildFunc func(b *Builder)
 
-// Create creates builds and prepares a guilet
-func Create(fn BuildFunc) *Entity {
-	root := &Entity{
-		RectComponent: *gorgeui.NewRectComponent(),
-	}
-	b := Builder{root: &curEntity{
-		elem: root,
-	}}
-
-	fn(&b)
-	return root
-}
-
 // AddMode builder add mode.
 type AddMode int
 
@@ -58,6 +45,19 @@ type Builder struct {
 
 	// Save Restore SetProp stuff and all that.
 	propStack propStack
+}
+
+// Create creates builds and prepares a guilet
+func Create(fn BuildFunc) *Entity {
+	root := &Entity{
+		RectComponent: *gorgeui.NewRectComponent(),
+	}
+	b := Builder{
+		root: &curEntity{elem: root},
+	}
+
+	fn(&b)
+	return root
 }
 
 // SetAddMode set Entity add mode.
@@ -105,18 +105,36 @@ func (b *Builder) Prop(k string, v ...interface{}) ForwardProp {
 	return ForwardProp{prop: k, def: def}
 }
 
-// UseProps set props, if an entity is passed it will set only on entity and return the entity.
-// else it will set on builder.
-func (b *Builder) UseProps(k string, e *Entity) *Entity {
-	props := b.propStack.cur().Select(k)
-	b.setupProps(props, e)
-	return e
-}
-
 // Observe adds a function to observe a property in the root Entity.
 func (b Builder) Observe(k string, fn interface{}) {
 	b.root.elem.observe(k, fn)
 }
+
+// UseProps set props, if an entity is passed it will set only on entity and return the entity.
+// else it will set on builder.
+/*func (b *Builder) UseProps(k string, e ...*Entity) *Entity {
+	if len(e) == 0 {
+		if b.propGroup == nil {
+			return nil
+		}
+		p := b.propGroup.Select(k)
+
+		b.SetProps(p)
+		return nil
+	}
+
+	if b.propGroup == nil {
+		return e[0]
+	}
+	b.setupProps(b.propGroup.Select(k), e[0])
+	return e[0]
+}
+
+// DefineProps to be used in as groups.
+func (b *Builder) DefineProps(g PropsGroup) {
+	b.SetProps(g.Select(""))
+	b.propGroup = g
+}*/
 
 // Create creates an Entity with builder properties
 // NOTE: it does not add to the current container.
@@ -164,7 +182,8 @@ func (b *Builder) AddEntity(e *Entity) *Entity {
 	return e
 }
 
-// Begin creates and pushes a guilet onto stack.
+// Begin creates and pushes an Entity onto stack it will save
+// property state and restore on end.
 func (b *Builder) Begin(fn BuildFunc) *Entity {
 	w := b.Add(fn)
 	b.push(w)
@@ -178,21 +197,26 @@ func (b *Builder) End() {
 	b.pop()
 }
 
-func (b *Builder) setProp(e *Entity, k string, v interface{}) {
-	pk, ok := v.(ForwardProp)
-	if !ok {
-		e.Set(k, v)
-		return
-	}
-	b.Observe(pk.prop, func(v interface{}) { e.Set(k, v) })
-	if pk.def != nil { // Set the default value
-		e.Set(k, pk.def)
-	}
-}
-
 func (b *Builder) setupProps(props Props, e *Entity) {
 	for k, v := range props {
-		b.setProp(e, k, v)
+		k, v := k, v
+
+		// If we don't have any observer, don't bother setting it.
+		if _, ok := e.props[k]; !ok {
+			continue
+		}
+
+		pk, ok := v.(ForwardProp)
+		if !ok {
+			e.Set(k, v)
+			continue
+		}
+		b.Observe(pk.prop, func(v interface{}) {
+			e.Set(k, v)
+		})
+		if pk.def != nil { // Set the default value
+			e.Set(k, pk.def)
+		}
 	}
 }
 
@@ -221,7 +245,7 @@ func (b *Builder) cur() *curEntity {
 	return b.stack[len(b.stack)-1]
 }
 
-func makePropFunc(fn interface{}) func(interface{}) {
+func makePropFunc(k string, fn interface{}) func(interface{}) {
 	if fn, ok := fn.(func(interface{})); ok {
 		return fn
 	}
@@ -232,7 +256,7 @@ func makePropFunc(fn interface{}) func(interface{}) {
 		arg := reflect.ValueOf(v)
 		if aTyp := arg.Type(); aTyp != inTyp {
 			if !arg.CanConvert(inTyp) {
-				panic(fmt.Sprintf("Can't convert %v to %v", aTyp, inTyp))
+				panic(fmt.Sprintf("Can't convert prop [%q] %v(%v) to %v", k, aTyp, v, inTyp))
 			}
 			arg = arg.Convert(inTyp)
 		}

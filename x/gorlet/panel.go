@@ -1,15 +1,13 @@
 package gorlet
 
 import (
-	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
-	"github.com/stdiopt/gorge/systems/gorgeui/widget"
 )
 
 // Panel creates a panel.
 func Panel() BuildFunc {
-	return func(b *Builder) {
+	return Quad()
+	/*return func(b *Builder) {
 		p := b.Root()
 		ent := widget.QuadEntity()
 		gorgeui.AddElementTo(p, ent)
@@ -27,7 +25,7 @@ func Panel() BuildFunc {
 
 		// Defaults
 		p.Set("color", m32.Color(0, 0, 0, .2))
-	}
+	}*/
 }
 
 // BeginPanel begins a panel.

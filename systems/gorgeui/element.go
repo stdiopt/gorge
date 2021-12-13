@@ -21,15 +21,16 @@ type (
 type ElementComponent struct {
 	event.Bus
 
-	static   []gorge.Entity
+	element  []gorge.Entity
 	children []gorge.Entity
 	all      []gorge.Entity
 
 	DragEvents     bool
 	DisableRaycast bool
 
-	Attached   bool
-	LayoutFunc func(e Entity) // LayoutFunc is called when the element state is changed rect etc
+	Attached bool
+	// LayoutFunc is called when the element state is changed rect etc
+	LayoutFunc func(e Entity)
 }
 
 // Element implements the Element.
@@ -62,7 +63,7 @@ func (c *ElementComponent) Children() []gorge.Entity {
 
 func (c *ElementComponent) add(ents ...gorge.Entity) {
 	c.all = append(c.all, ents...)
-	c.static = append(c.static, ents...)
+	c.element = append(c.element, ents...)
 }
 
 // AddChildren adds dynamic children to this element.
@@ -71,17 +72,29 @@ func (c *ElementComponent) AddChildren(ents ...gorge.Entity) {
 	c.children = append(c.children, ents...)
 }
 
-func (c *ElementComponent) removeChildren(ents ...gorge.Entity) {
+func (c *ElementComponent) remove(isElement bool, ents ...gorge.Entity) {
+	target := c.children
+	if isElement {
+		target = c.element
+	}
+
 	for _, e := range ents {
-		for i := 0; i < len(c.children); i++ {
-			if c.children[i] == e {
-				t := c.children
-				c.children = append(c.children[:i], c.children[i+1:]...)
+		for i := 0; i < len(target); i++ {
+			if target[i] == e {
+				t := target
+				target = append(target[:i], target[i+1:]...)
 				i--
 				t[len(t)-1] = nil // remove reference to last so it can be Gc'ed
 			}
 		}
 	}
+	// Reassign original slice
+	if isElement {
+		c.element = target
+	} else {
+		c.children = target
+	}
+
 	for _, e := range ents {
 		for i := 0; i < len(c.all); i++ {
 			if c.all[i] == e {
@@ -120,5 +133,19 @@ func AddElementTo(parent Entity, ents ...gorge.Entity) {
 	if parent.Element().Attached {
 		ui := RootUI(parent)
 		ui.Add(ents...)
+	}
+}
+
+// RemoveElementFrom removes element from entity.
+func RemoveElementFrom(parent Entity, ents ...gorge.Entity) {
+	for _, cc := range ents {
+		if t, ok := cc.(gorge.ParentSetter); ok {
+			t.SetParent(nil)
+		}
+		parent.Element().remove(true, cc)
+	}
+	if parent.Element().Attached {
+		ui := RootUI(parent)
+		ui.Remove(ents...)
 	}
 }
