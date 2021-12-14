@@ -30,7 +30,7 @@ type ElementComponent struct {
 
 	Attached bool
 	// LayoutFunc is called when the element state is changed rect etc
-	LayoutFunc func(e Entity)
+	Layouter Layouter
 }
 
 // Element implements the Element.
@@ -47,8 +47,8 @@ func (c *ElementComponent) SetDisableRaycast(b bool) {
 }
 
 // SetLayoutFunc sets the layout func.
-func (c *ElementComponent) SetLayoutFunc(fn LayoutFunc) {
-	c.LayoutFunc = fn
+func (c *ElementComponent) SetLayouter(fn Layouter) {
+	c.Layouter = fn
 }
 
 // GetEntities implements the gorge.EntityContainer interface.

@@ -14,6 +14,10 @@ func (p Props) Clone() Props {
 
 // Set a property to props.
 func (p Props) Set(k string, v interface{}) {
+	if v == nil {
+		delete(p, k)
+		return
+	}
 	p[k] = v
 }
 

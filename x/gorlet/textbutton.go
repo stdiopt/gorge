@@ -16,6 +16,10 @@ func TextButton(t string, clickfn func()) BuildFunc {
 			down       = m32.Color(.4)
 			fadeFactor = float32(10)
 		)
+		b.BindProp("color", &normal)
+		b.BindProp("highlight", &highlight)
+		b.BindProp("down", &down)
+		b.BindProp("fadeFactor", &fadeFactor)
 
 		root := b.Root()
 		b.SetAddMode(ElementAdd)

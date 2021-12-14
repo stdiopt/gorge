@@ -13,12 +13,8 @@ type ForwardProp struct {
 	def  interface{}
 }
 
-// PlacementFunc will be used in a container and will define clients rect.
-type PlacementFunc func(w *Entity) // OnAdd in the Entity
-
 type curEntity struct {
-	placement PlacementFunc
-	elem      *Entity
+	entity *Entity
 }
 
 // BuildFunc to build a guilet
@@ -36,9 +32,10 @@ const (
 // Builder used to build a guilet.
 type Builder struct {
 	placement PlacementFunc
-	layout    gorgeui.LayoutFunc
+	layout    gorgeui.Layouter
 
-	mode AddMode
+	onAddFn func(e *Entity)
+	mode    AddMode
 
 	stack []*curEntity
 	root  *curEntity
@@ -52,8 +49,12 @@ func Create(fn BuildFunc) *Entity {
 	root := &Entity{
 		RectComponent: *gorgeui.NewRectComponent(),
 	}
+	// root.SetLayouter(gorgeui.AutoHeight(1))
+	// root.SetAnchor(0)
+	// root.SetRect(0, 0, 30, 5)
+	root.SetPivot(0)
 	b := Builder{
-		root: &curEntity{elem: root},
+		root: &curEntity{entity: root},
 	}
 
 	fn(&b)
@@ -71,7 +72,7 @@ func (b *Builder) Placement(fn PlacementFunc) {
 }
 
 // Layout set next widget layout.
-func (b *Builder) Layout(fns ...gorgeui.LayoutFunc) {
+func (b *Builder) Layout(fns ...gorgeui.Layouter) {
 	if len(fns) == 0 {
 		return
 	}
@@ -80,7 +81,7 @@ func (b *Builder) Layout(fns ...gorgeui.LayoutFunc) {
 
 // Root returns root guilet.
 func (b *Builder) Root() *Entity {
-	return b.root.elem
+	return b.root.entity
 }
 
 // Set a property for the next widget.
@@ -105,9 +106,54 @@ func (b *Builder) Prop(k string, v ...interface{}) ForwardProp {
 	return ForwardProp{prop: k, def: def}
 }
 
+// ForwardProps will forward any entity props in this builder to the entity
+// using a prefix
+func (b *Builder) ForwardProps(pre string, e *Entity) {
+	for k, v := range e.observers {
+		key := k
+		if pre != "" {
+			key = pre + "." + k
+		}
+		for _, fn := range v {
+			b.Observe(key, fn)
+		}
+	}
+}
+
 // Observe adds a function to observe a property in the root Entity.
 func (b Builder) Observe(k string, fn interface{}) {
-	b.root.elem.observe(k, fn)
+	b.root.entity.observe(k, fn)
+}
+
+// BindProp binds a property to a pointer.
+func (b Builder) BindProp(k string, v interface{}) {
+	val := reflect.ValueOf(v)
+	if val.Kind() != reflect.Ptr {
+		panic("Bind value must be a pointer")
+	}
+	val = val.Elem()
+
+	b.Observe(k, func(v interface{}) {
+		arg := reflect.ValueOf(v)
+		if arg.Type() != val.Type() {
+			if !arg.Type().ConvertibleTo(val.Type()) {
+				panic(fmt.Sprintf("Cannot bind %s to %s", arg.Type(), val.Type()))
+			}
+			arg = arg.Convert(val.Type())
+		}
+
+		val.Set(arg)
+	})
+}
+
+// Save save props state onto stack.
+func (b Builder) Save() {
+	b.propStack.Save()
+}
+
+// Restore restores props from stack.
+func (b *Builder) Restore() {
+	b.propStack.Restore()
 }
 
 // UseProps set props, if an entity is passed it will set only on entity and return the entity.
@@ -144,24 +190,13 @@ func (b *Builder) Create(fn BuildFunc) *Entity {
 	return w
 }
 
+func (b *Builder) OnAdd(fn func(e *Entity)) {
+	b.onAddFn = fn
+}
+
 // Add an Entity to the current container.
 func (b *Builder) Add(fn BuildFunc) *Entity {
-	e := b.Create(fn)
-
-	cur := b.cur()
-	switch b.mode {
-	case ChildrenAdd:
-		if cur.placement != nil {
-			cur.placement(e)
-		}
-		cur.elem.Add(e)
-	case ElementAdd:
-		e.SetPivot(.5)
-		e.SetAnchor(0, 0, 1, 1)
-		e.SetRect(0)
-		cur.elem.AddElement(e)
-	}
-	return e
+	return b.AddEntity(b.Create(fn))
 }
 
 // AddEntity adds a prebuilt entity.
@@ -169,15 +204,15 @@ func (b *Builder) AddEntity(e *Entity) *Entity {
 	cur := b.cur()
 	switch b.mode {
 	case ChildrenAdd:
-		if cur.placement != nil {
-			cur.placement(e)
+		cur.entity.Add(e)
+		if b.onAddFn != nil {
+			b.onAddFn(e)
 		}
-		cur.elem.Add(e)
 	case ElementAdd:
 		e.SetPivot(.5)
 		e.SetAnchor(0, 0, 1, 1)
 		e.SetRect(0)
-		cur.elem.AddElement(e)
+		cur.entity.AddElement(e)
 	}
 	return e
 }
@@ -202,7 +237,7 @@ func (b *Builder) setupProps(props Props, e *Entity) {
 		k, v := k, v
 
 		// If we don't have any observer, don't bother setting it.
-		if _, ok := e.props[k]; !ok {
+		if _, ok := e.observers[k]; !ok {
 			continue
 		}
 
@@ -220,10 +255,10 @@ func (b *Builder) setupProps(props Props, e *Entity) {
 	}
 }
 
-func (b *Builder) push(g *Entity) {
-	cur := curEntity{elem: g}
-	cur.placement = b.placement
-	g.LayoutFunc = b.layout
+func (b *Builder) push(e *Entity) {
+	cur := curEntity{entity: e}
+	e.onAdd = b.placement
+	e.Layouter = b.layout
 
 	b.placement = nil
 	b.layout = nil

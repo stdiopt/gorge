@@ -158,8 +158,8 @@ func (s *system) HandleEvent(v event.Event) {
 		// XXX: {lpf} new automatic layout per update
 		// (this should be called once a layout relevante state is changed)
 		for _, el := range s.elems {
-			if lfn := el.Element().LayoutFunc; lfn != nil {
-				lfn(el)
+			if l := el.Element().Layouter; l != nil {
+				l.Layout(el)
 			}
 		}
 

@@ -213,12 +213,12 @@ func (b *Builder) End() {
 }
 
 // BeginPanel starts a panel, the next widgets will be added as childs to panel.
-func (b *Builder) BeginPanel(d ...gorgeui.LayoutFunc) *Panel {
+func (b *Builder) BeginPanel(ls ...gorgeui.Layouter) *Panel {
 	// cur := b.cur()
 	s := b.style.cur() // this won't pop 'once'
 	panel := NewPanel()
-	if len(d) > 0 {
-		panel.SetLayoutFunc(gorgeui.MultiLayout(d...))
+	if len(ls) > 0 {
+		panel.SetLayouter(gorgeui.MultiLayout(ls...))
 	}
 	panel.SetColor(s.background[:]...)
 

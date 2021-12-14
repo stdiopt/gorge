@@ -29,8 +29,8 @@ func Panel() BuildFunc {
 }
 
 // BeginPanel begins a panel.
-func (b *Builder) BeginPanel(layout ...gorgeui.LayoutFunc) *Entity {
-	b.Layout(layout...)
+func (b *Builder) BeginPanel(ls ...gorgeui.Layouter) *Entity {
+	b.Layout(ls...)
 	return b.Begin(Panel())
 }
 

@@ -11,12 +11,18 @@ type (
 	}
 )
 
+// PlacementFunc will be used in a container and will define clients rect.
+type PlacementFunc func(w *Entity) // OnAdd in the Entity
+
 // Entity is a gui component
 type Entity struct {
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
 
-	props map[string][]func(interface{})
+	// TODO: {lpf} give it a proper name.
+	onAdd PlacementFunc
+
+	observers map[string][]func(interface{})
 }
 
 // Attached implements the Attacher interface
@@ -33,10 +39,10 @@ func (e *Entity) Attached(ent gorgeui.Entity) {
 
 // Set invoke any observer attached to the named propery.
 func (e *Entity) Set(name string, value interface{}) {
-	if e.props == nil {
+	if e.observers == nil {
 		return
 	}
-	if fns, ok := e.props[name]; ok {
+	if fns, ok := e.observers[name]; ok {
 		for _, fn := range fns {
 			fn(value)
 		}
@@ -44,20 +50,24 @@ func (e *Entity) Set(name string, value interface{}) {
 }
 
 func (e *Entity) observe(k string, fn interface{}) {
-	if e.props == nil {
-		e.props = map[string][]func(interface{}){}
+	if e.observers == nil {
+		e.observers = map[string][]func(interface{}){}
 	}
-	e.props[k] = append(e.props[k], makePropFunc(k, fn))
+	e.observers[k] = append(e.observers[k], makePropFunc(k, fn))
 }
 
 // Add adds a children to entity.
 func (e *Entity) Add(children ...*Entity) {
 	for _, c := range children {
+		if e.onAdd != nil {
+			e.onAdd(c)
+		}
+		// This adds it to children class.
 		gorgeui.AddChildrenTo(e, c)
 	}
 	// Relayout
-	if e.LayoutFunc != nil {
-		e.LayoutFunc(e)
+	if e.Layouter != nil {
+		e.Layouter.Layout(e)
 	}
 }
 
@@ -76,8 +86,7 @@ func (e *Entity) RemoveElement(els ...gorge.Entity) {
 	}
 }
 
-// Rect helper
-
+// FillParent will reset anchor to 0,0 1,1 and Rect to 0,0,0,0.
 func (e *Entity) FillParent(n float32) {
 	e.SetAnchor(0, 0, 1, 1)
 	e.SetRect(n)

@@ -38,7 +38,7 @@ func Slider(min, max float32) BuildFunc {
 				// this will be stuck forever :/
 				b.Set("textColor", b.Prop("textColor"))
 				b.Set("fontScale", b.Prop("fontScale", 2))
-				// b.Set("color", b.Prop("handlerColor"))
+				b.Set("color", b.Prop("handlerColor"))
 				handler = b.TextButton("0", nil)
 				handler.SetPivot(.5)
 				handler.SetRect(0, 0, handlerSize, 0)
