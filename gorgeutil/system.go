@@ -49,7 +49,7 @@ func (c Context) PerspectiveCamera(fov, near, far float32) *Camera {
 func (c Context) UICamera() *Camera {
 	cam := NewCamera()
 	cam.SetOrtho(100, -100, 100)
-	cam.SetCullMask(gorge.MaskUI)
+	cam.SetCullMask(gorge.CullMaskUI)
 	cam.SetOrder(100)
 	cam.SetClearFlag(gorge.ClearDepthOnly)
 	c.Add(cam)

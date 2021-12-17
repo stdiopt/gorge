@@ -80,7 +80,7 @@ func NewUICamera() *Camera {
 			ClearFlag:      gorge.ClearDepthOnly,
 			Viewport:       m32.Vec4{0, 0, 1, 1},
 			Order:          100,
-			CullMask:       gorge.MaskUI,
+			CullMask:       gorge.CullMaskUI,
 		},
 	}
 }

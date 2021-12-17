@@ -9,26 +9,31 @@ import (
 )
 
 // Spinner creates a new spinner.
-func Spinner(lbl string) BuildFunc {
+func Spinner(lbl string, fn func(float32)) BuildFunc {
 	return func(b *Builder) {
+		var (
+			fontScale      = b.Prop("fontScale", 2)
+			labelColor     = b.Prop("labelColor", m32.Color(1))
+			labelTextColor = b.Prop("labelTextColor", m32.Color(1))
+			textColor      = b.Prop("textColor", m32.Color(1))
+		)
 		var val float32 = -1
 
-		b.Set("fontScale", b.Prop("fontScale", 2))
+		b.Set("fontScale", fontScale)
 		root := b.Root()
-		b.Layout(gorgeui.FlexHorizontal(1, 2))
+		b.UseLayout(LayoutFlexHorizontal(1, 2))
 		b.BeginPanel()
 		{
 
-			b.Set("color", b.Prop("labelColor", m32.Color(1)))
+			b.Set("color", labelColor)
 			b.BeginPanel()
 			{
-				b.Set("color", b.Prop("labelTextColor", m32.Color(1)))
+				b.Set("color", labelTextColor)
 				b.Label(lbl)
 			}
 			b.End()
 		}
-		b.Set("color", b.Prop("textColor", m32.Color(1)))
-
+		b.Set("color", textColor)
 		l := b.Label("")
 		b.EndPanel()
 
@@ -38,7 +43,9 @@ func Spinner(lbl string) BuildFunc {
 			}
 			val = v
 			l.Set("text", fmt.Sprintf("%.2f", val))
-
+			if fn != nil {
+				fn(val)
+			}
 			root.Trigger(EventValueChanged{val})
 		})
 
@@ -55,6 +62,6 @@ func Spinner(lbl string) BuildFunc {
 }
 
 // Spinner add a spinner to the child.
-func (b *Builder) Spinner(t string) *Entity {
-	return b.Add(Spinner(t))
+func (b *Builder) Spinner(t string, fn func(float32)) *Entity {
+	return b.Add(Spinner(t, fn))
 }

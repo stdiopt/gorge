@@ -19,7 +19,7 @@ func System(g *gorge.Context, rc *resource.Context) error {
 	log.Println("Initializing system")
 	dbg := newDebugLines()
 	dbg.Queue = 200
-	dbg.SetCullMask(1 << 0x17)
+	dbg.SetCullMask(gorge.CullMaskUIDebug)
 	g.Add(dbg)
 
 	DefaultFont = &text.Font{}

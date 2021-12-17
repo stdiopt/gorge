@@ -29,7 +29,7 @@ func New(g gorger) *UI {
 	e := &UI{
 		RectComponent: RectIdent(),
 		gorge:         g.Gorge(),
-		CullMask:      gorge.MaskUI, // default
+		CullMask:      gorge.CullMaskUI, // default
 	}
 	e.SetAnchor(0)
 	// e.SetPivot(.5)

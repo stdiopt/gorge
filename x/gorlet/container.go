@@ -1,11 +1,11 @@
 package gorlet
 
 // Container empty container consturctor.
-func Container(b *Builder) {
-}
+func Container(b *Builder) {}
 
 // BeginContainer begins an empty container.
-func (b *Builder) BeginContainer() *Entity {
+func (b *Builder) BeginContainer(layout ...Layouter) *Entity {
+	b.UseLayout(layout...)
 	return b.Begin(Container)
 }
 

@@ -12,19 +12,25 @@ import (
 // EventF32Changed triggers on certain widdgets a value change.
 
 // Slider guilet.
-func Slider(min, max float32) BuildFunc {
+func Slider(min, max float32, fn func(float32)) BuildFunc {
 	return func(b *Builder) {
+		var (
+			fontScale        = b.Prop("fontScale")
+			handlerTextColor = b.Prop("textColor")
+			handlerColor     = b.Prop("handlerColor")
+		)
 		var val float32
 		var handlerSize float32 = 4
-
 		var track *Entity
 		var handler *Entity
 
 		root := b.Root()
-
+		root.SetAnchor(0)
+		root.SetRect(0, 0, 30, 4)
 		root.SetDragEvents(true)
 
 		b.Set("color", m32.Color(.4, .2))
+		b.Set("fontScale", fontScale)
 		b.SetAddMode(ElementAdd)
 		b.BeginPanel()
 		{
@@ -36,9 +42,9 @@ func Slider(min, max float32) BuildFunc {
 				track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 
 				// this will be stuck forever :/
-				b.Set("textColor", b.Prop("textColor"))
-				b.Set("fontScale", b.Prop("fontScale", 2))
-				b.Set("color", b.Prop("handlerColor"))
+				b.Set("textColor", handlerTextColor)
+				b.Set("color", handlerColor)
+
 				handler = b.TextButton("0", nil)
 				handler.SetPivot(.5)
 				handler.SetRect(0, 0, handlerSize, 0)
@@ -66,9 +72,13 @@ func Slider(min, max float32) BuildFunc {
 				return
 			}
 			val = v
-			root.Trigger(EventValueChanged{val})
 			handler.SetAnchor(val, 0, val, 1)
 			handler.Set("text", fmt.Sprintf("%.2f", min+(val*(max-min))))
+
+			if fn != nil {
+				fn(val)
+			}
+			root.Trigger(EventValueChanged{val})
 		})
 		b.Observe("handlerSize", func(f float32) {
 			handlerSize = f
@@ -122,6 +132,6 @@ func Slider(min, max float32) BuildFunc {
 }
 
 // Slider adds a slider to current element.
-func (b *Builder) Slider(min, max float32) *Entity {
-	return b.Add(Slider(min, max))
+func (b *Builder) Slider(min, max float32, fn func(float32)) *Entity {
+	return b.Add(Slider(min, max, fn))
 }

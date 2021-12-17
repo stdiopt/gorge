@@ -12,8 +12,6 @@ import (
 // Label functional.
 func Label(t string) BuildFunc {
 	return func(b *Builder) {
-		root := b.Root()
-
 		mat := gorge.NewShaderMaterial(static.Shaders.Unlit)
 		mat.SetQueue(100)
 		mat.SetDepth(gorge.DepthNone)
@@ -21,7 +19,7 @@ func Label(t string) BuildFunc {
 
 		// Font      *text.Font
 		var Size float32 = 2
-		var Alignment [2]text.AlignType = [2]text.AlignType{text.AlignCenter, text.AlignCenter}
+		Alignment := [2]text.AlignType{text.AlignCenter, text.AlignCenter}
 
 		ent := text.New(gorgeui.DefaultFont)
 		ent.SetMaterial(mat)
@@ -31,15 +29,16 @@ func Label(t string) BuildFunc {
 		ent.SetAlignment(Alignment[0])
 		ent.SetColor(1, 1, 1, 1)
 
-		gorgeui.AddElementTo(root, ent)
+		root := b.Root()
+		root.AddElement(ent)
 
 		// Element maybe?
-		b.Root().HandleFunc(func(e event.Event) {
+		root.HandleFunc(func(e event.Event) {
 			_, ok := e.(gorgeui.EventUpdate) // Change to PreUpdate?
 			if !ok {
 				return
 			}
-			r := b.Root().Rect()
+			r := root.Rect()
 			bounds := m32.Vec2{r[2] - r[0], r[3] - r[1]}
 			ent.Position[0] = r[0] // left
 
@@ -74,7 +73,7 @@ func Label(t string) BuildFunc {
 			ent.Size = v
 			ent.Update()
 		})
-		b.Observe("align", func(a []text.AlignType) {
+		b.Observe("textAlign", func(a []text.AlignType) {
 			Alignment = *(*[2]text.AlignType)(a)
 			ent.Alignment = a[0]
 			ent.Update()

@@ -3,8 +3,6 @@ package gorlet
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // ForwardProp to be used to forward properties.
@@ -29,10 +27,18 @@ const (
 	ElementAdd
 )
 
+type nextData struct {
+	placement PlacementFunc
+	layout    Layouter
+
+	Rect   []float32
+	Anchor []float32
+	Pivot  []float32
+}
+
 // Builder used to build a guilet.
 type Builder struct {
-	placement PlacementFunc
-	layout    gorgeui.Layouter
+	next nextData
 
 	onAddFn func(e *Entity)
 	mode    AddMode
@@ -44,44 +50,59 @@ type Builder struct {
 	propStack propStack
 }
 
-// Create creates builds and prepares a guilet
-func Create(fn BuildFunc) *Entity {
-	root := &Entity{
-		RectComponent: *gorgeui.NewRectComponent(),
-	}
-	// root.SetLayouter(gorgeui.AutoHeight(1))
-	// root.SetAnchor(0)
-	// root.SetRect(0, 0, 30, 5)
-	root.SetPivot(0)
-	b := Builder{
-		root: &curEntity{entity: root},
-	}
-
-	fn(&b)
-	return root
-}
-
 // SetAddMode set Entity add mode.
 func (b *Builder) SetAddMode(mode AddMode) {
 	b.mode = mode
 }
 
-// Placement sets the placement func.
-func (b *Builder) Placement(fn PlacementFunc) {
-	b.placement = fn
-}
-
-// Layout set next widget layout.
-func (b *Builder) Layout(fns ...gorgeui.Layouter) {
-	if len(fns) == 0 {
-		return
-	}
-	b.layout = gorgeui.MultiLayout(fns...)
-}
-
 // Root returns root guilet.
 func (b *Builder) Root() *Entity {
 	return b.root.entity
+}
+
+// ClientArea sets the root entity client area, when adding entities using Add
+// those will be added to the current container
+// calling this twice will override the previous call.
+func (b Builder) ClientArea() {
+	cur := b.cur()
+	if cur == b.root {
+		return
+	}
+	b.root.entity.SetClientArea(cur.entity)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Properties related to the next entity
+///////////////////////////////////////////////////////////////////////////////
+
+// Placement sets the placement func.
+func (b *Builder) Placement(fn PlacementFunc) {
+	b.next.placement = fn
+}
+
+// TODO: maybe switch to WithLayout
+
+// UseLayout set next widget layout.
+func (b *Builder) UseLayout(fns ...Layouter) {
+	if len(fns) == 0 {
+		return
+	}
+	b.next.layout = MultiLayout(fns...)
+}
+
+// UseRect sets next Entity Rect.
+func (b *Builder) UseRect(v ...float32) {
+	b.next.Rect = v
+}
+
+// UseAnchor sets next Entity Anchor.
+func (b *Builder) UseAnchor(v ...float32) {
+	b.next.Anchor = v
+}
+
+// UsePivot sets next Entity Pivot.
+func (b *Builder) UsePivot(v ...float32) {
+	b.next.Pivot = v
 }
 
 // Set a property for the next widget.
@@ -122,7 +143,7 @@ func (b *Builder) ForwardProps(pre string, e *Entity) {
 
 // Observe adds a function to observe a property in the root Entity.
 func (b Builder) Observe(k string, fn interface{}) {
-	b.root.entity.observe(k, fn)
+	b.root.entity.Observe(k, fn)
 }
 
 // BindProp binds a property to a pointer.
@@ -156,45 +177,33 @@ func (b *Builder) Restore() {
 	b.propStack.Restore()
 }
 
-// UseProps set props, if an entity is passed it will set only on entity and return the entity.
-// else it will set on builder.
-/*func (b *Builder) UseProps(k string, e ...*Entity) *Entity {
-	if len(e) == 0 {
-		if b.propGroup == nil {
-			return nil
-		}
-		p := b.propGroup.Select(k)
-
-		b.SetProps(p)
-		return nil
-	}
-
-	if b.propGroup == nil {
-		return e[0]
-	}
-	b.setupProps(b.propGroup.Select(k), e[0])
-	return e[0]
-}
-
-// DefineProps to be used in as groups.
-func (b *Builder) DefineProps(g PropsGroup) {
-	b.SetProps(g.Select(""))
-	b.propGroup = g
-}*/
-
 // Create creates an Entity with builder properties
 // NOTE: it does not add to the current container.
 func (b *Builder) Create(fn BuildFunc) *Entity {
-	w := Create(fn)
-	b.setupProps(b.propStack.cur(), w)
-	return w
+	e := Create(fn)
+
+	e.OnAdd(b.next.placement)
+	if b.next.layout != nil {
+		e.SetLayout(b.next.layout)
+	}
+
+	if len(b.next.Rect) > 0 {
+		e.SetRect(b.next.Rect...)
+	}
+	if len(b.next.Anchor) > 0 {
+		e.SetAnchor(b.next.Anchor...)
+	}
+	if len(b.next.Pivot) > 0 {
+		e.SetPivot(b.next.Pivot...)
+	}
+	b.next = nextData{}
+
+	b.setupProps(b.propStack.cur(), e)
+
+	return e
 }
 
-func (b *Builder) OnAdd(fn func(e *Entity)) {
-	b.onAddFn = fn
-}
-
-// Add an Entity to the current container.
+// Add creates and add an Entity to the current container.
 func (b *Builder) Add(fn BuildFunc) *Entity {
 	return b.AddEntity(b.Create(fn))
 }
@@ -217,6 +226,20 @@ func (b *Builder) AddEntity(e *Entity) *Entity {
 	return e
 }
 
+// SetRoot will set the root container.
+func (b *Builder) SetRoot(fn BuildFunc) *Entity {
+	if len(b.stack) > 0 {
+		panic("Builder.Start() called while already in a container")
+	}
+	if len(b.root.entity.observers) > 0 {
+		panic("Builder.Start() called while root already has observers")
+	}
+	e := b.Create(fn)
+
+	b.root.entity = e
+	return e
+}
+
 // Begin creates and pushes an Entity onto stack it will save
 // property state and restore on end.
 func (b *Builder) Begin(fn BuildFunc) *Entity {
@@ -236,7 +259,7 @@ func (b *Builder) setupProps(props Props, e *Entity) {
 	for k, v := range props {
 		k, v := k, v
 
-		// If we don't have any observer, don't bother setting it.
+		// If we don't have the target observer, don't bother setting it.
 		if _, ok := e.observers[k]; !ok {
 			continue
 		}
@@ -246,9 +269,7 @@ func (b *Builder) setupProps(props Props, e *Entity) {
 			e.Set(k, v)
 			continue
 		}
-		b.Observe(pk.prop, func(v interface{}) {
-			e.Set(k, v)
-		})
+		b.Observe(pk.prop, e.PropSetter(k))
 		if pk.def != nil { // Set the default value
 			e.Set(k, pk.def)
 		}
@@ -257,11 +278,6 @@ func (b *Builder) setupProps(props Props, e *Entity) {
 
 func (b *Builder) push(e *Entity) {
 	cur := curEntity{entity: e}
-	e.onAdd = b.placement
-	e.Layouter = b.layout
-
-	b.placement = nil
-	b.layout = nil
 
 	b.stack = append(b.stack, &cur)
 }

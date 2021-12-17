@@ -10,8 +10,9 @@ type (
 // TODO: Add masking constants and camera masking stuff here
 // All, None, UI, Debug etc
 const (
-	MaskDefault = 0xFF
-	MaskUI      = 0x100
+	CullMaskDefault = 0xFF
+	CullMaskUI      = 1 << 8
+	CullMaskUIDebug = 1 << 9
 )
 
 // RenderableComponent contains info for renderer

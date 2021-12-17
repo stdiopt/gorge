@@ -8,53 +8,103 @@ import (
 )
 
 // Window creates a draggable window with a title bar.
-func Window(title string, body BuildFunc) BuildFunc {
+func Window(def string) BuildFunc {
 	return func(b *Builder) {
 		const (
 			spacing = .4
 		)
 		var (
 			// fontScale      = b.Prop("fontScale", 2)
-			winColor       = b.Prop("win.background", m32.Color(0, .3))
-			titleFontScale = b.Prop("win.title.fontScale", 1.5)
-			titleColor     = b.Prop("win.title.color", m32.Color(0, 0, .3, .3))
-			titleTextColor = b.Prop("win.title.textcolor", m32.Color(1))
+			winColor       = b.Prop("background", m32.Color(0, .3))
+			titleFontScale = b.Prop("title.fontScale", 1.5)
+			titleColor     = b.Prop("title.color", m32.Color(0, 0, .3, .3))
+			titleTextColor = b.Prop("title.textcolor", m32.Color(1))
+			titleText      = b.Prop("title.text", def)
 		)
 
 		root := b.Root()
-		root.FillParent(0)
 
 		b.Set("color", winColor)
-		b.Layout(gorgeui.AutoHeight(1))
+		// b.Layout(gorgeui.AutoHeight(1))
 		b.BeginPanel()
-
+		// full.SetAnchor(0, 0, 1, 1)
 		b.SetProps(Props{
 			"fontScale": titleFontScale,
 			"color":     titleColor,
 			"textColor": titleTextColor,
 		})
-		p := b.BeginPanel()
-		p.SetAnchor(0, 0, 1, 0)
-		p.SetRect(0, 0, 0, 2)
-		p.SetPivot(0)
-		p.SetDragEvents(true)
-		p.HandleFunc(func(e event.Event) {
+		b.UseAnchor(0, 0, 1, 0)
+		b.UseRect(0, 0, 0, 2)
+		title := b.BeginPanel()
+		{
+			title.SetDragEvents(true)
+			title.HandleFunc(func(e event.Event) {
+				switch e := e.(type) {
+				case gorgeui.EventDrag:
+					ui := gorgeui.RootUI(root)
+					wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
+					wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, m32.Vec2{}).GetPoint(1))
+					root.Translate(wp[0], -wp[1], 0)
+				default:
+				}
+			})
+
+			b.UseAnchor(0, 0, 1, 1)
+			b.Set("text", titleText)
+			b.Label("")
+		}
+		b.EndPanel()
+
+		// Body
+		b.Set("color", winColor)
+		b.UseAnchor(0, 0, 1, 1)
+		b.UseRect(0, 2, 0, 0)
+		b.BeginPanel()
+		b.ClientArea()
+		b.EndPanel()
+
+		b.Set("color", nil)
+		b.Set("textColor", nil)
+
+		// b.UseAnchor(0, 0, 1, 1)
+		// b.UseRect(0, 0, 1, 0)
+		// b.TextButton("status", nil)
+
+		b.UseAnchor(1)
+		b.UseRect(0, 0, 1, 1)
+		b.UsePivot(.8)
+		b.Set("color", titleColor)
+
+		resizer := b.Add(Quad())
+		resizer.SetDragEvents(true)
+		resizer.HandleFunc(func(e event.Event) {
 			switch e := e.(type) {
 			case gorgeui.EventDrag:
 				ui := gorgeui.RootUI(root)
 				wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
 				wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, m32.Vec2{}).GetPoint(1))
-				root.Translate(wp[0], -wp[1], 0)
+				root.Dim = root.Dim.Add(m32.Vec2{wp[0], -wp[1]})
 			default:
 			}
 		})
-		b.Label(title)
-		b.EndContainer()
-
-		body := b.Add(body)
-		b.ForwardProps("", body)
-		body.SetAnchor(0, 0, 1, 1)
-		body.SetRect(spacing, 2+spacing, spacing, spacing)
-		body.SetPivot(0)
 	}
+}
+
+// WindowWrap wraps a window directly.
+func WindowWrap(title string, bodyFn BuildFunc) BuildFunc {
+	return func(b *Builder) {
+		b.SetRoot(Window(title))
+		body := b.Add(bodyFn)
+		b.ForwardProps("", body)
+	}
+}
+
+// BeginWindow begins a window.
+func (b *Builder) BeginWindow(titleText string) *Entity {
+	return b.Begin(Window(titleText))
+}
+
+// EndWindow alias to End().
+func (b *Builder) EndWindow() {
+	b.End()
 }

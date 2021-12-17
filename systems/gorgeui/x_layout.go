@@ -49,13 +49,13 @@ func AutoHeight(spacing float32) LayoutFunc {
 	}
 }
 
-// ListVertical returns a layoutfunc that will arrange children vertically.
-func ListVertical(spacing float32) LayoutFunc {
-	return List(DirectionVertical, spacing)
+// LayoutListVertical returns a layoutfunc that will arrange children vertically.
+func LayoutListVertical(spacing float32) LayoutFunc {
+	return LayoutList(DirectionVertical, spacing)
 }
 
-// List automatically layout children vertically.
-func List(dir Direction, spacing float32) LayoutFunc {
+// LayoutList automatically layout children vertically.
+func LayoutList(dir Direction, spacing float32) LayoutFunc {
 	padding := m32.Vec4{spacing, spacing, spacing, spacing}
 	return func(ent Entity) {
 		children := ent.Element().Children()
@@ -86,21 +86,21 @@ func List(dir Direction, spacing float32) LayoutFunc {
 	}
 }
 
-// FlexVertical automatically layout children vertically based on sizes.
-func FlexVertical(sizes ...float32) LayoutFunc {
-	return Flex(DirectionVertical, sizes...)
+// LayoutFlexVertical automatically layout children vertically based on sizes.
+func LayoutFlexVertical(sizes ...float32) LayoutFunc {
+	return LayoutFlex(DirectionVertical, sizes...)
 }
 
-// FlexHorizontal automatically layout children horizontally based on sizes.
-func FlexHorizontal(sizes ...float32) LayoutFunc {
-	return Flex(DirectionHorizontal, sizes...)
+// LayoutFlexHorizontal automatically layout children horizontally based on sizes.
+func LayoutFlexHorizontal(sizes ...float32) LayoutFunc {
+	return LayoutFlex(DirectionHorizontal, sizes...)
 }
 
 // TODO: {lpf} Transform this to am interface{} as we might want to change size
 // params live.
 
-// Flex layout
-func Flex(dir Direction, sizes ...float32) LayoutFunc {
+// LayoutFlex layout
+func LayoutFlex(dir Direction, sizes ...float32) LayoutFunc {
 	var sum float32
 	smaller := sizes[0]
 	for _, f := range sizes {

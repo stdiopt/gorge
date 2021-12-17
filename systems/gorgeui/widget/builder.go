@@ -218,7 +218,7 @@ func (b *Builder) BeginPanel(ls ...gorgeui.Layouter) *Panel {
 	s := b.style.cur() // this won't pop 'once'
 	panel := NewPanel()
 	if len(ls) > 0 {
-		panel.SetLayouter(gorgeui.MultiLayout(ls...))
+		panel.Layouter = gorgeui.MultiLayout(ls...)
 	}
 	panel.SetColor(s.background[:]...)
 
