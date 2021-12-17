@@ -111,6 +111,16 @@ func (c *RectComponent) SetRect(vs ...float32) {
 	c.Dim[1] = v[3]
 }
 
+// SetWidth sets the width.
+func (c *RectComponent) SetWidth(w float32) {
+	c.Dim[0] = w
+}
+
+// SetWidth sets the height.
+func (c *RectComponent) SetHeight(w float32) {
+	c.Dim[1] = w
+}
+
 // SetAnchor sets anchor.
 func (c *RectComponent) SetAnchor(v ...float32) {
 	switch len(v) {
