@@ -184,8 +184,10 @@ func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) interface{} 
 		s.input.SetScrollDelta(float32(evt.Get("deltaY").Float()))
 	case "mousemove":
 		s.input.SetCursorPosition(
-			float32(evt.Get("pageX").Float()*s.CanvasResolution),
-			float32(evt.Get("pageY").Float()*s.CanvasResolution),
+			m32.Vec2{
+				float32(evt.Get("pageX").Float() * s.CanvasResolution),
+				float32(evt.Get("pageY").Float() * s.CanvasResolution),
+			},
 		)
 	case "contextmenu":
 		s.input.SetMouseButtonState(input.MouseRight, input.ActionDown)
