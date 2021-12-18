@@ -28,7 +28,7 @@ func TextButton(t string, clickfn func()) BuildFunc {
 		p := b.BeginPanel()
 		{
 			b.SetProps(Props{
-				"alignment": []text.AlignType{text.AlignCenter, text.AlignCenter},
+				"alignment": []text.Align{text.AlignCenter, text.AlignCenter},
 				"text":      b.Prop("text", t),
 				"fontScale": b.Prop("fontScale", 2),
 				"textColor": b.Prop("textColor", m32.Color(0)),

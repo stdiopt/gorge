@@ -12,22 +12,24 @@ import (
 // Label functional.
 func Label(t string) BuildFunc {
 	return func(b *Builder) {
+		var autoSize bool
+
 		mat := gorge.NewShaderMaterial(static.Shaders.Unlit)
 		mat.SetQueue(100)
 		mat.SetDepth(gorge.DepthNone)
 		mat.SetTexture("albedoMap", gorgeui.DefaultFont.Texture)
 
-		// Font      *text.Font
-		var Size float32 = 2
-		Alignment := [2]text.AlignType{text.AlignCenter, text.AlignCenter}
+		Alignment := [2]text.Align{text.AlignCenter, text.AlignCenter}
 
 		ent := text.New(gorgeui.DefaultFont)
 		ent.SetMaterial(mat)
-		ent.SetScale(1, -1, 1)
-		ent.SetOverflow(text.OverflowWordWrap)
-		ent.Size = Size
-		ent.SetAlignment(Alignment[0])
-		ent.SetColor(1, 1, 1, 1)
+		ent.SetScale(1, -1, 1) // UI is inverted
+
+		// Defaults
+		ent.Overflow = text.OverflowWordWrap
+		ent.Size = 2
+		ent.Alignment = Alignment[0]
+		ent.Color = m32.Color(1)
 
 		root := b.Root()
 		root.AddElement(ent)
@@ -38,49 +40,56 @@ func Label(t string) BuildFunc {
 			if !ok {
 				return
 			}
-			r := root.Rect()
-			bounds := m32.Vec2{r[2] - r[0], r[3] - r[1]}
-			ent.Position[0] = r[0] // left
 
+			r := root.Rect()
+			// AutoSize is experimental and probably buggy.
+			// it doesn't take into account the anchoring.
+			if autoSize {
+				if p, ok := root.Parent().(gorgeui.Entity); ok {
+					rr := p.RectTransform().Rect()
+					// Only use parenting rect.
+					r[0] = rr[0]
+					r[2] = rr[2]
+				}
+				root.Dim = m32.Vec2{
+					ent.Max[0],
+					ent.Max[1] - ent.Min[1],
+				}
+			}
+
+			bounds := m32.Vec2{r[2] - r[0], r[3] - r[1]}
 			if ent.Boundary != bounds {
-				ent.Boundary = bounds
-				ent.Update()
+				ent.SetBoundary(bounds[0], bounds[1])
 			}
 
 			// This is executed regardless the text change
-			textHeight := float32(ent.Lines) * Size
+			textHeight := float32(ent.Lines) * ent.Size
 			switch Alignment[1] {
 			case text.AlignStart:
-				ent.Position[1] = r[1] + Size*0.25
+				ent.Position[1] = r[1] + ent.Size*0.25
 			case text.AlignCenter:
-				ent.Position[1] = r[3] - (bounds[1]/2 + textHeight/2) + Size*0.25 // top, center
+				ent.Position[1] = r[3] - (bounds[1]*.5 + textHeight*.5) + ent.Size*0.25 // top, center
 			case text.AlignEnd:
-				ent.Position[1] = r[3] - textHeight + Size*0.25
+				ent.Position[1] = r[3] - textHeight + ent.Size*0.25
 			}
 		})
 
-		// Lose to strong type?
+		b.Observe("autoSize", func(v bool) { autoSize = v })
 		b.Observe("text", func(s string) {
 			ent.SetText(s)
-			ent.Update()
 		})
 		b.Observe("textColor", func(c m32.Vec4) {
 			ent.SetColorv(c)
-			ent.Update()
 		})
 		b.Observe("fontScale", func(v float32) {
-			Size = v
-			ent.Size = v
-			ent.Update()
+			ent.SetSize(v)
 		})
-		b.Observe("textAlign", func(a []text.AlignType) {
-			Alignment = *(*[2]text.AlignType)(a)
-			ent.Alignment = a[0]
-			ent.Update()
+		b.Observe("textAlign", func(a []text.Align) {
+			Alignment = *(*[2]text.Align)(a)
+			ent.SetAlignment(Alignment[0])
 		})
 		b.Observe("overflow", func(o text.Overflow) {
-			ent.Overflow = o
-			ent.Update()
+			ent.SetOverflow(o)
 		})
 		root.Set("text", t)
 	}

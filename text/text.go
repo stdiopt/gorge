@@ -34,17 +34,17 @@ func (o Overflow) String() string {
 	return "Overflow#unknown"
 }
 
-// AlignType type for specifying text alignment.
-type AlignType int
+// Align type for specifying text alignment.
+type Align int
 
 // Text Alignment types.
 const (
-	AlignStart = AlignType(iota)
+	AlignStart = Align(iota)
 	AlignCenter
 	AlignEnd
 )
 
-func (a AlignType) String() string {
+func (a Align) String() string {
 	switch a {
 	case AlignStart:
 		return "AlignStart"
@@ -82,7 +82,7 @@ type Mesh struct {
 	// Boundary counting from starting Point
 	Boundary m32.Vec2
 	// Wrap just naive string wrap, should have better options
-	Alignment AlignType
+	Alignment Align
 	Overflow  Overflow
 	// Size 0 will return a default size (1)
 	Size float32
@@ -150,9 +150,15 @@ func (m *Mesh) SetOverflow(o Overflow) {
 	m.Update()
 }
 
+// SetSize sets the relative font size.
+func (m *Mesh) SetSize(v float32) {
+	m.Size = v
+	m.Update()
+}
+
 // SetAlignment sets the horizontal alignment based on boundary and updates
 // underlying mesh.
-func (m *Mesh) SetAlignment(a AlignType) {
+func (m *Mesh) SetAlignment(a Align) {
 	m.Alignment = a
 	m.Update()
 }
@@ -165,8 +171,8 @@ func (m *Mesh) getSize() float32 {
 	return 1
 }
 
-// measureWidth measures a width of a text best usage without "\n"
-func (m *Mesh) measureWidth(w []rune) float32 {
+// MeasureWidth measures a width of a text best usage without "\n"
+func (m *Mesh) MeasureWidth(w []rune) float32 {
 	size := m.getSize()
 	var x, totalX float32
 	for i, ch := range w {
@@ -301,11 +307,11 @@ func (m *Mesh) updateFlow() {
 			}
 			continue
 		}
-		w := m.measureWidth(line)
+		w := m.MeasureWidth(line)
 		cut := 1
 		switch m.Overflow {
 		case OverflowWordWrap: // And wrap
-			for ; len(line) > 1 && w > m.Boundary[0]; w = m.measureWidth(line) {
+			for ; len(line) > 1 && w > m.Boundary[0]; w = m.MeasureWidth(line) {
 				line = discardLastWord(line)
 				cut = 0
 				if len(line) <= 1 {
@@ -316,7 +322,7 @@ func (m *Mesh) updateFlow() {
 		// TODO: {lpf} Not very efficient? as it is looking backward
 		// might be better looking forward?
 		case OverflowBreakWord:
-			for ; len(line) > 1 && w > m.Boundary[0]; w = m.measureWidth(line) {
+			for ; len(line) > 1 && w > m.Boundary[0]; w = m.MeasureWidth(line) {
 				line = line[:len(line)-1]
 				cut = 0
 				if len(line) <= 1 {

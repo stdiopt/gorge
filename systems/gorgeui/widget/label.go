@@ -10,7 +10,7 @@ import (
 )
 
 // AlignType label text alignment type.
-type AlignType = text.AlignType
+type AlignType = text.Align
 
 // Text alignments.
 const (
