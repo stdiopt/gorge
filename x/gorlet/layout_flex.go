@@ -5,6 +5,7 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
+// FlexLayout will redimension children based on sizes.
 type FlexLayout struct {
 	Spacing   float32
 	Direction Direction
@@ -14,12 +15,15 @@ type FlexLayout struct {
 	sum     float32
 }
 
+// Layout implements layouter interface.
 func (l FlexLayout) Layout(ent gorgeui.Entity) {
 	children := ent.Element().Children()
 	esum := l.sum // effective sum
 	if d := len(children) - len(l.sizes); d > 0 {
 		esum = l.sum + float32(d)*l.smaller
 	}
+	// log.Println("Smaller:", l.smaller)
+	// log.Println("Sizes:", l.sizes)
 	var start float32
 	for i, e := range children {
 		rt, ok := e.(interface{ RectTransform() *gorgeui.RectComponent })
@@ -33,7 +37,6 @@ func (l FlexLayout) Layout(ent gorgeui.Entity) {
 		}
 
 		end := start + sz/esum
-		// log.Println("Size:", sz)
 		switch l.Direction {
 		case DirectionHorizontal:
 			r.SetAnchor(start, 0, end, 1)
@@ -57,8 +60,8 @@ func (l *FlexLayout) SetSizes(sizes ...float32) {
 	}
 }
 
-// LayoutFlex layout
-func LayoutFlex(dir Direction, sizes ...float32) *FlexLayout {
+// layoutFlex layout
+func layoutFlex(dir Direction, sizes ...float32) *FlexLayout {
 	l := &FlexLayout{
 		Spacing:   .3,
 		Direction: dir,
@@ -69,10 +72,10 @@ func LayoutFlex(dir Direction, sizes ...float32) *FlexLayout {
 
 // LayoutFlexVertical automatically layout children vertically based on sizes.
 func LayoutFlexVertical(sizes ...float32) *FlexLayout {
-	return LayoutFlex(DirectionVertical, sizes...)
+	return layoutFlex(DirectionVertical, sizes...)
 }
 
 // LayoutFlexHorizontal automatically layout children horizontally based on sizes.
 func LayoutFlexHorizontal(sizes ...float32) *FlexLayout {
-	return LayoutFlex(DirectionHorizontal, sizes...)
+	return layoutFlex(DirectionHorizontal, sizes...)
 }

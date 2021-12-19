@@ -69,8 +69,8 @@ type cameraEntity interface {
 	Camera() *gorge.CameraComponent
 }
 
-// TrackballCamera attaches events and all to make a trackball
-func TrackballCamera(c cameraEntity) *CameraRig {
+// NewTrackballCamera attaches events and all to make a trackball
+func NewTrackballCamera(c cameraEntity) *CameraRig {
 	if c == nil {
 		c = NewCamera()
 	}

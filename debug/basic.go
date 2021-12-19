@@ -137,7 +137,7 @@ func NewBasic(g *gorge.Context) *Basic {
 	cam.SetClearFlag(gorge.ClearSkybox)
 	cam.SetClearColor(.4, .4, .4)
 
-	camRig := gorgeutil.TrackballCamera(cam)
+	camRig := gorgeutil.NewTrackballCamera(cam)
 	camRig.SetPosition(0, 5, 5)
 
 	camGimbal := gorgeutil.NewGimbal()
