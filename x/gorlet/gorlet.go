@@ -28,7 +28,7 @@ type Entity struct {
 	// TODO: {lpf} give it a proper name.
 	onAdd      PlacementFunc
 	clientArea *Entity
-	layouter   Layouter
+	// layouter   Layouter
 
 	observers map[string][]func(interface{})
 }

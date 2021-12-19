@@ -7,22 +7,12 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-// Context extends gorge context with default entity instantiators.
-type Context struct {
-	*gorge.Context
-}
-
-// WithContext returns a helper.
-func WithContext(g *gorge.Context) *Context {
-	return &Context{g}
-}
-
 // System initializes gorgeutil context
-func System(g *gorge.Context) func() *Context {
+/*func System(g *gorge.Context) func() *Context {
 	return func() *Context {
 		return WithContext(g)
 	}
-}
+}*/
 
 // Camera creates and adds a default camera to a gorge context.
 func (c Context) Camera() *Camera {

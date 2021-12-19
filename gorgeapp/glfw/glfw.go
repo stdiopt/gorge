@@ -22,7 +22,7 @@ func init() {
 }
 
 // Run will run stuff natively (*nix only maybe)
-func Run(opt Options, systems ...interface{}) error {
+func Run(opt Options, systems ...gorge.InitFunc) error {
 	log.Println("Init GLFW")
 	const width, height = 800, 600
 
@@ -44,8 +44,6 @@ func Run(opt Options, systems ...interface{}) error {
 	}
 	window.MakeContextCurrent()
 
-	glw := &gl.Wrapper{}
-
 	// When running opengl "github.com/go-gl/gl/v4.6-core/gl"
 	// if err := ogl.Init(); err != nil {
 	// 	return err
@@ -60,6 +58,9 @@ func Run(opt Options, systems ...interface{}) error {
 	// ogl.Hint(opengl.LINE_SMOOTH_HINT, opengl.NICEST)
 	// ogl.Hint(opengl.POLYGON_SMOOTH_HINT, opengl.NICEST)
 
+	glw := &gl.Wrapper{}
+	gl.Init(glw)
+
 	s := glfwSystem{
 		glctx:  glw,
 		window: window,
@@ -70,10 +71,12 @@ func Run(opt Options, systems ...interface{}) error {
 		resourceFS = RootFS{}
 	}
 
-	ggArgs := []interface{}{
-		func(g *gorge.Context, res *resource.Context) {
+	ggArgs := []gorge.InitFunc{
+		func(g *gorge.Context) {
+			res := resource.FromContext(g)
 			res.AddFS("/", resourceFS)
-			g.PutProp(glw)
+
+			// g.PutProp(glw)
 		},
 		s.System,
 	}
@@ -136,11 +139,10 @@ type glfwSystem struct {
 	cursorRelative bool
 }
 
-func (s *glfwSystem) System(g *gorge.Context, ic *input.Context) error {
-	s.input = ic
+func (s *glfwSystem) System(g *gorge.Context) {
+	s.input = input.FromContext(g)
 	s.gorge = g
 	s.setupEvents()
-	return nil
 }
 
 func (s *glfwSystem) setupEvents() {

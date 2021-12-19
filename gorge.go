@@ -2,40 +2,66 @@
 package gorge
 
 import (
+	"errors"
 	"log"
 
-	"github.com/stdiopt/gorge/core"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/internal/logger"
 	"github.com/stdiopt/gorge/m32"
 )
 
+// ErrAlreadyStarted is returned when Start is called more than once
+var ErrAlreadyStarted = errors.New("already started")
+
 func init() {
 	logger.Global()
 }
 
-type tcore = core.Core
+// InitFunc type of function to initialize gorge.
+type InitFunc func(*Context)
+
+// Or systems
+type systems struct {
+	kv map[interface{}]interface{}
+}
+
+func (p *systems) addSystem(k, v interface{}) {
+	if p.kv == nil {
+		p.kv = make(map[interface{}]interface{})
+	}
+	if _, ok := p.kv[k]; ok {
+		panic("this system was already set")
+	}
+	p.kv[k] = v
+}
+
+func (p *systems) getSystem(k interface{}) interface{} {
+	if p.kv == nil {
+		return nil
+	}
+	return p.kv[k]
+}
 
 // Gorge main state manager and message bus
 type Gorge struct {
-	tcore
+	event.Bus
+	systems
+	// tcore
 	// screenSize since this is shared between places
 	// Maybe create Device/Display so we can even use multiple displays
 	screenSize m32.Vec2
+	inits      []InitFunc
 
 	fnch chan syncFunc
+	done chan error
 }
 
 // New create a new manager with default systems
-func New(systems ...interface{}) *Gorge {
-	g := &Gorge{
-		tcore: *core.New(systems...),
+func New(inits ...InitFunc) *Gorge {
+	return &Gorge{
+		inits: inits,
 		fnch:  make(chan syncFunc, 64),
 	}
-	g.PutProp(func() *Context {
-		return &Context{g}
-	})
-	return g
 }
 
 // SetScreenSize used by the gorgeapp to set the current screensize
@@ -52,13 +78,42 @@ func (g *Gorge) ScreenSize() m32.Vec2 {
 // Start the systems
 // nolint: errcheck
 func (g *Gorge) Start() error {
-	if err := g.tcore.Start(); err != nil {
-		return err
+	if g.done != nil {
+		return ErrAlreadyStarted
 	}
+	g.done = make(chan error)
+	// Call every init func
+	c := &Context{g}
+	for _, fn := range g.inits {
+		fn(c)
+	}
+	/*if err := g.tcore.Start(); err != nil {
+		return err
+	}*/
 
 	g.Trigger(EventStart{})
 	g.Trigger(EventAfterStart{})
 	return nil
+}
+
+// Wait waits for execution to finish.
+func (g *Gorge) Wait() error {
+	if g.done == nil {
+		return nil
+	}
+	return <-g.done
+}
+
+// Close closes the running instance.
+func (g *Gorge) Close() {
+	close(g.done)
+	g.done = nil
+}
+
+// CloseWithError closes with an error which will be sent on Wait() call
+func (g *Gorge) CloseWithError(err error) {
+	g.done <- err
+	close(g.done)
 }
 
 // Run will initialize gorge, Start and wait.

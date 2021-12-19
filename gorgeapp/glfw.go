@@ -3,6 +3,7 @@
 package gorgeapp
 
 import (
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/gorgeapp/glfw"
 	"github.com/stdiopt/gorge/systems/audio"
 )
@@ -12,6 +13,12 @@ const Type = "glfw"
 
 // Run the glfw app
 func (a *App) Run() error {
-	inits := append([]interface{}{audio.System}, a.inits...)
+	inits := append([]gorge.InitFunc{
+		func(g *gorge.Context) {
+			audio.FromContext(g)
+		},
+	},
+		a.inits...,
+	)
 	return glfw.Run(a.glfwOptions, inits...)
 }

@@ -56,6 +56,7 @@ func SpinnerVec3(fn func(m32.Vec3)) BuildFunc {
 	}
 }
 
+// SpinnerVec3 adds a spinner to builder.
 func (b *Builder) SpinnerVec3(fn func(m32.Vec3)) *Entity {
 	return b.Add(SpinnerVec3(fn))
 }

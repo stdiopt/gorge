@@ -116,7 +116,7 @@ func (c *RectComponent) SetWidth(w float32) {
 	c.Dim[0] = w
 }
 
-// SetWidth sets the height.
+// SetHeight sets the height.
 func (c *RectComponent) SetHeight(w float32) {
 	c.Dim[1] = w
 }

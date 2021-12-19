@@ -1,8 +1,6 @@
 package input
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 )
@@ -24,7 +22,7 @@ func (s *Input) HandleEvent(v event.Event) {
 }
 
 // System initialize the key manager on gorge.
-func System(g *gorge.Context) {
+/*func System(g *gorge.Context) {
 	log.Println("Initializing system")
 	s := &Input{
 		keyManager:   keyManager{gorge: g},
@@ -34,7 +32,7 @@ func System(g *gorge.Context) {
 	g.PutProp(func() *Context {
 		return &Context{s}
 	})
-}
+}*/
 
 // ActionState type
 type ActionState int

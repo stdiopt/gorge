@@ -16,7 +16,7 @@ import (
 )
 
 // Start create a premade gorge manager
-func Run(opt Options, systems ...interface{}) error {
+func Run(opt Options, systems ...gorge.InitFunc) error {
 	Document.Get("head").Set("innerHTML", `
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -48,9 +48,12 @@ func Run(opt Options, systems ...interface{}) error {
 	webgl.Call("getExtension", "EXT_texture_filter_anisotropic")
 	webgl.Call("getExtension", "EXT_color_buffer_float") // possible on chrome
 
+	glw := &gl.Wrapper{Value: webgl}
+	gl.Init(glw)
+
 	s := wasmSystem{
 		canvas:           canvas,
-		glctx:            &gl.Wrapper{Value: webgl},
+		glw:              glw,
 		CanvasResolution: 1, // TODO: from Opts
 	}
 
@@ -59,8 +62,9 @@ func Run(opt Options, systems ...interface{}) error {
 	if resourceFS == nil {
 		resourceFS = resource.HTTPFS{"."}
 	}
-	ggArgs := []interface{}{
-		func(g *gorge.Context, res *resource.Context) {
+	ggArgs := []gorge.InitFunc{
+		func(g *gorge.Context) {
+			res := resource.FromContext(g)
 			res.AddFS("/", resourceFS)
 		},
 		s.System,
@@ -76,7 +80,7 @@ func Run(opt Options, systems ...interface{}) error {
 type wasmSystem struct {
 	gorge  *gorge.Context
 	input  *input.Context
-	glctx  *gl.Wrapper
+	glw    *gl.Wrapper
 	canvas js.Value
 
 	CanvasResolution float64
@@ -105,13 +109,12 @@ func (s *wasmSystem) HandleEvent(v event.Event) {
 	}
 }
 
-func (s *wasmSystem) System(g *gorge.Context, ic *input.Context) error {
+func (s *wasmSystem) System(g *gorge.Context) {
 	s.gorge = g
-	s.input = ic
-	g.PutProp(s.glctx)
+	s.input = input.FromContext(g)
+	// g.PutProp(s.glctx)
 	s.checkCanvasSize()
 	g.Handle(s)
-	return nil
 }
 
 func (s *wasmSystem) checkCanvasSize() {

@@ -15,6 +15,8 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+const maxaddr = 0x7FFFFFFF
+
 type (
 	vec3 = m32.Vec3
 	vec2 = m32.Vec2
@@ -247,11 +249,10 @@ func (m *MeshDataPTN) Add(p m32.Vec3, t m32.Vec2, n m32.Vec3) {
 
 // Data returns the mesh data
 func (m *MeshDataPTN) Data() *gorge.MeshData {
-	const max = ^uint32(0)
 	vsize := 3 + 2 + 3
 
 	sz := len(m.Vertices) * vsize
-	uverts := (*(*[max]float32)(unsafe.Pointer(&m.Vertices[0])))[:sz:sz]
+	uverts := (*(*[maxaddr]float32)(unsafe.Pointer(&m.Vertices[0])))[:sz:sz]
 
 	verts := make([]float32, sz)
 	copy(verts, uverts)

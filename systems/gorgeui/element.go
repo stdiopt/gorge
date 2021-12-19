@@ -47,9 +47,9 @@ func (c *ElementComponent) SetDisableRaycast(b bool) {
 }
 
 // SetLayout sets the layout func that will be called on update to update children.
-//func (c *ElementComponent) SetLayout(fn Layouter) {
+// func (c *ElementComponent) SetLayout(fn Layouter) {
 //	c.Layouter = fn
-//}
+// }
 
 // GetEntities implements the gorge.EntityContainer interface.
 func (c *ElementComponent) GetEntities() []gorge.Entity {

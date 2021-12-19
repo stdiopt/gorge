@@ -12,8 +12,11 @@ import (
 	"github.com/stdiopt/gorge/systems/audio/proc"
 )
 
+// System initializes the audio system.
+func System(g *gorge.Context) { FromContext(g) }
+
 // System initializes the gorge system.
-func System(g *gorge.Context) error {
+/*func System(g *gorge.Context) error {
 	log.Println("Initializing system")
 	audio := &Audio{
 		sources: map[*gorge.AudioSource]*Processor{},
@@ -23,7 +26,7 @@ func System(g *gorge.Context) error {
 	g.Handle(audio)
 
 	return nil
-}
+}*/
 
 // Audio struct state for tracked playing audio clips, effects stack etc
 type Audio struct {

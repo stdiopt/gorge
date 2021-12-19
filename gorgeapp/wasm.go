@@ -3,6 +3,7 @@
 package gorgeapp
 
 import (
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/gorgeapp/wasm"
 	"github.com/stdiopt/gorge/systems/audio"
 )
@@ -10,6 +11,6 @@ import (
 const Type = "wasm"
 
 func (a *App) Run() error {
-	inits := append([]interface{}{audio.System}, a.inits...)
+	inits := append([]gorge.InitFunc{audio.System}, a.inits...)
 	return wasm.Run(a.wasmOptions, inits...)
 }

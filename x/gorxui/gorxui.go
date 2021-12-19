@@ -19,7 +19,7 @@ import (
 type buildFunc = gorlet.BuildFunc
 
 var registry = map[string]func() buildFunc{
-	"panel":      func() buildFunc { return gorlet.Panel() },
+	"panel":      func() buildFunc { return gorlet.Panel() }, // nolint: gocritic
 	"label":      func() buildFunc { return gorlet.Label("") },
 	"textbutton": func() buildFunc { return gorlet.TextButton("", nil) },
 	"spinner":    func() buildFunc { return gorlet.Spinner("", nil) },

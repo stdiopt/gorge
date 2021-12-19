@@ -24,6 +24,8 @@ import (
 	"github.com/stdiopt/gorge"
 )
 
+const maxaddr = 0x7FFFFFFF
+
 func init() {
 	exts := []string{
 		".jpg", ".jpeg",
@@ -84,15 +86,13 @@ func ReadTexture(rd io.Reader) (*gorge.TextureData, error) {
 
 // TextureDataFromImage converts a go image.Image to gorge.TextureData.
 func TextureDataFromImage(im image.Image) (*gorge.TextureData, error) {
-	const max = ^uint32(0)
-
 	dim := im.Bounds()
 	var format gorge.TextureFormat
 	var pixData []byte
 	switch im := im.(type) {
 	case *hdr.RGB:
 		sz := len(im.Pix) * 4
-		byteData := (*(*[max]byte)(unsafe.Pointer(&im.Pix[0])))[:sz:sz]
+		byteData := (*(*[maxaddr]byte)(unsafe.Pointer(&im.Pix[0])))[:sz:sz]
 
 		format = gorge.TextureFormatRGB32F
 		pixData = append([]byte{}, byteData...)

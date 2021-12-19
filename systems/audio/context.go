@@ -1,6 +1,12 @@
 package audio
 
-import "github.com/stdiopt/gorge"
+import (
+	"log"
+
+	"github.com/stdiopt/gorge"
+)
+
+var ctxKey = struct{ string }{"audio"}
 
 type audio = Audio
 
@@ -11,9 +17,18 @@ type Context struct {
 
 // FromContext returns an audio context from a gorge.Context.
 func FromContext(g *gorge.Context) *Context {
-	var ret *Context
-	if err := g.BindProps(func(c *Context) { ret = c }); err != nil {
-		g.Error(err)
+	if ctx, ok := gorge.GetSystem(g, ctxKey).(*Context); ok {
+		return ctx
 	}
-	return ret
+
+	log.Println("Initializing system")
+	audio := &Audio{
+		sources: map[*gorge.AudioSource]*Processor{},
+	}
+	ctx := &Context{audio}
+	gorge.AddSystem(g, ctxKey, ctx)
+	// g.PutProp(&Context{audio})
+	g.Handle(audio)
+
+	return ctx
 }

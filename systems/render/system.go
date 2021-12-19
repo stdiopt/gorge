@@ -1,30 +1,18 @@
 package render
 
 import (
-	"log"
 	"time"
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
 // System gorge system initializer
-func System(g *gorge.Context, glw *gl.Wrapper) error {
+/*func System(g *gorge.Context, glw *gl.Wrapper) error {
 	log.Println("initializing system")
 	gl.Init(glw)
 
 	r := newRenderer(g)
-	/*r.RenderStage = StagePipeline(&Context{r},
-		// CubeSkyboxStage,
-		ProceduralSkyboxStage,
-		EachCameraStage(
-			PrepareStage,
-			LightStage,
-			CameraClearStage,
-			RenderStage,
-		),
-	)*/
 	g.PutProp(func() *Context {
 		return &Context{r}
 	})
@@ -35,7 +23,7 @@ func System(g *gorge.Context, glw *gl.Wrapper) error {
 		statTimeCount: 3,
 	})
 	return nil
-}
+}*/
 
 type system struct {
 	gorge    *gorge.Context

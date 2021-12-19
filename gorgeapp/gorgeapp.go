@@ -5,9 +5,9 @@ import (
 	"io/fs"
 	"log"
 
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/gorgeapp/glfw"
 	"github.com/stdiopt/gorge/gorgeapp/wasm"
-	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render"
@@ -28,14 +28,14 @@ type AppFunc func(p *App)
 
 // App the bootstrapper.
 type App struct {
-	inits []interface{}
+	inits []gorge.InitFunc
 
 	wasmOptions wasm.Options
 	glfwOptions glfw.Options
 }
 
 // New creates a new App.
-func New(inits ...interface{}) *App {
+func New(inits ...gorge.InitFunc) *App {
 	// Defaults should be on each platforms code but not deep enough so it wont
 	// be hard to find
 	log.Println("Initializing platform:", Type)
@@ -50,21 +50,32 @@ func New(inits ...interface{}) *App {
 	}
 
 	// define default rendering pipeline
-	defInits := []interface{}{
-		func(glw *gl.Wrapper) {
-			log.Println("GL The wrapper:", glw)
-			log.Println("GL version:", glw.GetString(gl.VERSION))
-			log.Println("GL Renderer:", glw.GetString(gl.RENDERER))
+	defInits := []gorge.InitFunc{
+		func(g *gorge.Context) {
+			// glw := gl.FromContext(g)
 		},
-		resource.System,
-		input.System,
+		func(g *gorge.Context) {
+			log.Println("GL The wrapper:", gl.Wrapper{})
+			log.Println("GL version:", gl.GetString(gl.VERSION))
+			log.Println("GL Renderer:", gl.GetString(gl.RENDERER))
+
+			resource.FromContext(g)
+			input.FromContext(g)
+			render.FromContext(g)
+			renderpl.Default(g)
+			// This initializes some global fonts
+			gorgeui.FromContext(g)
+			// gorgeutil.FromContext(g)
+		},
+		// resource.System,
+		// input.System,
 		// Disable audio system for android for now, since oto conflicts symbols because of
 		// x/mobile/app so it's being added in other platforms
 		// audio.System,
-		render.System,
-		renderpl.Default,
-		gorgeui.System,
-		gorgeutil.System,
+		// render.System,
+		// renderpl.Default,
+		// gorgeui.System,
+		// gorgeutil.System,
 	}
 	a.inits = append(defInits, inits...) // nolint
 	return a

@@ -179,7 +179,7 @@ func NewBasic(g *gorge.Context) *Basic {
 func BasicSystem(g *gorge.Context) {
 	log.Println("initializing helper system")
 	thing := NewBasic(g)
-	g.PutProp(thing)
+	// g.PutProp(thing)
 	g.Add(thing)
 	g.Handle(thing)
 }

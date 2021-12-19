@@ -8,15 +8,16 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
+const maxaddr = 0x7FFFFFFF
+
 func asBytes(data interface{}) []byte {
-	const max = ^uint32(0)
 	switch v := data.(type) {
 	case []float32:
 		bsz := len(v) * 4
-		return (*(*[max]byte)(unsafe.Pointer(&v[0])))[:bsz:bsz]
+		return (*(*[maxaddr]byte)(unsafe.Pointer(&v[0])))[:bsz:bsz]
 	case []uint32:
 		bsz := len(v) * 4
-		return (*(*[max]byte)(unsafe.Pointer(&v[0])))[:bsz:bsz]
+		return (*(*[maxaddr]byte)(unsafe.Pointer(&v[0])))[:bsz:bsz]
 	case []byte:
 		return v
 	}

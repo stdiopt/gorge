@@ -1,7 +1,10 @@
 // Package renderpl contains default rendering pipeline for gorge
 package renderpl
 
-import "github.com/stdiopt/gorge/systems/render"
+import (
+	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/systems/render"
+)
 
 // const defCameraMask = uint32(0xFF)
 
@@ -18,7 +21,8 @@ func Pipeline(r *render.Context, fns ...PipelineFunc) render.PassFunc {
 }
 
 // Default detault rendering pipeline
-func Default(r *render.Context) {
+func Default(g *gorge.Context) {
+	r := render.FromContext(g)
 	r.SetRenderStage(Pipeline(r,
 		// CubeSkyboxStage,
 		ProceduralSkybox,

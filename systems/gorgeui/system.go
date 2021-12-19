@@ -1,7 +1,6 @@
 package gorgeui
 
 import (
-	"log"
 	"math/rand"
 	"sort"
 
@@ -10,12 +9,11 @@ import (
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/input"
-	"github.com/stdiopt/gorge/systems/resource"
 	"github.com/stdiopt/gorge/text"
 )
 
 // System initializes UI system in gorge.
-func System(g *gorge.Context, rc *resource.Context) error {
+/*func System(g *gorge.Context, rc *resource.Context) error {
 	log.Println("Initializing system")
 	dbg := newDebugLines()
 	dbg.Queue = 200
@@ -37,7 +35,7 @@ func System(g *gorge.Context, rc *resource.Context) error {
 		return &Context{s}
 	})
 	return nil
-}
+}*/
 
 type system struct {
 	Debug DebugFlag

@@ -1,6 +1,16 @@
 package resource
 
-import "github.com/stdiopt/gorge"
+import (
+	"fmt"
+	"io/fs"
+	"log"
+
+	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/layerfs"
+	"github.com/stdiopt/gorge/static"
+)
+
+var ctxKey = struct{ string }{"resource"}
 
 type manager = Resource
 
@@ -12,9 +22,25 @@ type Context struct {
 // FromContext returns a Context from a gorge Context
 func FromContext(g *gorge.Context) *Context {
 	var ret *Context
-	if err := g.BindProps(func(c *Context) { ret = c }); err != nil {
-		g.Error(err)
+	if ctx, ok := gorge.GetSystem(g, ctxKey).(*Context); ok {
+		return ctx
 	}
+	log.Println("Initializing system")
+
+	lfs := layerfs.FS{}
+	s, err := fs.Sub(static.Assets, "src")
+	if err != nil {
+		panic(fmt.Errorf("static embed not found: %w", err))
+	}
+	lfs.Mount(gorgeStatic, s)
+
+	m := &Resource{gorge: g, fs: lfs}
+
+	ret = &Context{
+		manager: m,
+	}
+
+	gorge.AddSystem(g, ctxKey, ret)
 	return ret
 }
 

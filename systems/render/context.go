@@ -1,6 +1,12 @@
 package render
 
-import "github.com/stdiopt/gorge"
+import (
+	"log"
+
+	"github.com/stdiopt/gorge"
+)
+
+var ctxKey = struct{ string }{"render"}
 
 type render = Render
 
@@ -12,9 +18,18 @@ type Context struct {
 // FromContext returns a Context from gorge Context
 // triggers an error and returns nil if doesn't exists.
 func FromContext(g *gorge.Context) *Context {
-	var ret *Context
-	if err := g.BindProps(func(c *Context) { ret = c }); err != nil {
-		g.Error(err)
+	if ctx, ok := gorge.GetSystem(g, ctxKey).(*Context); ok {
+		return ctx
 	}
-	return ret
+	log.Println("initializing system")
+
+	r := newRenderer(g)
+	ctx := &Context{render: r}
+	gorge.AddSystem(g, ctxKey, ctx)
+	g.Handle(&system{
+		gorge:         g,
+		renderer:      r,
+		statTimeCount: 3,
+	})
+	return ctx
 }

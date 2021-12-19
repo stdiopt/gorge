@@ -11,6 +11,7 @@ const (
 	DirectionVertical
 )
 
+// Layouter interface for layouting entities.
 type Layouter interface {
 	Layout(gorgeui.Entity)
 }

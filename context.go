@@ -16,3 +16,13 @@ type Context struct {
 func (c *Context) Gorge() *Context {
 	return c
 }
+
+// AddSystem to gorge context.
+func AddSystem(g *Context, k, v interface{}) {
+	g.addSystem(k, v)
+}
+
+// GetSystem gets a system from a gorge context.
+func GetSystem(g *Context, k interface{}) interface{} {
+	return g.getSystem(k)
+}

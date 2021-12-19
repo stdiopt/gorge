@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -21,7 +20,7 @@ import (
 const gorgeStatic = "_gorge/"
 
 // System gorge system initializer func.
-func System(g *gorge.Context) {
+/*func System(g *gorge.Context) {
 	log.Println("Initializing system")
 
 	lfs := layerfs.FS{}
@@ -39,7 +38,7 @@ func System(g *gorge.Context) {
 	g.PutProp(func() *Context {
 		return &Context{m}
 	})
-}
+}*/
 
 // Resource the resource manager.
 type Resource struct {
