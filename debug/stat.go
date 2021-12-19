@@ -3,6 +3,7 @@ package debug
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"math"
 	"runtime"
 	"time"
@@ -36,10 +37,9 @@ type statSystem struct {
 }
 
 // StatText logs stats on default logger.
-func StatText(g *gorge.Context, glw *gl.Wrapper) error {
+func StatText(g *gorge.Context) {
 	s := &statSystem{
 		gorge:      g,
-		glw:        glw,
 		glVersion:  gl.GetString(gl.VERSION),
 		glRenderer: gl.GetString(gl.RENDERER),
 	}
@@ -77,14 +77,13 @@ func StatText(g *gorge.Context, glw *gl.Wrapper) error {
 			}
 		}
 	})
-	return nil
 }
 
 // Stat inits stat system
-func Stat(g *gorge.Context, rc *resource.Context, glw *gl.Wrapper) error {
+func Stat(g *gorge.Context) {
+	rc := resource.FromContext(g)
 	s := &statSystem{
 		gorge:      g,
-		glw:        glw,
 		glVersion:  gl.GetString(gl.VERSION),
 		glRenderer: gl.GetString(gl.RENDERER),
 	}
@@ -92,7 +91,8 @@ func Stat(g *gorge.Context, rc *resource.Context, glw *gl.Wrapper) error {
 
 	font := &text.Font{}
 	if err := rc.Load(font, "_gorge/fonts/font.ttf", text.FontResolution(512)); err != nil {
-		return err
+		log.Println("err:", err)
+		return
 	}
 
 	s.camera = gorgeutil.NewOrthoCamera(20, -100, 100)
@@ -165,8 +165,6 @@ func Stat(g *gorge.Context, rc *resource.Context, glw *gl.Wrapper) error {
 			}
 		}
 	})
-
-	return nil
 }
 
 func (s *statSystem) recalc() {

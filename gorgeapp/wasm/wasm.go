@@ -60,7 +60,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	// Default asset loader to .
 	resourceFS := opt.FS
 	if resourceFS == nil {
-		resourceFS = resource.HTTPFS{"."}
+		resourceFS = resource.HTTPFS{""}
 	}
 	ggArgs := []gorge.InitFunc{
 		func(g *gorge.Context) {

@@ -42,7 +42,7 @@ func New(inits ...gorge.InitFunc) *App {
 	a := &App{
 		// Defaults
 		wasmOptions: wasm.Options{
-			FS: resource.HTTPFS{BaseURL: "/"},
+			FS: resource.HTTPFS{BaseURL: ""},
 		},
 		glfwOptions: glfw.Options{
 			FS: resource.FileFS{BasePath: "."},
