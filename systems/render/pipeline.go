@@ -6,11 +6,11 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
-// PassFunc func that will render.
-type PassFunc func(ri *Pass)
+// StepFunc func that will render.
+type StepFunc func(ri *Step)
 
-// Pass holds information about a render Pass.
-type Pass struct {
+// Step holds information about a render Step.
+type Step struct {
 	RenderNumber int
 	Viewport     m32.Vec4
 

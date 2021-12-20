@@ -80,7 +80,7 @@ func (rg *RenderableGroup) Front() Renderable {
 
 // Update updates any related gpu buffer on the group based on pass
 // we update the group with the pass render number which might be updated
-func (rg *RenderableGroup) Update(p *Pass) {
+func (rg *RenderableGroup) Update(p *Step) {
 	vbo, _ := rg.renderer.vbos.Get(rg.renderable.Mesh)
 	if vbo != rg.vbo {
 		// Need to be aware if the the VBO format changed here

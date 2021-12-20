@@ -11,9 +11,9 @@ import (
 
 // EachCamera executes a pipeline per existing system cameras.
 func EachCamera(pipes ...PipelineFunc) PipelineFunc {
-	return func(r *render.Context, next render.PassFunc) render.PassFunc {
+	return func(r *render.Context, next render.StepFunc) render.StepFunc {
 		eachCamera := Pipeline(r, pipes...)
-		return func(p *render.Pass) {
+		return func(p *render.Step) {
 			sort.Sort(cameraSorter(r.Cameras))
 			for _, c := range r.Cameras {
 				p.Camera = c
@@ -29,8 +29,8 @@ func EachCamera(pipes ...PipelineFunc) PipelineFunc {
 // - append instance to render state
 // - prepare upload buffer
 // - upload transform and color attribs
-func PrepareCamera(r *render.Context, next render.PassFunc) render.PassFunc {
-	return func(p *render.Pass) {
+func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
+	return func(p *render.Step) {
 		cam := p.Camera.Camera()
 
 		p.Viewport = cam.CalcViewport(r.Gorge().ScreenSize())
@@ -115,10 +115,10 @@ func PrepareCamera(r *render.Context, next render.PassFunc) render.PassFunc {
 }
 
 // ClearCamera returns the stage that clears the renderer based on camera.
-func ClearCamera(r *render.Context, next render.PassFunc) render.PassFunc {
+func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 	// Get skybox AND procedural skybox renderer
 	skyBox := CameraSkybox(r, "envMap")
-	return func(ri *render.Pass) {
+	return func(ri *render.Step) {
 		// Render a SkyboxMaterial quad
 
 		cam := ri.Camera.Camera()
@@ -155,7 +155,7 @@ func ClearCamera(r *render.Context, next render.PassFunc) render.PassFunc {
 }
 
 // CameraSkybox Regular skybox using ri "envMap" cube sample
-func CameraSkybox(r *render.Context, srcMap string) render.PassFunc {
+func CameraSkybox(r *render.Context, srcMap string) render.StepFunc {
 	shader := r.NewShader(static.Shaders.CubeEnv)
 
 	cubeVBO := r.GetVBO(gorge.NewMesh(&gorge.MeshData{
@@ -169,7 +169,7 @@ func CameraSkybox(r *render.Context, srcMap string) render.PassFunc {
 	cubeVBO.BindAttribs(shader)
 	gl.BindVertexArray(gl.Null)
 
-	return func(ri *render.Pass) {
+	return func(ri *render.Step) {
 		tex := ri.Samplers[srcMap]
 		if tex == nil {
 			return

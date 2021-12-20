@@ -34,7 +34,7 @@ type lights struct {
 
 // PrepareLights prepares a rendering stage to setup light related uniforms and draw
 // geometry to depht maps for shadowing.
-func PrepareLights(r *render.Context, next render.PassFunc) render.PassFunc {
+func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 	lightNames := []lightName{}
 	depthNames := []depthName{}
 
@@ -143,7 +143,7 @@ func PrepareLights(r *render.Context, next render.PassFunc) render.PassFunc {
 		// lightNames: lightNames,
 	}
 
-	return func(ri *render.Pass) {
+	return func(ri *render.Step) {
 		depthCubeIndex := 0
 		depth2DIndex := 0
 		for ti := 0; ti < len(r.Lights); ti++ {
@@ -197,7 +197,7 @@ func PrepareLights(r *render.Context, next render.PassFunc) render.PassFunc {
 }
 
 // This render a depth cube based on light to target DepthIndex
-func (s *lights) processDepthCube(ri *render.Pass, light render.Light, di int) {
+func (s *lights) processDepthCube(ri *render.Step, light render.Light, di int) {
 	// Check cached light and render if needed
 	pos := light.Mat4().Col(3).Vec3()
 	farPlane := light.Light().Range
@@ -249,7 +249,7 @@ func (s *lights) processDepthCube(ri *render.Pass, light render.Light, di int) {
 }
 
 // Returns the mat4 used to render stuff
-func (s *lights) processDepth2D(ri *render.Pass, light render.Light, di int) m32.Mat4 {
+func (s *lights) processDepth2D(ri *render.Step, light render.Light, di int) m32.Mat4 {
 	m4 := ri.Camera.Mat4()
 	camPos := m4.Col(3).Vec3()
 	camForward := m4.MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()

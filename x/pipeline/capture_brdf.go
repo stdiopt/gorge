@@ -8,7 +8,7 @@ import (
 )
 
 func (pl *PL) CaptureBRDF(target string) PipelineFunc {
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		const size = 512
 
 		brdfSD := &gorge.ShaderData{Src: static.MustData("shaders/ibl/brdf.glsl")}
@@ -26,7 +26,7 @@ func (pl *PL) CaptureBRDF(target string) PipelineFunc {
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		return func(p *Pass) {
+		return func(p *Step) {
 			gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, pl.captureFBO)
 
 			gl.BindRenderbuffer(gl.RENDERBUFFER, pl.captureRBO)

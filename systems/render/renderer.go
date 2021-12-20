@@ -26,11 +26,11 @@ type Render struct {
 
 	DrawCalls     int
 	DisableRender bool
-	renderInfo    Pass
+	renderInfo    Step
 
 	// Or Renderer Render
-	InitStage   PassFunc
-	RenderStage PassFunc
+	InitStage   StepFunc
+	RenderStage StepFunc
 }
 
 func newRenderer(g *gorge.Context) *Render {
@@ -71,7 +71,7 @@ func newRenderer(g *gorge.Context) *Render {
 		textures:       textures,
 		vbos:           vbos,
 		buffers:        bm,
-		renderInfo: Pass{
+		renderInfo: Step{
 			CameraUBO: cameraUBO,
 			Viewport:  m32.Vec4{},
 			Queues:    map[int]*Queue{},
@@ -212,18 +212,18 @@ func (r *Render) RemoveRenderable(re Renderable) {
 }
 
 // SetInitStage sets Init stage for renderer, used to prepare stuff.
-func (r *Render) SetInitStage(s PassFunc) {
+func (r *Render) SetInitStage(s StepFunc) {
 	r.InitStage = s
 }
 
 // SetRenderStage sets the renderer stage.
-func (r *Render) SetRenderStage(s PassFunc) {
+func (r *Render) SetRenderStage(s StepFunc) {
 	r.RenderStage = s
 }
 
 // PassShadow passes geometry with a specific shader
 // TODO: we are checking DisableShadow here
-func (r *Render) PassShadow(ri *Pass, s *Shader) {
+func (r *Render) PassShadow(ri *Step, s *Shader) {
 	gl.Enable(gl.BLEND)
 	for _, qi := range ri.QueuesIndex {
 		renderables := ri.Queues[qi].Renderables
@@ -273,7 +273,7 @@ func (r *Render) PassShadow(ri *Pass, s *Shader) {
 // SetupShader sets the current material uniforms
 // could be set on renderableInstance too?
 func (r *Render) SetupShader(
-	ri *Pass,
+	ri *Step,
 	group *RenderableGroup,
 ) {
 	mesh := group.Renderable().Mesh

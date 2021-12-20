@@ -11,9 +11,9 @@ import (
 
 type (
 	Render       = render.Render
-	Pass         = render.Pass
+	Step         = render.Step
 	PipelineFunc = renderpl.PipelineFunc
-	PassFunc     = render.PassFunc
+	StepFunc     = render.StepFunc
 	VBO          = render.VBO
 	Shader       = render.Shader
 )

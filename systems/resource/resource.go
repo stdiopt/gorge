@@ -113,7 +113,7 @@ func (r *Resource) Load(v interface{}, name string, opts ...interface{}) error {
 	if err := loader(&Context{r}, v, name, opts...); err != nil {
 		return err
 	}
-	r.gorge.Trigger(EventLoadComplete{
+	go r.gorge.TriggerOnUpdate(EventLoadComplete{
 		Name:     name,
 		Resource: v,
 	})

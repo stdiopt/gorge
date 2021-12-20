@@ -9,10 +9,10 @@ import (
 
 // RenderCube with a specific CubeMap sampler
 func (pl *PL) RenderCube(srcMap string, vp m32.Vec4) PipelineFunc {
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		shader := r.NewShader(static.Shaders.CubeEnv)
 
-		return func(p *Pass) {
+		return func(p *Step) {
 			tex := p.Samplers[srcMap]
 			if tex == nil {
 				next(p)
@@ -44,11 +44,11 @@ func (pl *PL) RenderCube(srcMap string, vp m32.Vec4) PipelineFunc {
 }
 
 func (p *PL) RenderQuad(srcMap string, vp m32.Vec4) PipelineFunc {
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		emptyVAO := gl.CreateVertexArray()
 		shader := r.NewShader(static.Shaders.Quad)
 
-		return func(p *Pass) {
+		return func(p *Step) {
 			tex := p.Samplers[srcMap]
 			if tex == nil {
 				next(p)
@@ -79,11 +79,11 @@ func (p *PL) RenderQuad(srcMap string, vp m32.Vec4) PipelineFunc {
 }
 
 func (pl *PL) RenderQuadDepth(srcMap string, vp m32.Vec4) PipelineFunc {
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		emptyVAO := gl.CreateVertexArray()
 		shader := r.NewShader(static.Shaders.QuadDepth)
 
-		return func(p *Pass) {
+		return func(p *Step) {
 			tex := p.Samplers[srcMap]
 			if tex == nil {
 				next(p)

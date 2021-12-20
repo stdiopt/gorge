@@ -10,7 +10,7 @@ import (
 
 // ProceduralSkybox renders a procedural skybox into a cube
 // So we can reuse it in env mapping
-func ProceduralSkybox(r *render.Context, next render.PassFunc) render.PassFunc {
+func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 	targetFBO := gl.CreateFramebuffer()
 
 	// skybox Object
@@ -61,7 +61,7 @@ func ProceduralSkybox(r *render.Context, next render.PassFunc) render.PassFunc {
 	camProj := m32.Perspective(90, 1, .1, 10)
 
 	prevLightDir := m32.Vec3{0, 0, 0}
-	return func(ri *render.Pass) {
+	return func(ri *render.Step) {
 		// Find first directional light
 		// Do this elsewhere like on prepare
 		lightDir := m32.Vec3{-3, -3, -3} // Else we will use this

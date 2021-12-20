@@ -13,7 +13,7 @@ import (
 func (pl *PL) CaptureIrradiance(src, target string) PipelineFunc {
 	srcTex := src
 	dstTex := target
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		size := 32
 
 		irradianceSD := &gorge.ShaderData{Src: static.MustData("shaders/ibl/irradiance_convolution.glsl")}
@@ -22,7 +22,7 @@ func (pl *PL) CaptureIrradiance(src, target string) PipelineFunc {
 		irradianceTex := pl.createCubeMap(size, false)
 
 		// We have radiance shader now
-		return func(p *Pass) {
+		return func(p *Step) {
 			irradianceShader.Bind()
 			irradianceShader.Set("environmentMap", 0)
 			irradianceShader.Set("projection", camProj)

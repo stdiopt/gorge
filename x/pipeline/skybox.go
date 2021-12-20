@@ -9,7 +9,7 @@ import (
 )
 
 func (pl *PL) LoadHDR(src string, target string) PipelineFunc {
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		equirectangularSD := &gorge.ShaderData{Src: static.MustData("shaders/ibl/equirectangular_cube.glsl")}
 		equirectangularShader := r.NewShader(equirectangularSD)
 
@@ -40,7 +40,7 @@ func (pl *PL) LoadHDR(src string, target string) PipelineFunc {
 
 		cubeTex := pl.createCubeMap(texSize, false)
 
-		return func(p *Pass) {
+		return func(p *Step) {
 			equirectangularShader.Bind()
 			equirectangularShader.Set("equirectangularMap", 0)
 			equirectangularShader.Set("projection", camProj)
@@ -69,7 +69,7 @@ func (pl *PL) LoadHDR(src string, target string) PipelineFunc {
 }
 
 func (pl *PL) LoadSkyboxStage(target string) PipelineFunc {
-	return func(_ *render.Context, next PassFunc) PassFunc {
+	return func(_ *render.Context, next StepFunc) StepFunc {
 		srcs := []string{
 			"skybox/right.jpg",
 			"skybox/left.jpg",
@@ -104,7 +104,7 @@ func (pl *PL) LoadSkyboxStage(target string) PipelineFunc {
 			)
 		}
 
-		return func(p *Pass) {
+		return func(p *Step) {
 			p.Props["has_"+target] = true
 			p.Samplers[target] = cubeTex
 			next(p)

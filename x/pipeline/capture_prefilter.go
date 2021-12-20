@@ -10,7 +10,7 @@ import (
 )
 
 func (pl *PL) CapturePrefilter(src, target string) PipelineFunc {
-	return func(r *render.Context, next PassFunc) PassFunc {
+	return func(r *render.Context, next StepFunc) StepFunc {
 		size := 128
 
 		prefilterSD := &gorge.ShaderData{Src: static.MustData("shaders/ibl/prefilter.glsl")}
@@ -23,7 +23,7 @@ func (pl *PL) CapturePrefilter(src, target string) PipelineFunc {
 
 		prefilterMap := pl.createCubeMap(size, true)
 
-		return func(p *Pass) {
+		return func(p *Step) {
 			tex := p.Samplers[src]
 			if tex == nil {
 				next(p)

@@ -74,6 +74,18 @@ func create(g *gorge.Context, doc *Doc) *GLTF {
 	}
 }
 
+// ReleaseRawData releases the raw data from memory leaving the gpu ref only
+func (r *GLTF) ReleaseRawData(g *gorge.Context) {
+	for _, t := range r.Textures {
+		g.ResourceReleaseData(t)
+	}
+	for _, m := range r.Meshes {
+		for _, p := range m.primitives {
+			g.ResourceReleaseData(p.Mesh)
+		}
+	}
+}
+
 // UpdateDelta to be manually called to trigger animations, morphs etc.
 func (r *GLTF) UpdateDelta(dt float32) {
 	for _, fn := range r.updateFn {
@@ -340,9 +352,6 @@ func (c *gltfCreator) processNodes() {
 
 		if n.Rotation != nil {
 			r := *n.Rotation
-			// W := r[3]
-			// V := m32.V3{r[0], r[1], r[2]}
-			// node.Transform().Rotation = m32.Q{W: W, V: mgl32.Vec3(V)}
 			node.Transform().Rotation = m32.Quat(r)
 		}
 
@@ -611,13 +620,13 @@ func (c *gltfCreator) getGPrimitive(prim *MeshPrimitive) *gorge.Mesh {
 		Vertices:    verts,
 		Indices:     indices,
 	}
-	var ref gorge.Resourcer // nolint
+	// var ref gorge.Resourcer // nolint
 	// c.gorge.RunInMain(func() {
-	ref = c.gorge.ResourceRef(&meshData)
+	// ref = c.gorge.ResourceRef(&meshData)
 	// })
-	c.primRef[prim] = ref
+	c.primRef[prim] = &meshData
 
-	return gorge.NewMesh(ref)
+	return gorge.NewMesh(&meshData)
 }
 
 func (c *gltfCreator) getGTexture(tex *Texture) *gorge.Texture {
@@ -635,9 +644,10 @@ func (c *gltfCreator) getGTexture(tex *Texture) *gorge.Texture {
 			c.gorge.Error(err)
 			return nil
 		}
+		ref = texData
 
 		// c.gorge.RunInMain(func() {
-		ref = c.gorge.ResourceRef(texData)
+		// ref = c.gorge.ResourceRef(texData)
 		// })
 		c.texRef[im] = ref
 	}
@@ -718,7 +728,7 @@ type GMesh struct {
 func acBufIndices(buf []byte, _ int, ty ComponentType) interface{} {
 	switch ty {
 	case ComponentUByte:
-		return append([]byte{}, buf...)
+		return append([]byte{}, buf...) // copy
 	case ComponentUShort:
 		return append([]uint16{}, bufUI16Slice(buf)...)
 	case ComponentUInt:

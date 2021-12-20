@@ -6,8 +6,8 @@ import (
 )
 
 // Render Renders the geometry (forward)
-func Render(r *render.Context, next render.PassFunc) render.PassFunc {
-	return func(ri *render.Pass) {
+func Render(r *render.Context, next render.StepFunc) render.StepFunc {
+	return func(ri *render.Step) {
 		for _, qi := range ri.QueuesIndex {
 			renderables := ri.Queues[qi].Renderables
 			for _, re := range renderables {

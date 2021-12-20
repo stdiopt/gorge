@@ -9,12 +9,12 @@ import (
 // const defCameraMask = uint32(0xFF)
 
 // PipelineFunc middleware alike pipelining.
-type PipelineFunc func(r *render.Context, next render.PassFunc) render.PassFunc
+type PipelineFunc func(r *render.Context, next render.StepFunc) render.StepFunc
 
 // Pipeline builds a StagerFunc from several pipelineFuncs.
-func Pipeline(r *render.Context, fns ...PipelineFunc) render.PassFunc {
+func Pipeline(r *render.Context, fns ...PipelineFunc) render.StepFunc {
 	if len(fns) == 0 {
-		return func(ri *render.Pass) {} // End of line
+		return func(ri *render.Step) {} // End of line
 	}
 	next := fns[1:]
 	return fns[0](r, Pipeline(r, next...))
