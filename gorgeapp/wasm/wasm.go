@@ -20,11 +20,11 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	Document.Get("head").Set("innerHTML", `
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title> gorge - go reduced game engine</title>
+	<title> gorge </title>
 	<style>
 		* {box-sizing: border-box;}
 		body{ height: 100vh; margin:0; padding:0; }
-		canvas { position:fixed; top: 0px; height:100%; width: 100%; }
+		canvas { position:fixed; top: 0px; height:100%; width: 100%; outline:none;}
 		#fs-btn { z-index:10; position:fixed; top:5px;right:5px; }
 	</style>
 	`)
@@ -34,6 +34,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 		return nil
 	}))
 	canvas := El("canvas")
+	canvas.Call("setAttribute", "tabindex", "1")
 
 	Body.Call("appendChild", fullScreenBtn)
 	Body.Call("appendChild", canvas)
@@ -153,6 +154,7 @@ func (s *wasmSystem) setupEvents() {
 
 func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) interface{} {
 	evt := args[0]
+	evt.Call("preventDefault")
 
 	code := evt.Get("code").String()
 	etype := evt.Get("type").String()
@@ -168,6 +170,7 @@ func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) interface{} {
 
 	switch etype {
 	case "keydown":
+		s.canvas.Call("focus")
 		s.input.SetKeyState(ikey, input.ActionDown)
 	case "keyup":
 		s.input.SetKeyState(ikey, input.ActionUp)
@@ -193,8 +196,10 @@ func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) interface{} 
 			},
 		)
 	case "contextmenu":
+		s.canvas.Call("focus")
 		s.input.SetMouseButtonState(input.MouseRight, input.ActionDown)
 	case "mousedown":
+		s.canvas.Call("focus")
 		btn := evt.Get("button").Int()
 		gbtn, ok := mousebtnMap[btn]
 		if !ok {
@@ -221,6 +226,7 @@ func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) interface{} 
 	var gtyp input.PointerType
 	switch etype {
 	case "touchstart":
+		s.canvas.Call("focus")
 		gtyp = input.PointerDown
 	case "touchmove":
 		gtyp = input.PointerMove
