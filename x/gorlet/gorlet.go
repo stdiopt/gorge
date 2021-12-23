@@ -15,8 +15,13 @@ type (
 	}
 )
 
-// PlacementFunc will be used in a container and will define clients rect.
-type PlacementFunc func(w *Entity) // OnAdd in the Entity
+type (
+	// PlacementFunc will be used in a container and will define clients rect.
+	PlacementFunc func(w *Entity) // OnAdd in the Entity
+	// ObserverFunc is the type of the function function that will be
+	// called when the named property is set.
+	ObserverFunc = func(interface{})
+)
 
 // Entity is a gui component
 type Entity struct {
@@ -30,7 +35,7 @@ type Entity struct {
 	clientArea *Entity
 	// layouter   Layouter
 
-	observers map[string][]func(interface{})
+	observers map[string][]ObserverFunc
 }
 
 // XXX:
@@ -66,9 +71,9 @@ func Create(fn BuildFunc) *Entity {
 		name:          ename,
 		RectComponent: *gorgeui.NewRectComponent(),
 	}
-	// root.SetLayouter(gorgeui.AutoHeight(1))
-	// root.SetAnchor(0)
-	// root.SetRect(0, 0, 30, 5)
+	// defEntity.SetLayout(gorgeui.AutoHeight(1))
+	// defEntity.SetAnchor(0)
+	// defEntity.SetRect(0, 0, 30, 5)
 	defEntity.SetPivot(0)
 	b := Builder{
 		root: &curEntity{entity: defEntity},
@@ -169,41 +174,16 @@ func (e *Entity) PropSetter(name string) func(v interface{}) {
 }
 
 // Observe adds a named observer setting nil will delete all observers.
-func (e *Entity) Observe(k string, fn interface{}) {
+func (e *Entity) Observe(k string, fn ObserverFunc) {
 	if e.observers == nil {
-		e.observers = map[string][]func(interface{}){}
+		e.observers = map[string][]ObserverFunc{}
 	}
 	if fn == nil {
 		delete(e.observers, k)
 		return
 	}
-	e.observers[k] = append(e.observers[k], makePropFunc(k, fn))
+	e.observers[k] = append(e.observers[k], fn)
 }
-
-/*
-func (e *Entity) Add(children ...*Entity) {
-	if e.clientArea != nil {
-		e.clientArea.Add(children...)
-		if e.Layouter != nil {
-			e.Layouter.Layout(e)
-		}
-		return
-	}
-	for _, c := range children {
-		if e.onAdd != nil {
-			e.onAdd(c)
-		}
-		// This adds it to children class.
-		gorgeui.AddChildrenTo(e, c)
-	}
-
-	// TODO: {lpf} This could be only on gorlet and do a tree call
-	// Relayout
-	if e.Layouter != nil {
-		e.Layouter.Layout(e)
-	}
-}
-*/
 
 // AddElement adds an UI element to entity.
 func (e *Entity) AddElement(els ...gorge.Entity) {

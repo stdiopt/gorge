@@ -37,7 +37,7 @@ func Spinner(lbl string, fn func(float32)) BuildFunc {
 		l := b.Label("")
 		b.EndPanel()
 
-		b.Observe("value", func(v float32) {
+		b.Observe("value", ObsFunc(func(v float32) {
 			if val == v {
 				return
 			}
@@ -47,7 +47,7 @@ func Spinner(lbl string, fn func(float32)) BuildFunc {
 				fn(val)
 			}
 			root.Trigger(EventValueChanged{val})
-		})
+		}))
 
 		root.SetDragEvents(true)
 		root.HandleFunc(func(e event.Event) {

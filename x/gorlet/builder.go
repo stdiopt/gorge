@@ -142,7 +142,7 @@ func (b *Builder) ForwardProps(pre string, e *Entity) {
 }
 
 // Observe adds a function to observe a property in the root Entity.
-func (b Builder) Observe(k string, fn interface{}) {
+func (b Builder) Observe(k string, fn func(interface{})) {
 	b.root.entity.Observe(k, fn)
 }
 
@@ -296,7 +296,20 @@ func (b *Builder) cur() *curEntity {
 	return b.stack[len(b.stack)-1]
 }
 
-func makePropFunc(k string, fn interface{}) func(interface{}) {
+/*
+// ObsFunc generics way
+func ObsFunc[T any](fn func(T)) func(interface{}) {
+	return func(vv interface{}) {
+		v, ok := vv.(T);
+		if !ok {
+			panic(fmt.Sprintf("Can't convert prop [%q] %T(%v) to %v", k, vv, v, *new(T)))
+		}
+		fn((v)
+	}
+}*/
+
+// ObsFunc creates a typed observer func from reflection.
+func ObsFunc(fn interface{}) func(interface{}) {
 	if fn, ok := fn.(func(interface{})); ok {
 		return fn
 	}
@@ -307,7 +320,7 @@ func makePropFunc(k string, fn interface{}) func(interface{}) {
 		arg := reflect.ValueOf(v)
 		if aTyp := arg.Type(); aTyp != inTyp {
 			if !arg.CanConvert(inTyp) {
-				panic(fmt.Sprintf("Can't convert prop [%q] %v(%v) to %v", k, aTyp, v, inTyp))
+				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, inTyp))
 			}
 			arg = arg.Convert(inTyp)
 		}
@@ -315,3 +328,34 @@ func makePropFunc(k string, fn interface{}) func(interface{}) {
 		fnVal.Call([]reflect.Value{arg})
 	}
 }
+
+/*
+// ObsFunc creates a typed observer func from type switch it works on tinygo since
+// tiny go doesn't support reflection NumIn.
+func ObsFunc(fn interface{}) func(interface{}) {
+	switch fn := fn.(type) {
+	case func(interface{}):
+		return fn
+	case func(string):
+		return func(v interface{}) {
+			fn(v.(string))
+		}
+	case func(float32):
+		return func(v interface{}) { fn(v.(float32)) }
+	case func(float64):
+		return func(v interface{}) { fn(v.(float64)) }
+	case func(int):
+		return func(v interface{}) { fn(v.(int)) }
+	case func(m32.Vec4):
+		return func(v interface{}) { fn(v.(m32.Vec4)) }
+	case func(bool):
+		return func(v interface{}) { fn(v.(bool)) }
+	case func([]text.Align):
+		return func(v interface{}) { fn(v.([]text.Align)) }
+	case func(text.Overflow):
+		return func(v interface{}) { fn(v.(text.Overflow)) }
+	default:
+		panic(fmt.Sprintf("unsupported observer: %T", fn))
+	}
+}
+*/

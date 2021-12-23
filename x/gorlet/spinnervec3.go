@@ -42,7 +42,7 @@ func SpinnerVec3(fn func(m32.Vec3)) BuildFunc {
 
 		b.EndPanel()
 
-		b.Observe("value", func(v m32.Vec3) {
+		b.Observe("value", ObsFunc(func(v m32.Vec3) {
 			if val == v {
 				return
 			}
@@ -52,7 +52,7 @@ func SpinnerVec3(fn func(m32.Vec3)) BuildFunc {
 			z.Set("value", v[2])
 			fn(val)
 			root.Trigger(EventValueChanged{Value: val})
-		})
+		}))
 	}
 }
 

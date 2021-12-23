@@ -39,8 +39,6 @@ func RectIdent() RectComponent {
 		Dim:    m32.Vec2{0, 0},
 		Pivot:  m32.Vec2{.5, .5},
 	}
-	// rc.Transform() // rebuild transform
-	// rc.TransformComponent.SetParent(rc.container)
 	return rc
 }
 

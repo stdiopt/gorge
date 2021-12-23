@@ -32,6 +32,7 @@ func Label(t string) BuildFunc {
 		ent.Color = m32.Color(1)
 
 		root := b.Root()
+		// root.SetHeight(4)
 		root.AddElement(ent)
 
 		// Element maybe?
@@ -74,23 +75,23 @@ func Label(t string) BuildFunc {
 			}
 		})
 
-		b.Observe("autoSize", func(v bool) { autoSize = v })
-		b.Observe("text", func(s string) {
+		b.Observe("autoSize", ObsFunc(func(v bool) { autoSize = v }))
+		b.Observe("text", ObsFunc(func(s string) {
 			ent.SetText(s)
-		})
-		b.Observe("textColor", func(c m32.Vec4) {
+		}))
+		b.Observe("textColor", ObsFunc(func(c m32.Vec4) {
 			ent.SetColorv(c)
-		})
-		b.Observe("fontScale", func(v float32) {
+		}))
+		b.Observe("fontScale", ObsFunc(func(v float32) {
 			ent.SetSize(v)
-		})
-		b.Observe("textAlign", func(a []text.Align) {
+		}))
+		b.Observe("textAlign", ObsFunc(func(a []text.Align) {
 			Alignment = *(*[2]text.Align)(a)
 			ent.SetAlignment(Alignment[0])
-		})
-		b.Observe("overflow", func(o text.Overflow) {
+		}))
+		b.Observe("overflow", ObsFunc(func(o text.Overflow) {
 			ent.SetOverflow(o)
-		})
+		}))
 		root.Set("text", t)
 	}
 }

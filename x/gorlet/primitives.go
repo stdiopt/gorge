@@ -92,9 +92,9 @@ func rectElement(ent graphicer) BuildFunc {
 			t.Scale[0] = r[2] - r[0]
 			t.Scale[1] = r[3] - r[1]
 		})
-		b.Observe("color", func(c m32.Vec4) {
+		b.Observe("color", ObsFunc(func(c m32.Vec4) {
 			ent.Colorable().SetColorv(c)
-		})
+		}))
 		// Defaults
 		p.Set("color", m32.Color(0, 0, 0, .2))
 	}

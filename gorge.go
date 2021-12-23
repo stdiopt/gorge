@@ -42,9 +42,11 @@ func (p *systems) getSystem(k interface{}) interface{} {
 	return p.kv[k]
 }
 
+type eventBus = event.Bus
+
 // Gorge main state manager and message bus
 type Gorge struct {
-	event.Bus
+	eventBus
 	systems
 	// tcore
 	// screenSize since this is shared between places

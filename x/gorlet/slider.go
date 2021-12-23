@@ -54,10 +54,10 @@ func Slider(min, max float32, fn func(float32)) BuildFunc {
 		}
 		b.End()
 
-		b.Observe("handlerColor", func(c m32.Vec4) {
+		b.Observe("handlerColor", ObsFunc(func(c m32.Vec4) {
 			handler.Set("color", c)
-		})
-		b.Observe("handler", func(e *Entity) {
+		}))
+		b.Observe("handler", ObsFunc(func(e *Entity) {
 			// Need to remove Element first :/
 			track.RemoveElement(handler)
 			handler = e
@@ -66,8 +66,8 @@ func Slider(min, max float32, fn func(float32)) BuildFunc {
 			handler.SetPivot(.5)
 			handler.SetRect(0, 0, handlerSize, 0)
 			handler.SetAnchor(val, 0, val, 1)
-		})
-		b.Observe("value", func(v float32) {
+		}))
+		b.Observe("value", ObsFunc(func(v float32) {
 			if val == v {
 				return
 			}
@@ -79,12 +79,12 @@ func Slider(min, max float32, fn func(float32)) BuildFunc {
 				fn(val)
 			}
 			root.Trigger(EventValueChanged{val})
-		})
-		b.Observe("handlerSize", func(f float32) {
+		}))
+		b.Observe("handlerSize", ObsFunc(func(f float32) {
 			handlerSize = f
 			handler.SetRect(0, 0, handlerSize/2, 0)
 			track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
-		})
+		}))
 
 		var dragging bool
 		root.HandleFunc(func(e event.Event) {
