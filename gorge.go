@@ -18,7 +18,7 @@ func init() {
 }
 
 // InitFunc type of function to initialize gorge.
-type InitFunc func(*Context)
+type InitFunc func(*Context) error
 
 // Or systems
 type systems struct {

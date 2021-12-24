@@ -2,10 +2,15 @@
 // nolint
 package gl
 
+import "log"
+
 var wrapper *Wrapper
 
 func Init(glw *Wrapper) {
 	wrapper = glw
+	log.Println("GL The wrapper:", glw)
+	log.Println("GL version:", glw.GetString(VERSION))
+	log.Println("GL Renderer:", glw.GetString(RENDERER))
 }
 
 // This function redirects to wrapper which implements the platform specific GL

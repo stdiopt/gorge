@@ -11,7 +11,6 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render"
-	"github.com/stdiopt/gorge/systems/render/gl"
 	"github.com/stdiopt/gorge/systems/render/renderpl"
 	"github.com/stdiopt/gorge/systems/resource"
 )
@@ -51,20 +50,14 @@ func New(inits ...gorge.InitFunc) *App {
 
 	// define default rendering pipeline
 	defInits := []gorge.InitFunc{
-		func(g *gorge.Context) {
-			// glw := gl.FromContext(g)
-		},
-		func(g *gorge.Context) {
-			log.Println("GL The wrapper:", gl.Wrapper{})
-			log.Println("GL version:", gl.GetString(gl.VERSION))
-			log.Println("GL Renderer:", gl.GetString(gl.RENDERER))
-
+		func(g *gorge.Context) error {
 			resource.FromContext(g)
 			input.FromContext(g)
 			render.FromContext(g)
 			renderpl.Default(g)
 			// This initializes some global fonts
 			gorgeui.FromContext(g)
+			return nil
 			// gorgeutil.FromContext(g)
 		},
 		// resource.System,

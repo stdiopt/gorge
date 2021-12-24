@@ -176,10 +176,11 @@ func NewBasic(g *gorge.Context) *Basic {
 }
 
 // BasicSystem initializes a default scene when used in app initializator.
-func BasicSystem(g *gorge.Context) {
+func BasicSystem(g *gorge.Context) error {
 	log.Println("initializing helper system")
 	thing := NewBasic(g)
 	// g.PutProp(thing)
 	g.Add(thing)
 	g.Handle(thing)
+	return nil
 }

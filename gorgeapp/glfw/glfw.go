@@ -72,11 +72,10 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	}
 
 	ggArgs := []gorge.InitFunc{
-		func(g *gorge.Context) {
+		func(g *gorge.Context) error {
 			res := resource.FromContext(g)
 			res.AddFS("/", resourceFS)
-
-			// g.PutProp(glw)
+			return nil
 		},
 		s.System,
 	}
@@ -87,6 +86,11 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	g.HandleFunc(func(e event.Event) {
 		switch v := e.(type) {
 		case gorge.EventCursorRelative:
+			if v { // set cursor to center on turn on
+				sx, sy := s.window.GetSize()
+				cx, cy := float64(sx/2), float64(sy/2)
+				s.window.SetCursorPos(cx, cy)
+			}
 			s.cursorRelative = bool(v)
 		case gorge.EventCursorHidden:
 			if v {
@@ -139,10 +143,11 @@ type glfwSystem struct {
 	cursorRelative bool
 }
 
-func (s *glfwSystem) System(g *gorge.Context) {
+func (s *glfwSystem) System(g *gorge.Context) error {
 	s.input = input.FromContext(g)
 	s.gorge = g
 	s.setupEvents()
+	return nil
 }
 
 func (s *glfwSystem) setupEvents() {
@@ -174,10 +179,10 @@ func (s *glfwSystem) setupEvents() {
 	)
 
 	// Start in center anyway
-	sx, sy := s.window.GetSize()
-	cx, cy := float64(sx/2), float64(sy/2)
-	s.window.SetCursorPos(cx, cy)
-	s.input.SetCursorPosition(m32.Vec2{float32(cx), float32(cy)})
+	// sx, sy := s.window.GetSize()
+	// cx, cy := float64(sx/2), float64(sy/2)
+	// s.window.SetCursorPos(cx, cy)
+	// s.input.SetCursorPosition(m32.Vec2{float32(cx), float32(cy)})
 
 	s.window.SetCursorPosCallback(func(w *glfw.Window, x, y float64) {
 		if !s.cursorRelative {

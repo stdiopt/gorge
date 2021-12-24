@@ -14,8 +14,9 @@ const Type = "glfw"
 // Run the glfw app
 func (a *App) Run() error {
 	inits := append([]gorge.InitFunc{
-		func(g *gorge.Context) {
+		func(g *gorge.Context) error {
 			audio.FromContext(g)
+			return nil
 		},
 	},
 		a.inits...,

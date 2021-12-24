@@ -64,9 +64,10 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 		resourceFS = resource.HTTPFS{""}
 	}
 	ggArgs := []gorge.InitFunc{
-		func(g *gorge.Context) {
+		func(g *gorge.Context) error {
 			res := resource.FromContext(g)
 			res.AddFS("/", resourceFS)
+			return nil
 		},
 		s.System,
 	}
@@ -110,12 +111,13 @@ func (s *wasmSystem) HandleEvent(v event.Event) {
 	}
 }
 
-func (s *wasmSystem) System(g *gorge.Context) {
+func (s *wasmSystem) System(g *gorge.Context) error {
 	s.gorge = g
 	s.input = input.FromContext(g)
 	// g.PutProp(s.glctx)
 	s.checkCanvasSize()
 	g.Handle(s)
+	return nil
 }
 
 func (s *wasmSystem) checkCanvasSize() {
