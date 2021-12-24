@@ -32,8 +32,10 @@ func Label(t string) BuildFunc {
 		ent.Color = m32.Color(1)
 
 		root := b.Root()
-		// root.SetHeight(4)
 		root.AddElement(ent)
+		b.BeginContainer()
+		b.ClientArea()
+		b.EndContainer()
 
 		// Element maybe?
 		root.HandleFunc(func(e event.Event) {

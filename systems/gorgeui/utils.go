@@ -5,8 +5,8 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
-// rectTransformer transform interface for UI elements
-type rectTransformer interface {
+// RectTransformer transform interface for UI elements
+type RectTransformer interface {
 	RectTransform() *RectComponent
 }
 

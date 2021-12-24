@@ -74,6 +74,14 @@ func (v Vec4) Vec3() Vec3 {
 	return Vec3{v[0], v[1], v[2]}
 }
 
+// Equal returns true if v and v2 are approximately equal.
+func (v Vec4) Equal(v2 Vec4) bool {
+	return FloatEqual(v[0], v2[0]) &&
+		FloatEqual(v[1], v2[1]) &&
+		FloatEqual(v[2], v2[2]) &&
+		FloatEqual(v[3], v2[3])
+}
+
 // Lerp Linear interpolation between 2 vecs
 func (v Vec4) Lerp(b Vec4, t float32) Vec4 {
 	return Vec4{

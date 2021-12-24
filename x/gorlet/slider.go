@@ -16,6 +16,7 @@ func Slider(min, max float32, fn func(float32)) BuildFunc {
 	return func(b *Builder) {
 		var (
 			fontScale        = b.Prop("fontScale")
+			backgroundColor  = b.Prop("backgroundColor", m32.Color(.4, .2))
 			handlerTextColor = b.Prop("textColor")
 			handlerColor     = b.Prop("handlerColor")
 		)
@@ -24,44 +25,44 @@ func Slider(min, max float32, fn func(float32)) BuildFunc {
 		var track *Entity
 		var handler *Entity
 
-		root := b.Root()
-		root.SetAnchor(0)
-		root.SetRect(0, 0, 30, 4)
+		b.Use("color", backgroundColor)
+
+		// b.UsePivot(0)
+		// b.UseAnchor(0)
+		// b.UseRect(0, 0, 30, 4)
+		root := b.SetRoot(Panel())
 		root.SetDragEvents(true)
 
-		b.Set("color", m32.Color(.4, .2))
-		b.Set("fontScale", fontScale)
-		b.SetAddMode(ElementAdd)
-		b.BeginPanel()
 		{
+			b.UseAnchor(0, 0, 1, 1)
+			b.UseRect(handlerSize/2, 0, handlerSize/2, 0)
+			b.UsePivot(0, .5)
 			track = b.BeginContainer()
 			{
-				track.SetAnchor(0, 0, 1, 1)
-				track.SetPivot(0, .5)
-				track.SetRect(0)
-				track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
+				// track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 
 				// this will be stuck forever :/
-				b.Set("textColor", handlerTextColor)
-				b.Set("color", handlerColor)
+				b.Use("textColor", handlerTextColor)
+				b.Use("color", handlerColor)
+				b.Use("fontScale", fontScale)
 
+				b.UsePivot(.5)
+				b.UseRect(0, 0, handlerSize, 0)
+				b.UseAnchor(val, 0, val, 1)
 				handler = b.TextButton("0", nil)
-				handler.SetPivot(.5)
-				handler.SetRect(0, 0, handlerSize, 0)
-				handler.SetAnchor(val, 0, val, 1)
 			}
 			b.End()
 		}
-		b.End()
 
 		b.Observe("handlerColor", ObsFunc(func(c m32.Vec4) {
 			handler.Set("color", c)
 		}))
 		b.Observe("handler", ObsFunc(func(e *Entity) {
 			// Need to remove Element first :/
-			track.RemoveElement(handler)
+			// should remove observers from handler?
+			track.Remove(handler)
 			handler = e
-			track.AddElement(handler)
+			track.Add(handler)
 
 			handler.SetPivot(.5)
 			handler.SetRect(0, 0, handlerSize, 0)
@@ -74,7 +75,6 @@ func Slider(min, max float32, fn func(float32)) BuildFunc {
 			val = v
 			handler.SetAnchor(val, 0, val, 1)
 			handler.Set("text", fmt.Sprintf("%.2f", min+(val*(max-min))))
-
 			if fn != nil {
 				fn(val)
 			}

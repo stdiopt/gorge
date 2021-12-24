@@ -24,7 +24,7 @@ const commonChars = `
 0123456789µ&
 abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
-{}()[]|$@?%/\:;,._-+=<>*"'~#
+{}()[]|$@?!%/\:;,._-+=<>*"'~#
 ` + "`"
 
 func fontLoader(res *resource.Context, v interface{}, name string, opts ...interface{}) error {

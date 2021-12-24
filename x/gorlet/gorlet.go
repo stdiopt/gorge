@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -28,35 +29,17 @@ type Entity struct {
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
 
+	container gorge.Container
+	children  []*Entity
+
 	name string // debug purposes
 
 	// TODO: {lpf} give it a proper name.
 	onAdd      PlacementFunc
 	clientArea *Entity
-	// layouter   Layouter
+	layouter   Layouter
 
 	observers map[string][]ObserverFunc
-}
-
-// XXX:
-// we could use layouter func here instead of gorgeui
-// this way we could just run through *Entity since this is
-// an higher level entity.
-//
-// Other way would be use the eventBus on the Create func.
-// Since then we wouldn't have HandleEvent exposed
-
-/*func (e *Entity) HandleEvent(evt event.Event) {
-	switch e := evt.(type) {
-	case gorgeui.EventUpdate:
-		if e.layouter != nil {
-			e.layouter.Layout(e)
-		}
-	}
-}*/
-
-func (e *Entity) String() string {
-	return e.name
 }
 
 // Create creates builds and prepares a guilet
@@ -82,6 +65,29 @@ func Create(fn BuildFunc) *Entity {
 	return b.root.entity
 }
 
+// XXX:
+// we could use layouter func here instead of gorgeui
+// this way we could just run through *Entity since this is
+// an higher level entity.
+//
+// Other way would be use the eventBus on the Create func.
+// Since then we wouldn't have HandleEvent exposed
+
+// HandleEvent handles events.
+func (e *Entity) HandleEvent(evt event.Event) {
+	switch evt.(type) {
+	case gorgeui.EventUpdate:
+		if e.layouter != nil {
+			e.layouter.Layout(e)
+		}
+	default:
+	}
+}
+
+func (e *Entity) String() string {
+	return e.name
+}
+
 // Client returns the client area of the entity, the client area
 // is an Entity where the children will be added using Add method.
 func (e *Entity) Client() *Entity {
@@ -100,6 +106,7 @@ func (e *Entity) SetClientArea(c *Entity) {
 }
 
 // OnAdd triggers when the entitywhen the entity is added to the parent.
+// missing consistency
 func (e *Entity) OnAdd(fn func(e *Entity)) {
 	if e.clientArea != nil {
 		e.clientArea.OnAdd(fn)
@@ -109,39 +116,91 @@ func (e *Entity) OnAdd(fn func(e *Entity)) {
 }
 
 // SetLayout Will set the layouter thing on client Entity.
-func (e *Entity) SetLayout(l gorgeui.Layouter) {
+func (e *Entity) SetLayout(l Layouter) {
 	if e.clientArea != nil {
 		e.clientArea.SetLayout(l)
 		return
 	}
-	e.Layouter = l
+	e.layouter = l
+}
+
+// GetEntities implement gorge.Container.
+func (e *Entity) GetEntities() []gorge.Entity {
+	return e.container
+}
+
+// Children returns this entity children.
+func (e *Entity) Children() []*Entity {
+	return e.children
 }
 
 // Add adds a children to entity.
-func (e *Entity) Add(children ...*Entity) {
+func (e *Entity) Add(child *Entity) {
 	if e.clientArea != nil {
-		e.clientArea.Add(children...)
-		if e.Layouter != nil {
-			e.Layouter.Layout(e)
+		e.clientArea.Add(child)
+		if e.layouter != nil {
+			e.layouter.Layout(e)
 		}
 		return
 	}
 
-	for _, c := range children {
-		if e.onAdd != nil {
-			e.onAdd(c)
-		}
-		// This adds it to children class.
-		gorgeui.AddChildrenTo(e, c)
+	if e.indexOf(child) != -1 {
+		return
 	}
+	if e.onAdd != nil {
+		e.onAdd(child)
+	}
+	e.children = append(e.children, child)
+	e.add(child)
 
 	// TODO: {lpf} This could be only on gorlet and do a tree call
-
 	// Relayout this entity as well as children will also relayout
 	// themselves on add.
-	if e.Layouter != nil {
-		e.Layouter.Layout(e)
+	if e.layouter != nil {
+		e.layouter.Layout(e)
 	}
+}
+
+// Remove removes a child from the entity.
+func (e *Entity) Remove(child *Entity) {
+	if e.clientArea != nil {
+		e.clientArea.Remove(child)
+		if e.layouter != nil {
+			e.layouter.Layout(e)
+		}
+		return
+	}
+
+	n := e.indexOf(child)
+	if n == -1 {
+		return
+	}
+	// remove from container if exists
+	e.remove(child)
+
+	t := e.children
+	e.children = append(e.children[:n], e.children[n+1:]...)
+	t[len(t)-1] = nil
+}
+
+func (e *Entity) exists(c *Entity) bool {
+	for _, cc := range e.children {
+		if c == cc {
+			return true
+		}
+	}
+	return false
+}
+
+// AddElement adds an element to the entity
+func (e *Entity) AddElement(ents ...gorge.Entity) {
+	e.add(ents...)
+}
+
+// RemoveElement removes an element.
+// TODO: {lpf} should this check for children here, since this can remove a child.
+func (e *Entity) RemoveElement(ents ...gorge.Entity) {
+	e.remove(ents...)
 }
 
 // Attached implements the Attacher interface
@@ -185,23 +244,47 @@ func (e *Entity) Observe(k string, fn ObserverFunc) {
 	e.observers[k] = append(e.observers[k], fn)
 }
 
-// AddElement adds an UI element to entity.
-func (e *Entity) AddElement(els ...gorge.Entity) {
-	for _, c := range els {
-		gorgeui.AddElementTo(e, c)
-	}
-}
-
-// RemoveElement removes element from entity and resets elements parent,
-// if the element is attached it will trigger gorge remove event.
-func (e *Entity) RemoveElement(els ...gorge.Entity) {
-	for _, c := range els {
-		gorgeui.RemoveElementFrom(e, c)
-	}
-}
-
 // FillParent will reset anchor to 0,0 1,1 and Rect to 0,0,0,0.
 func (e *Entity) FillParent(n float32) {
 	e.SetAnchor(0, 0, 1, 1)
 	e.SetRect(n)
+}
+
+func (e *Entity) indexOf(c *Entity) int {
+	for i, c2 := range e.children {
+		if c == c2 {
+			return i
+		}
+	}
+	return -1
+}
+
+// add it will add to container if the entity is attached it will add to
+// underlying gorge instance.
+func (e *Entity) add(children ...gorge.Entity) {
+	for _, c := range children {
+		if t, ok := c.(gorge.ParentSetter); ok {
+			t.SetParent(e)
+		}
+		e.container.Add(c)
+	}
+	if e.ElementComponent.Attached {
+		ui := gorgeui.RootUI(e)
+		ui.Add(children...)
+	}
+}
+
+// add it will remove from container if the entity is attached it will add to
+// underlying gorge instance.
+func (e *Entity) remove(children ...gorge.Entity) {
+	for _, c := range children {
+		if t, ok := c.(gorge.ParentSetter); ok {
+			t.SetParent(nil)
+		}
+		e.container.Remove(c)
+	}
+	if e.ElementComponent.Attached {
+		ui := gorgeui.RootUI(e)
+		ui.Remove(children...)
+	}
 }

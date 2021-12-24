@@ -24,7 +24,7 @@ func Window(def string) BuildFunc {
 
 		root := b.Root()
 
-		b.Set("color", winColor)
+		b.Use("color", winColor)
 		// b.Layout(gorgeui.AutoHeight(1))
 		b.BeginPanel()
 		// full.SetAnchor(0, 0, 1, 1)
@@ -50,21 +50,21 @@ func Window(def string) BuildFunc {
 			})
 
 			b.UseAnchor(0, 0, 1, 1)
-			b.Set("text", titleText)
+			b.Use("text", titleText)
 			b.Label("")
 		}
 		b.EndPanel()
 
 		// Body
-		b.Set("color", winColor)
+		b.Use("color", winColor)
 		b.UseAnchor(0, 0, 1, 1)
 		b.UseRect(0, 2, 0, 0)
 		b.BeginPanel()
 		b.ClientArea()
 		b.EndPanel()
 
-		b.Set("color", nil)
-		b.Set("textColor", nil)
+		b.Use("color", nil)
+		b.Use("textColor", nil)
 
 		// b.UseAnchor(0, 0, 1, 1)
 		// b.UseRect(0, 0, 1, 0)
@@ -73,7 +73,7 @@ func Window(def string) BuildFunc {
 		b.UseAnchor(1)
 		b.UseRect(0, 0, 1, 1)
 		b.UsePivot(.8)
-		b.Set("color", titleColor)
+		b.Use("color", titleColor)
 
 		resizer := b.Add(Quad())
 		resizer.SetDragEvents(true)

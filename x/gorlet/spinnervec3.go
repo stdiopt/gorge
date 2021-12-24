@@ -27,17 +27,17 @@ func SpinnerVec3(fn func(m32.Vec3)) BuildFunc {
 			}
 		}
 
-		b.Set("fontScale", fontScale)
-		b.Set("color", background)
+		b.Use("fontScale", fontScale)
+		b.Use("color", background)
 		b.BeginPanel(LayoutFlexHorizontal(1))
 
-		b.Set("labelColor", labelColorX)
+		b.Use("labelColor", labelColorX)
 		x := b.Spinner("X", obsFn(0))
 
-		b.Set("labelColor", labelColorY)
+		b.Use("labelColor", labelColorY)
 		y := b.Spinner("Y", obsFn(1))
 
-		b.Set("labelColor", labelColorZ)
+		b.Use("labelColor", labelColorZ)
 		z := b.Spinner("Z", obsFn(2))
 
 		b.EndPanel()

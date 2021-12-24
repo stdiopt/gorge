@@ -18,9 +18,9 @@ func Labeled(lbl string) BuildFunc {
 		b.BeginContainer(LayoutFlexHorizontal(1, 3))
 		{
 
-			b.Set("fontScale", fontScale)
-			b.Set("textAlign", textAlign)
-			b.Set("text", text)
+			b.Use("fontScale", fontScale)
+			b.Use("textAlign", textAlign)
+			b.Use("text", text)
 			b.UseRect(.3)
 			b.Label("")
 
@@ -34,6 +34,15 @@ func Labeled(lbl string) BuildFunc {
 		b.EndContainer()
 		// b.AddEntity(e)
 	}
+}
+
+// Labeled creates a labeled entity by passing the body
+// it returns the entity created by fn.
+func (b *Builder) Labeled(lbl string, fn BuildFunc) *Entity {
+	b.BeginLabeled(lbl)
+	e := b.Add(fn)
+	b.EndLabeled()
+	return e
 }
 
 // BeginLabeled creates a labeled Entity.

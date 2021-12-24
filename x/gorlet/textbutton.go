@@ -4,7 +4,6 @@ import (
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
-	"github.com/stdiopt/gorge/text"
 )
 
 // TextButton creates a text button.
@@ -16,23 +15,33 @@ func TextButton(t string, clickfn func()) BuildFunc {
 			down       = m32.Color(.4)
 			fadeFactor = float32(10)
 		)
+
 		b.BindProp("color", &normal)
 		b.BindProp("highlight", &highlight)
 		b.BindProp("down", &down)
 		b.BindProp("fadeFactor", &fadeFactor)
 
+		// Setting this here is not a good idea?.
+		// b.UseAnchor(0)
+		// b.UseRect(0, 0, 30, 4)
+		// b.UsePivot(0)
+		// root := b.SetRoot(Panel())
 		root := b.Root()
-		b.SetAddMode(ElementAdd)
 
-		b.Set("color", normal)
+		b.Use("color", normal)
+		b.UseAnchor(0, 0, 1, 1)
+		b.UseRect(0)
+		b.UsePivot(0)
 		p := b.BeginPanel()
 		{
 			b.SetProps(Props{
-				"alignment": []text.Align{text.AlignCenter, text.AlignCenter},
 				"text":      b.Prop("text", t),
 				"fontScale": b.Prop("fontScale", 2),
+				// "textAlign": b.Prop("textAlign", []text.Align{text.AlignCenter, text.AlignCenter}),
 				"textColor": b.Prop("textColor", m32.Color(0)),
 			})
+			b.UseRect(0)
+			b.UseAnchor(0, 0, 1, 1)
 			b.Label(t)
 		}
 		b.EndPanel()
@@ -51,13 +60,15 @@ func TextButton(t string, clickfn func()) BuildFunc {
 				target := normal
 				switch {
 				case state&statePressed != 0:
-					s *= 10
+					s *= 2
 					target = down
 				case state&stateHover != 0:
 					target = highlight
 				}
-				color = color.Lerp(target, e.DeltaTime()*s)
+				// Due to floating point this might run everytime but
+				// it is somewhat ok since comparing with epsilon might be slower
 				if target != color {
+					color = color.Lerp(target, e.DeltaTime()*s)
 					p.Set("color", color)
 				}
 			case gorgeui.EventPointerDown:

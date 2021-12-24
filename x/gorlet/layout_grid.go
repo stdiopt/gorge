@@ -2,7 +2,6 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // GridLayout creates a grid layouter that organizes children in a grid
@@ -13,17 +12,13 @@ type GridLayout struct {
 }
 
 // Layout implements layouter interface.
-func (l *GridLayout) Layout(e gorgeui.Entity) {
+func (l *GridLayout) Layout(e *Entity) {
 	sw := 1 / float32(l.Cols)
 	sh := 1 / float32(l.Rows)
-	for i, c := range e.Element().Children() {
-		cui, ok := c.(Entity)
-		if !ok {
-			continue
-		}
+	for i, e := range e.Children() {
 		cw := float32(i%l.Cols) / float32(l.Cols)
 		ch := float32(i/l.Cols) / float32(l.Rows)
-		cui.RectTransform().SetAnchor(cw, ch, cw+sw, ch+sh)
+		e.SetAnchor(cw, ch, cw+sw, ch+sh)
 		// s := m32.Vec4{l.Spacing / 2, l.Spacing / 2, l.Spacing / 2, l.Spacing / 2}
 		s := m32.Vec4{0, 0, l.Spacing / 2, l.Spacing / 2}
 		if cw == 0 {
@@ -37,7 +32,7 @@ func (l *GridLayout) Layout(e gorgeui.Entity) {
 			s[3] = 0
 		}
 
-		cui.RectTransform().SetRect(s[:]...)
+		e.SetRect(s[:]...)
 	}
 }
 

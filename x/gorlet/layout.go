@@ -1,6 +1,9 @@
 package gorlet
 
-import "github.com/stdiopt/gorge/systems/gorgeui"
+import (
+	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/systems/gorgeui"
+)
 
 // Direction for certain types of layouts
 type Direction int
@@ -13,23 +16,45 @@ const (
 
 // Layouter interface for layouting entities.
 type Layouter interface {
-	Layout(gorgeui.Entity)
+	Layout(*Entity)
 }
 
 // LayoutFunc type of func to be attached in UI element to update layout.
-type LayoutFunc func(ent gorgeui.Entity)
+type LayoutFunc func(ent *Entity)
 
 // Layout implements layouter interface.
-func (fn LayoutFunc) Layout(ent gorgeui.Entity) {
+func (fn LayoutFunc) Layout(ent *Entity) {
 	fn(ent)
 }
 
 // MultiLayout multiple layout function
 func MultiLayout(ls ...Layouter) LayoutFunc {
-	return func(ent gorgeui.Entity) {
+	return func(ent *Entity) {
 		for _, l := range ls {
 			l.Layout(ent)
 		}
+	}
+}
+
+// AutoHeight be resize to content.
+func AutoHeight(spacing float32) LayoutFunc {
+	return func(ent *Entity) {
+		children := ent.GetEntities()
+
+		dim := m32.Vec2{}
+		for _, c := range children {
+			rt, ok := c.(gorgeui.RectTransformer)
+			if !ok {
+				continue
+			}
+			r := rt.RectTransform()
+
+			top := r.Position[1]
+			bottom := top + r.Dim[1]
+			dim[1] = m32.Max(bottom+spacing, dim[1])
+
+		}
+		ent.RectTransform().Dim[1] = dim[1]
 	}
 }
 

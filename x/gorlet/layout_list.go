@@ -14,9 +14,9 @@ type ListLayout struct {
 }
 
 // Layout implements layouter
-func (l *ListLayout) Layout(ent gorgeui.Entity) {
+func (l *ListLayout) Layout(ent *Entity) {
 	cury := float32(0)
-	children := ent.Element().Children()
+	children := ent.GetEntities()
 	for _, e := range children {
 		rt, ok := e.(interface{ RectTransform() *gorgeui.RectComponent })
 		if !ok {
@@ -26,7 +26,9 @@ func (l *ListLayout) Layout(ent gorgeui.Entity) {
 
 		rect := r.Rect()
 		h := rect[3] - rect[1]
-
+		if h < 3 {
+			h = 3
+		}
 		r.SetAnchor(0, 0, 1, 0)
 		r.SetRect(l.SpacingSides[0], cury, l.SpacingSides[1], h)
 		cury += h + l.Spacing

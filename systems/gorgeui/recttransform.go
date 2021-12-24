@@ -69,12 +69,12 @@ func (c *RectComponent) Mat4() m32.Mat4 {
 		rect[1] + (rect[3]-rect[1])*c.Anchor[1],
 	}
 	pivot := m32.Vec2{}
-	if c.Anchor[0] == c.Anchor[2] {
+	if m32.FloatEqual(c.Anchor[0], c.Anchor[2]) {
 		pivot[0] = -c.Dim[0] * c.Pivot[0]
 		// } else {
 		//	pivot[0] = -c.Dim[0] * 0.5
 	}
-	if c.Anchor[1] == c.Anchor[3] {
+	if m32.FloatEqual(c.Anchor[1], c.Anchor[3]) {
 		pivot[1] = -c.Dim[1] * c.Pivot[1]
 		// } else {
 		//      pivot[1] = -c.Dim[1] * 0.5

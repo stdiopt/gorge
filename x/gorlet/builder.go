@@ -18,15 +18,6 @@ type curEntity struct {
 // BuildFunc to build a guilet
 type BuildFunc func(b *Builder)
 
-// AddMode builder add mode.
-type AddMode int
-
-// AddMode constants.
-const (
-	ChildrenAdd = AddMode(iota)
-	ElementAdd
-)
-
 type nextData struct {
 	placement PlacementFunc
 	layout    Layouter
@@ -41,18 +32,12 @@ type Builder struct {
 	next nextData
 
 	onAddFn func(e *Entity)
-	mode    AddMode
 
 	stack []*curEntity
 	root  *curEntity
 
 	// Save Restore SetProp stuff and all that.
 	propStack propStack
-}
-
-// SetAddMode set Entity add mode.
-func (b *Builder) SetAddMode(mode AddMode) {
-	b.mode = mode
 }
 
 // Root returns root guilet.
@@ -75,8 +60,8 @@ func (b Builder) ClientArea() {
 // Properties related to the next entity
 ///////////////////////////////////////////////////////////////////////////////
 
-// Placement sets the placement func.
-func (b *Builder) Placement(fn PlacementFunc) {
+// UsePlacement sets the placement func.
+func (b *Builder) UsePlacement(fn PlacementFunc) {
 	b.next.placement = fn
 }
 
@@ -105,8 +90,8 @@ func (b *Builder) UsePivot(v ...float32) {
 	b.next.Pivot = v
 }
 
-// Set a property for the next widget.
-func (b *Builder) Set(k string, v interface{}) {
+// Use a property for the next widget.
+func (b *Builder) Use(k string, v interface{}) {
 	b.propStack.cur().Set(k, v)
 }
 
@@ -211,18 +196,11 @@ func (b *Builder) Add(fn BuildFunc) *Entity {
 // AddEntity adds a prebuilt entity.
 func (b *Builder) AddEntity(e *Entity) *Entity {
 	cur := b.cur()
-	switch b.mode {
-	case ChildrenAdd:
-		cur.entity.Add(e)
-		if b.onAddFn != nil {
-			b.onAddFn(e)
-		}
-	case ElementAdd:
-		e.SetPivot(.5)
-		e.SetAnchor(0, 0, 1, 1)
-		e.SetRect(0)
-		cur.entity.AddElement(e)
+	cur.entity.Add(e)
+	if b.onAddFn != nil {
+		b.onAddFn(e)
 	}
+
 	return e
 }
 

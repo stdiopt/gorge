@@ -29,6 +29,15 @@ var registry = map[string]func() buildFunc{
 	"labeled": func() buildFunc { return gorlet.Labeled("") },
 }
 
+func Register(k string, fn func() buildFunc) {
+	registry[k] = fn
+}
+
+// FromString parses a xml string into a gorlet.Entity.
+func FromString(s string) (*gorlet.Entity, error) {
+	return New(strings.NewReader(s))
+}
+
 // New creates an entity based on xml.
 func New(r io.Reader) (*gorlet.Entity, error) {
 	x := xml.NewDecoder(r)
@@ -51,9 +60,9 @@ func New(r io.Reader) (*gorlet.Entity, error) {
 				}
 				b.Save()
 				// add a label right here
-				b.Set("autoSize", true)
-				b.Set("textAlign", []text.Align{text.AlignStart, text.AlignCenter})
-				b.Set("text", b.Prop("text", t))
+				b.Use("autoSize", true)
+				b.Use("textAlign", []text.Align{text.AlignStart, text.AlignCenter})
+				b.Use("text", b.Prop("text", t))
 				b.UseAnchor(0)
 				b.Label("")
 				b.Restore()
@@ -69,7 +78,7 @@ func New(r io.Reader) (*gorlet.Entity, error) {
 				e = b.Begin(fn())
 
 				for _, a := range tok.Attr {
-					_ = setProp(e, a) // errcheck
+					_ = setProp(b.Root(), e, a) // errcheck
 				}
 			case xml.EndElement:
 				// log.Println("End:", tok)
@@ -128,19 +137,19 @@ func flexProp(param string) (*gorlet.FlexLayout, error) {
 // EventAction action triggered on stuff.
 type EventAction struct {
 	Action string
-	Value  interface{}
+	Entity *gorlet.Entity
 }
 
-func setProp(e *gorlet.Entity, a xml.Attr) error {
+func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 	if a.Name.Space == "a" {
 		switch a.Name.Local {
 		case "click":
 			e.HandleFunc(func(ee event.Event) {
-				e, ok := ee.(gorgeui.EventPointerUp)
+				_, ok := ee.(gorgeui.EventPointerUp)
 				if !ok {
 					return
 				}
-				log.Printf("Should Trigger event on root: %v With %v", a.Value, e)
+				root.Trigger(EventAction{a.Value, e})
 			})
 		default:
 			log.Println("Unknown action", a.Name.Local)

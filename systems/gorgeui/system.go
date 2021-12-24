@@ -153,14 +153,6 @@ func (s *system) HandleEvent(v event.Event) {
 			triggerOn(el, EventUpdate(e.DeltaTime()))
 		}
 
-		// XXX: {lpf} new automatic layout per update
-		// (this should be called once a layout relevante state is changed)
-		for _, el := range s.elems {
-			if l := el.Element().Layouter; l != nil {
-				l.Layout(el)
-			}
-		}
-
 		if s.Debug&DebugRects != 0 {
 			s.debugRects()
 		}

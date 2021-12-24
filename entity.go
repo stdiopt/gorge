@@ -43,9 +43,39 @@ type Container []Entity
 // Enforce interface
 var _ EntityContainer = (*Container)(nil)
 
-// Add one ore more entities to Container.
+// Add one ore more entities to Container
+// it will loop existing elements to compare and avoid duplicates.
 func (c *Container) Add(ents ...Entity) {
-	*c = append(*c, ents...)
+	for _, ent := range ents {
+		if c.indexOf(ent) != -1 {
+			continue
+		}
+		*c = append(*c, ent)
+	}
+}
+
+// Remove entities from container it does not remove from the world.
+func (c *Container) Remove(ents ...Entity) {
+	for _, ent := range ents {
+		n := c.indexOf(ent)
+		if n == -1 {
+			continue
+		}
+		t := (*c)
+		*c = append((*c)[:n], (*c)[n+1:]...)
+		// deref last entity to be able to GC.
+		t[len(t)-1] = nil
+		break
+	}
+}
+
+func (c *Container) indexOf(ent Entity) int {
+	for i, e := range *c {
+		if e == ent {
+			return i
+		}
+	}
+	return -1
 }
 
 // GetEntities implements the entitycontainer

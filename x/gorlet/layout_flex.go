@@ -2,7 +2,6 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // FlexLayout will redimension children based on sizes.
@@ -16,8 +15,8 @@ type FlexLayout struct {
 }
 
 // Layout implements layouter interface.
-func (l FlexLayout) Layout(ent gorgeui.Entity) {
-	children := ent.Element().Children()
+func (l FlexLayout) Layout(ent *Entity) {
+	children := ent.Children()
 	esum := l.sum // effective sum
 	if d := len(children) - len(l.sizes); d > 0 {
 		esum = l.sum + float32(d)*l.smaller
@@ -26,11 +25,6 @@ func (l FlexLayout) Layout(ent gorgeui.Entity) {
 	// log.Println("Sizes:", l.sizes)
 	var start float32
 	for i, e := range children {
-		rt, ok := e.(interface{ RectTransform() *gorgeui.RectComponent })
-		if !ok {
-			continue
-		}
-		r := rt.RectTransform()
 		sz := l.smaller
 		if i < len(l.sizes) {
 			sz = l.sizes[i]
@@ -39,9 +33,9 @@ func (l FlexLayout) Layout(ent gorgeui.Entity) {
 		end := start + sz/esum
 		switch l.Direction {
 		case DirectionHorizontal:
-			r.SetAnchor(start, 0, end, 1)
+			e.SetAnchor(start, 0, end, 1)
 		case DirectionVertical:
-			r.SetAnchor(0, start, 1, end)
+			e.SetAnchor(0, start, 1, end)
 		}
 		// Do we need to set rect here?
 		// r.SetRect(l.Spacing)

@@ -19,21 +19,21 @@ func Spinner(lbl string, fn func(float32)) BuildFunc {
 		)
 		var val float32 = -1
 
-		b.Set("fontScale", fontScale)
+		b.Use("fontScale", fontScale)
 		root := b.Root()
 		b.UseLayout(LayoutFlexHorizontal(1, 2))
 		b.BeginPanel()
 		{
 
-			b.Set("color", labelColor)
+			b.Use("color", labelColor)
 			b.BeginPanel()
 			{
-				b.Set("color", labelTextColor)
+				b.Use("color", labelTextColor)
 				b.Label(lbl)
 			}
 			b.End()
 		}
-		b.Set("color", textColor)
+		b.Use("color", textColor)
 		l := b.Label("")
 		b.EndPanel()
 
