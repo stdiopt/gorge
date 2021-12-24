@@ -12,7 +12,7 @@ import (
 // EventF32Changed triggers on certain widdgets a value change.
 
 // Slider guilet.
-func Slider(min, max float32, fn func(float32)) BuildFunc {
+func Slider(min, max float32, fn func(float32)) Func {
 	return func(b *Builder) {
 		var (
 			fontScale        = b.Prop("fontScale")

@@ -79,7 +79,7 @@ type graphicer interface {
 	Colorable() *gorge.ColorableComponent
 }
 
-func rectElement(ent graphicer) BuildFunc {
+func rectElement(ent graphicer) Func {
 	return func(b *Builder) {
 		p := b.Root()
 		p.AddElement(ent)
@@ -101,11 +101,11 @@ func rectElement(ent graphicer) BuildFunc {
 }
 
 // Quad returns a quad entity starting at 0,0 to 1,1
-func Quad() BuildFunc {
+func Quad() Func {
 	return rectElement(quadEntity())
 }
 
 // Poly returns a polygon starting at 0,0 to 1,1
-func Poly(n int) BuildFunc {
+func Poly(n int) Func {
 	return rectElement(polyEntity(n))
 }

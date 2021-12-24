@@ -43,7 +43,7 @@ type Entity struct {
 }
 
 // Create creates builds and prepares a guilet
-func Create(fn BuildFunc) *Entity {
+func Create(fn Func) *Entity {
 	fnVal := reflect.ValueOf(fn)
 	fi := runtime.FuncForPC(fnVal.Pointer())
 	ename := fi.Name()

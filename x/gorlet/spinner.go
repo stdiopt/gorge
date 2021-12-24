@@ -9,7 +9,7 @@ import (
 )
 
 // Spinner creates a new spinner.
-func Spinner(lbl string, fn func(float32)) BuildFunc {
+func Spinner(lbl string, fn func(float32)) Func {
 	return func(b *Builder) {
 		var (
 			fontScale      = b.Prop("fontScale", 2)

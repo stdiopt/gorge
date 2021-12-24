@@ -1,7 +1,7 @@
 package gorlet
 
 // Panel creates a panel.
-func Panel() BuildFunc {
+func Panel() Func {
 	return Quad()
 }
 

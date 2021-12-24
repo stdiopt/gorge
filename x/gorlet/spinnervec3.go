@@ -5,7 +5,7 @@ import (
 )
 
 // SpinnerVec3 creates 3 spinners to control a m32.Vec3
-func SpinnerVec3(fn func(m32.Vec3)) BuildFunc {
+func SpinnerVec3(fn func(m32.Vec3)) Func {
 	return func(b *Builder) {
 		var (
 			fontScale   = b.Prop("fontScale", 2)

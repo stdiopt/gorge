@@ -1,7 +1,6 @@
 package gorgeui
 
 import (
-	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 )
 
@@ -17,10 +16,7 @@ type (
 )
 
 // Embed without exporting the fields.
-type (
-	eventBus       = event.Bus
-	gorgeContainer = gorge.Container
-)
+type eventBus = event.Bus
 
 // ElementComponent is a base widget for UI things
 // it contains some state

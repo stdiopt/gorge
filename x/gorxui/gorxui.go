@@ -16,7 +16,7 @@ import (
 	"github.com/stdiopt/gorge/x/gorlet"
 )
 
-type buildFunc = gorlet.BuildFunc
+type buildFunc = gorlet.Func
 
 var registry = map[string]func() buildFunc{
 	"panel":      func() buildFunc { return gorlet.Panel() }, // nolint: gocritic
@@ -29,35 +29,50 @@ var registry = map[string]func() buildFunc{
 	"labeled": func() buildFunc { return gorlet.Labeled("") },
 }
 
+// Register a Tag func.
 func Register(k string, fn func() buildFunc) {
 	registry[k] = fn
 }
 
 // FromString parses a xml string into a gorlet.Entity.
-func FromString(s string) (*gorlet.Entity, error) {
-	return New(strings.NewReader(s))
+func FromString(s string) (gorlet.Func, error) {
+	return read(strings.NewReader(s))
 }
 
-// New creates an entity based on xml.
-func New(r io.Reader) (*gorlet.Entity, error) {
+// MustFromString parses xml and panic if error.
+func MustFromString(s string) gorlet.Func {
+	fn, err := read(strings.NewReader(s))
+	if err != nil {
+		panic(err)
+	}
+	return fn
+}
+
+func read(r io.Reader) (gorlet.Func, error) {
+	fns := []func(*gorlet.Builder){}
+
+	push := func(fn func(*gorlet.Builder)) {
+		fns = append(fns, fn)
+	}
+
 	x := xml.NewDecoder(r)
-	ent := gorlet.Create(func(b *gorlet.Builder) {
-		for {
-			tok, err := x.Token()
-			if err == io.EOF {
-				break
+	for {
+		tok, err := x.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Println("err:", err)
+			// do Something else
+			break
+		}
+		switch tok := tok.(type) {
+		case xml.CharData:
+			t := strings.TrimSpace(string(tok))
+			if t == "" {
+				continue
 			}
-			if err != nil {
-				log.Println("err:", err)
-				// do Something else
-				break
-			}
-			switch tok := tok.(type) {
-			case xml.CharData:
-				t := strings.TrimSpace(string(tok))
-				if t == "" {
-					continue
-				}
+			push(func(b *gorlet.Builder) {
 				b.Save()
 				// add a label right here
 				b.Use("autoSize", true)
@@ -66,27 +81,34 @@ func New(r io.Reader) (*gorlet.Entity, error) {
 				b.UseAnchor(0)
 				b.Label("")
 				b.Restore()
+			})
 
-			case xml.StartElement:
-				var e *gorlet.Entity
-				fn, ok := registry[strings.ToLower(tok.Name.Local)]
-				if !ok {
-					fn = func() buildFunc { return gorlet.Container }
-				}
-				// log.Println("Start:", tok)
-				// b.UseLayout(gorlet.LayoutList(.5))
+		case xml.StartElement:
+			var e *gorlet.Entity
+			fn, ok := registry[strings.ToLower(tok.Name.Local)]
+			if !ok {
+				fn = func() buildFunc { return gorlet.Container }
+			}
+			// log.Println("Start:", tok)
+			// b.UseLayout(gorlet.LayoutList(.5))
+			push(func(b *gorlet.Builder) {
 				e = b.Begin(fn())
-
 				for _, a := range tok.Attr {
 					_ = setProp(b.Root(), e, a) // errcheck
 				}
-			case xml.EndElement:
-				// log.Println("End:", tok)
+			})
+		case xml.EndElement:
+			push(func(b *gorlet.Builder) {
 				b.End()
-			}
+			})
 		}
-	})
-	return ent, nil
+	}
+	bf := func(b *gorlet.Builder) {
+		for _, fn := range fns {
+			fn(b)
+		}
+	}
+	return bf, nil
 }
 
 func parseFloat32Slice(str string) ([]float32, error) {
@@ -152,6 +174,17 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 				root.Trigger(EventAction{a.Value, e})
 			})
 		default:
+			e.HandleFunc(func(ee event.Event) {
+				evt, ok := ee.(EventAction)
+				if !ok {
+					return
+				}
+				if evt.Action != a.Name.Local {
+					return
+				}
+
+				root.Trigger(EventAction{a.Value, e})
+			})
 			log.Println("Unknown action", a.Name.Local)
 		}
 		return nil
@@ -162,7 +195,7 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		switch parts[0] {
 		case "list", "vlist":
 			var spacing float32
-			if len(parts) > 0 {
+			if len(parts) > 1 {
 				s, err := strconv.ParseFloat(parts[1], 32)
 				if err != nil {
 					return err
@@ -176,7 +209,16 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 				return err
 			}
 			e.SetLayout(f)
-
+		case "autoHeight":
+			var spacing float32
+			if len(parts) > 1 {
+				s, err := strconv.ParseFloat(parts[1], 32)
+				if err != nil {
+					return err
+				}
+				spacing = float32(s)
+			}
+			e.SetLayout(gorlet.AutoHeight(spacing))
 		default:
 			return fmt.Errorf("layout %q not implemented", a.Value)
 		}

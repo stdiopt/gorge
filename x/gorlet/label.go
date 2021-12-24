@@ -10,7 +10,7 @@ import (
 )
 
 // Label functional.
-func Label(t string) BuildFunc {
+func Label(t string) Func {
 	return func(b *Builder) {
 		var autoSize bool
 

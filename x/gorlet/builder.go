@@ -15,8 +15,8 @@ type curEntity struct {
 	entity *Entity
 }
 
-// BuildFunc to build a guilet
-type BuildFunc func(b *Builder)
+// Func to build a guilet
+type Func func(b *Builder)
 
 type nextData struct {
 	placement PlacementFunc
@@ -164,7 +164,7 @@ func (b *Builder) Restore() {
 
 // Create creates an Entity with builder properties
 // NOTE: it does not add to the current container.
-func (b *Builder) Create(fn BuildFunc) *Entity {
+func (b *Builder) Create(fn Func) *Entity {
 	e := Create(fn)
 
 	e.OnAdd(b.next.placement)
@@ -189,7 +189,7 @@ func (b *Builder) Create(fn BuildFunc) *Entity {
 }
 
 // Add creates and add an Entity to the current container.
-func (b *Builder) Add(fn BuildFunc) *Entity {
+func (b *Builder) Add(fn Func) *Entity {
 	return b.AddEntity(b.Create(fn))
 }
 
@@ -205,7 +205,7 @@ func (b *Builder) AddEntity(e *Entity) *Entity {
 }
 
 // SetRoot will set the root container.
-func (b *Builder) SetRoot(fn BuildFunc) *Entity {
+func (b *Builder) SetRoot(fn Func) *Entity {
 	if len(b.stack) > 0 {
 		panic("Builder.Start() called while already in a container")
 	}
@@ -220,7 +220,7 @@ func (b *Builder) SetRoot(fn BuildFunc) *Entity {
 
 // Begin creates and pushes an Entity onto stack it will save
 // property state and restore on end.
-func (b *Builder) Begin(fn BuildFunc) *Entity {
+func (b *Builder) Begin(fn Func) *Entity {
 	w := b.Add(fn)
 	b.push(w)
 	b.propStack.Save()

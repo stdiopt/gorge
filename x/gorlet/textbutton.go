@@ -7,7 +7,7 @@ import (
 )
 
 // TextButton creates a text button.
-func TextButton(t string, clickfn func()) BuildFunc {
+func TextButton(t string, clickfn func()) Func {
 	return func(b *Builder) {
 		var (
 			normal     = m32.Color(.7, .9)

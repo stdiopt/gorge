@@ -5,7 +5,7 @@ import (
 )
 
 // Labeled returns a gorlet that labels an entity.
-func Labeled(lbl string) BuildFunc {
+func Labeled(lbl string) Func {
 	return func(b *Builder) {
 		var (
 			fontScale = b.Prop("fontScale", 2)
@@ -38,7 +38,7 @@ func Labeled(lbl string) BuildFunc {
 
 // Labeled creates a labeled entity by passing the body
 // it returns the entity created by fn.
-func (b *Builder) Labeled(lbl string, fn BuildFunc) *Entity {
+func (b *Builder) Labeled(lbl string, fn Func) *Entity {
 	b.BeginLabeled(lbl)
 	e := b.Add(fn)
 	b.EndLabeled()

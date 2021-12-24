@@ -8,7 +8,7 @@ import (
 )
 
 // Window creates a draggable window with a title bar.
-func Window(def string) BuildFunc {
+func Window(def string) Func {
 	return func(b *Builder) {
 		const (
 			spacing = .4
@@ -91,7 +91,7 @@ func Window(def string) BuildFunc {
 }
 
 // WindowWrap wraps a window directly.
-func WindowWrap(title string, bodyFn BuildFunc) BuildFunc {
+func WindowWrap(title string, bodyFn Func) Func {
 	return func(b *Builder) {
 		b.SetRoot(Window(title))
 		body := b.Add(bodyFn)
