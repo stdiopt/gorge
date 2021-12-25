@@ -26,10 +26,10 @@ func quadEntity() *gEntity {
 	mesh := gorge.NewMesh(&gorge.MeshData{
 		Format: gorge.VertexFormatPTN(),
 		Vertices: []float32{
-			0, 1, 0, 0, 0, 0, 0, 1,
-			1, 1, 0, 1, 0, 0, 0, 1,
-			1, 0, 0, 1, 1, 0, 0, 1,
-			0, 0, 0, 0, 1, 0, 0, 1,
+			/*P:*/ 0, 1, 0 /*T*/, 0, 0 /*N*/, 0, 0, 1,
+			/*P:*/ 1, 1, 0 /*T*/, 1, 0 /*N*/, 0, 0, 1,
+			/*P:*/ 1, 0, 0 /*T*/, 1, 1 /*N*/, 0, 0, 1,
+			/*P:*/ 0, 0, 0 /*T*/, 0, 1 /*N*/, 0, 0, 1,
 		},
 		Indices: []uint32{
 			0, 2, 1,
@@ -77,6 +77,7 @@ func polyEntity(n int) *gEntity {
 type graphicer interface {
 	Transform() *gorge.TransformComponent
 	Colorable() *gorge.ColorableComponent
+	Renderable() *gorge.RenderableComponent
 }
 
 func rectElement(ent graphicer) Func {
@@ -94,6 +95,9 @@ func rectElement(ent graphicer) Func {
 		})
 		b.Observe("color", ObsFunc(func(c m32.Vec4) {
 			ent.Colorable().SetColorv(c)
+		}))
+		b.Observe("material", ObsFunc(func(mat gorge.Materialer) {
+			ent.Renderable().SetMaterial(mat)
 		}))
 		// Defaults
 		p.Set("color", m32.Color(0, 0, 0, .2))
