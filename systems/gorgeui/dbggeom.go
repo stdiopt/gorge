@@ -82,7 +82,7 @@ func (dg *debugLines) Clear() {
 }
 
 // SetCullMask sets the cull mask for the debug renderables.
-func (dg *debugLines) SetCullMask(m uint32) {
+func (dg *debugLines) SetCullMask(m gorge.CullMaskFlags) {
 	type renderabler interface {
 		Renderable() *gorge.RenderableComponent
 	}

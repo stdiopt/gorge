@@ -9,10 +9,24 @@ type (
 
 // TODO: Add masking constants and camera masking stuff here
 // All, None, UI, Debug etc
+
+// CullMaskFlags flag type for culling masks.
+type CullMaskFlags uint32
+
+// CullMask defaults
 const (
-	CullMaskDefault = 0xFF
-	CullMaskUI      = 1 << 8
-	CullMaskUIDebug = 1 << 9
+	CullMaskDefault = CullMaskFlags(0xFF)
+	CullMaskUI      = CullMaskFlags(1 << 8)
+	CullMaskUIDebug = CullMaskFlags(1 << 9)
+)
+
+// CastShadow flags
+type CastShadow int
+
+// CastShadow defaults
+const (
+	CastShadowEnabled = CastShadow(iota)
+	CastShadowDisabled
 )
 
 // RenderableComponent contains info for renderer
@@ -22,8 +36,9 @@ type RenderableComponent struct {
 	*Material
 	*Mesh
 
-	CullMask      uint32
-	DisableShadow bool
+	Order      int
+	CullMask   CullMaskFlags
+	CastShadow CastShadow
 }
 
 // NewRenderableComponent returns a new renderable component
@@ -49,12 +64,17 @@ func (r *RenderableComponent) SetMesh(m Mesher) {
 
 // SetCullMask will set the cull mask which is used in conjunction with camera
 // mask to filter which renderables will render in each camera.
-func (r *RenderableComponent) SetCullMask(m uint32) {
+func (r *RenderableComponent) SetCullMask(m CullMaskFlags) {
 	r.CullMask = m
 }
 
-// SetDisableShadow sets the disableShadow property which if it is true it
-// won't cast a shadow.
-func (r *RenderableComponent) SetDisableShadow(b bool) {
-	r.DisableShadow = b
+// SetCastShadow sets the castshadow if CastShadowDisabled it will be disabled
+// for all lights won't cast a shadow, CastShadowEnabled will enable it.
+func (r *RenderableComponent) SetCastShadow(s CastShadow) {
+	r.CastShadow = s
+}
+
+// SetOrder sets the render order lower will render first.
+func (r *RenderableComponent) SetOrder(o int) {
+	r.Order = o
 }

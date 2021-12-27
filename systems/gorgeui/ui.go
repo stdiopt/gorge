@@ -16,7 +16,7 @@ type UI struct {
 	RectComponent
 	ElementComponent
 
-	CullMask      uint32
+	CullMask      gorge.CullMaskFlags
 	DragThreshold float32 // int perhaps
 	Order         int
 	Camera        cameraEntity
@@ -39,7 +39,7 @@ func New(g gorger) *UI {
 }
 
 // SetCullMask for the UI.
-func (w *UI) SetCullMask(a uint32) {
+func (w *UI) SetCullMask(a gorge.CullMaskFlags) {
 	w.CullMask = a
 }
 

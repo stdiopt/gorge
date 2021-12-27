@@ -29,7 +29,7 @@ func NewLight() *Light {
 			Intensity:   100,
 			Color:       [3]float32{1, 1, 1},
 			Range:       1000,
-			CastShadows: true,
+			CastShadows: gorge.CastShadowEnabled,
 		},
 	}
 }
@@ -49,7 +49,7 @@ func NewDirectionalLight() *Light {
 			Intensity:   1,
 			Color:       [3]float32{1, 1, 1},
 			Range:       1000,
-			CastShadows: true,
+			CastShadows: gorge.CastShadowEnabled,
 		},
 	}
 }
@@ -65,7 +65,7 @@ func NewSpotLight() *Light {
 			Range:        100,
 			InnerConeCos: m32.Cos(30 * (math.Pi / 180)),
 			OuterConeCos: m32.Cos(40 * (math.Pi / 180)),
-			CastShadows:  true,
+			CastShadows:  gorge.CastShadowEnabled,
 		},
 	}
 }

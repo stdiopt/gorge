@@ -37,6 +37,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	glfw.WindowHint(glfw.Samples, 4)
+	glfw.WindowHint(glfw.StencilBits, 8)
 
 	window, err := glfw.CreateWindow(width, height, "gorge", nil, nil)
 	if err != nil {

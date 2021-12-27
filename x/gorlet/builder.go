@@ -75,6 +75,20 @@ func (b *Builder) UseLayout(fns ...Layouter) {
 	b.next.layout = MultiLayout(fns...)
 }
 
+// UseDimRect uses dimension rect sets anchor to 0
+func (b *Builder) UseDimRect(v ...float32) {
+	b.UseAnchor(0)
+	b.UsePivot(0)
+	b.UseRect(v...)
+}
+
+// UseRelRect uses relative from parent rect.
+func (b *Builder) UseRelRect(v ...float32) {
+	b.UseAnchor(0, 0, 1, 1)
+	b.UsePivot(0)
+	b.UseRect(v...)
+}
+
 // UseRect sets next Entity Rect.
 func (b *Builder) UseRect(v ...float32) {
 	b.next.Rect = v

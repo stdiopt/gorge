@@ -56,7 +56,7 @@ const (
 type CameraComponent struct {
 	Name           string
 	ProjectionType ProjectionType
-	CullMask       uint32
+	CullMask       CullMaskFlags
 
 	Fov       float32
 	OrthoSize float32
@@ -154,7 +154,7 @@ func (c *CameraComponent) SetClearColor(r, g, b float32) {
 
 // SetCullMask for camera, only specific renderables that masks this cullmask
 // will render with this camera.
-func (c *CameraComponent) SetCullMask(m uint32) {
+func (c *CameraComponent) SetCullMask(m CullMaskFlags) {
 	c.CullMask = m
 }
 

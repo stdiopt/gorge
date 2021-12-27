@@ -113,7 +113,7 @@ func Stat(g *gorge.Context) {
 	s.txt.SetPosition(-0.75, 0, 5)
 	// s.txt.Position[2] = 5
 	s.txt.CullMask = 1 << 16
-	s.txt.DisableShadow = true
+	s.txt.CastShadow = gorge.CastShadowDisabled
 
 	plane := gorgeutil.NewPlane(primitive.PlaneDirY)
 	plane.SetMaterial(planeMat)
@@ -122,7 +122,7 @@ func Stat(g *gorge.Context) {
 	plane.SetParent(s.txt)
 	plane.SetEuler(math.Pi/2, 0, 0)
 	plane.CullMask = 1 << 16
-	plane.DisableShadow = true
+	plane.CastShadow = gorge.CastShadowDisabled
 
 	g.Add(plane, s.txt)
 

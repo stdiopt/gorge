@@ -102,9 +102,9 @@ func TextureFormat(n gorge.TextureFormat) (int, gl.Enum, gl.Enum) {
 }
 
 // CullMask returns a bit CullMask if it's 0 it will return the default mask 0xFF
-func CullMask(n uint32) uint32 {
+func CullMask(n gorge.CullMaskFlags) gorge.CullMaskFlags {
 	if n == 0 {
-		return uint32(0xFF)
+		return gorge.CullMaskFlags(0xFF)
 	}
 	return n
 }

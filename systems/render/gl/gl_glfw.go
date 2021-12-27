@@ -207,7 +207,7 @@ func (g *Wrapper) ClearDepthf(d float32) {
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glClearStencil.xhtml
 func (g *Wrapper) ClearStencil(s int) {
-	panic("not implemented") // TODO: Implement
+	gl.ClearStencil(int32(s))
 }
 
 // ColorMask specifies whether color components in the framebuffer
@@ -215,7 +215,7 @@ func (g *Wrapper) ClearStencil(s int) {
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glColorMask.xhtml
 func (g *Wrapper) ColorMask(red bool, green bool, blue bool, alpha bool) {
-	panic("not implemented") // TODO: Implement
+	gl.ColorMask(red, green, blue, alpha)
 }
 
 // CompileShader compiles the source code of s.
@@ -896,7 +896,7 @@ func (g *Wrapper) ShaderSource(s Shader, src string) {
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glStencilFunc.xhtml
 func (g *Wrapper) StencilFunc(fn Enum, ref int, mask uint32) {
-	panic("not implemented") // TODO: Implement
+	gl.StencilFunc(fn, int32(ref), mask)
 }
 
 // StencilFuncSeparate sets the front or back stencil test reference value.
@@ -910,7 +910,7 @@ func (g *Wrapper) StencilFuncSeparate(face Enum, fn Enum, ref int, mask uint32) 
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glStencilMask.xhtml
 func (g *Wrapper) StencilMask(mask uint32) {
-	panic("not implemented") // TODO: Implement
+	gl.StencilMask(mask)
 }
 
 // StencilMaskSeparate controls the writing of bits in the stencil planes.
@@ -924,7 +924,7 @@ func (g *Wrapper) StencilMaskSeparate(face Enum, mask uint32) {
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glStencilOp.xhtml
 func (g *Wrapper) StencilOp(fail Enum, zfail Enum, zpass Enum) {
-	panic("not implemented") // TODO: Implement
+	gl.StencilOp(fail, zfail, zpass)
 }
 
 // StencilOpSeparate sets front or back stencil tests.

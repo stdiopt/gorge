@@ -23,6 +23,8 @@ type Step struct {
 	QueuesIndex []int
 	Queues      map[int]*Queue
 
+	StencilDirty bool
+
 	// Global specified uniforms, could be fetch from camera
 	// or directly on props
 	Projection m32.Mat4

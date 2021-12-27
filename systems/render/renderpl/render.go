@@ -9,6 +9,12 @@ import (
 func Render(r *render.Context, next render.StepFunc) render.StepFunc {
 	return func(ri *render.Step) {
 		for _, qi := range ri.QueuesIndex {
+			// Clear stencil per queue, SLOW?!
+			if ri.StencilDirty { // Stencil is per queue
+				gl.StencilMask(0xFF)
+				gl.Clear(gl.STENCIL_BUFFER_BIT)
+				ri.StencilDirty = false
+			}
 			renderables := ri.Queues[qi].Renderables
 			for _, re := range renderables {
 				mlen := re.Instances.Len()
@@ -17,10 +23,9 @@ func Render(r *render.Context, next render.StepFunc) render.StepFunc {
 				}
 
 				r.SetupShader(ri, re)
-
 				vao := re.VAO(nil)
 				gl.BindVertexArray(vao)
-				drawMode := render.DrawMode(re.Renderable().Mesh.GetDrawMode())
+				drawMode := render.DrawMode(re.Renderable().GetDrawMode())
 				r.Draw(drawMode, re.VBO(), uint32(mlen))
 				gl.BindVertexArray(gl.Null)
 			}

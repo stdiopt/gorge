@@ -230,7 +230,7 @@ func (r *Render) PassShadow(ri *Step, s *Shader) {
 
 		// Get depthCube shader
 		for _, group := range renderables {
-			if group.Renderable().DisableShadow {
+			if group.Renderable().CastShadow != gorge.CastShadowEnabled {
 				continue
 			}
 			mlen := group.Instances.Len()
@@ -271,13 +271,16 @@ func (r *Render) PassShadow(ri *Step, s *Shader) {
 }
 
 // SetupShader sets the current material uniforms
-// could be set on renderableInstance too?
+//
+// TODO: {lpf} Maybe set on renderable only since we could use it in render
+// pipeline to draw the sky box
 func (r *Render) SetupShader(
 	ri *Step,
 	group *RenderableGroup,
 ) {
 	mesh := group.Renderable().Mesh
 	mat := group.Renderable().Material
+	// Get shader by thing
 	shader := group.shader
 
 	// avoid this calls by storing the state globally?
@@ -305,11 +308,24 @@ func (r *Render) SetupShader(
 	} else {
 		gl.Enable(gl.CULL_FACE)
 	}
-	// New
+
 	if group.vbo.FrontFacing == gorge.FrontFacingCCW {
 		gl.FrontFace(gl.CCW)
 	} else {
 		gl.FrontFace(gl.CW)
+	}
+	// New stencil test
+	if mat.Stencil {
+		gl.Enable(gl.STENCIL_TEST)
+		gl.StencilMask(mat.StencilMask)
+		gl.StencilFunc(mat.StencilFunc.Func, mat.StencilFunc.Ref, mat.StencilFunc.Mask)
+		gl.StencilOp(mat.StencilOp.Fail, mat.StencilOp.ZFail, mat.StencilOp.ZPass)
+		ri.StencilDirty = true
+	} else {
+		// gl.StencilMask(0xFF)
+		// gl.StencilFunc(gl.ALWAYS, 0, 0xFF)
+		// gl.StencilOp(gl.KEEP, gl.KEEP, gl.KEEP)
+		gl.Disable(gl.STENCIL_TEST)
 	}
 
 	// Get shader

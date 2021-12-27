@@ -86,7 +86,7 @@ func (dg *Geom) Clear() {
 }
 
 // SetCullMask sets the cull mask for the debug renderables.
-func (dg *Geom) SetCullMask(m uint32) {
+func (dg *Geom) SetCullMask(m gorge.CullMaskFlags) {
 	for _, e := range dg.Container {
 		if e, ok := e.(renderabler); ok {
 			r := e.Renderable()

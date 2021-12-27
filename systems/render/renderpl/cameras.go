@@ -47,8 +47,6 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 		p.Ambient = cam.ClearColor
 		VP := p.Projection.Mul(p.View)
 
-		// this can be run only once, but it's running everytime
-
 		p.Props["VP"] = VP
 		p.Props["ambient"] = p.View
 		p.Props["viewPos"] = p.CamPos
@@ -81,7 +79,6 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 
 			// Mask check to see if we will render this on this camera
 			reMask := render.CullMask(re.Renderable().CullMask)
-
 			if reMask&camMask == 0 {
 				continue
 			}
@@ -91,12 +88,13 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 				re.Update(p)
 			}
 
+			// If VBO is nil we skip
 			if v := re.VBO(); v == nil || v.VertexLen == 0 {
 				continue
 			}
 
 			// queue index
-			qi := re.Renderable().Material.Queue
+			qi := re.Renderable().Queue
 			// Select queue to insert
 			q, ok := p.Queues[qi]
 			if !ok {
@@ -106,7 +104,13 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 				p.Queues[qi] = q
 				p.QueuesIndex = append(p.QueuesIndex, qi)
 			}
+			// Sort insert
 			q.Renderables = append(q.Renderables, re)
+		}
+		// NEW: Should sort By Order renderable
+		// we could eventually add Zsorter here too
+		for _, q := range p.Queues {
+			sort.Sort(renderableGroupSorter(q.Renderables))
 		}
 
 		sort.Ints(p.QueuesIndex)
@@ -136,6 +140,12 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			int32(ri.Viewport[2]),
 			int32(ri.Viewport[3]),
 		)
+
+		// XXX: New stencil test clearing, defaults to 0
+		// This might be optional on camera, not sure
+		// gl.StencilMask(0xFF)
+		// gl.ClearStencil(0)
+		// gl.Clear(gl.STENCIL_BUFFER_BIT)
 
 		switch cam.ClearFlag {
 		case gorge.ClearSkybox:
@@ -176,6 +186,8 @@ func CameraSkybox(r *render.Context, srcMap string) render.StepFunc {
 		}
 		VP := ri.Projection.Mul(ri.View.Mat3().Mat4())
 
+		// Odd to be here but ... we could run SetupMaterial here.
+		gl.Disable(gl.STENCIL_TEST)
 		gl.Clear(gl.DEPTH_BUFFER_BIT)
 		gl.DepthMask(false)
 		{

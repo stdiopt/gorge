@@ -9,6 +9,22 @@ import (
 	"github.com/stdiopt/gorge/text"
 )
 
+// TextAlign returns the text alignment
+// 0 params it will align to start
+// 1 param will align both to same value
+// 2 params will align left to first param top to second param
+func TextAlign(a ...text.Align) [2]text.Align {
+	switch {
+	case len(a) == 0:
+		return [2]text.Align{text.AlignStart, text.AlignStart}
+	case len(a) == 1:
+		return [2]text.Align{a[0], a[0]}
+	default:
+		return [2]text.Align{a[0], a[1]}
+
+	}
+}
+
 // Label functional.
 func Label(t string) Func {
 	return func(b *Builder) {
@@ -78,22 +94,17 @@ func Label(t string) Func {
 		})
 
 		b.Observe("autoSize", ObsFunc(func(v bool) { autoSize = v }))
-		b.Observe("text", ObsFunc(func(s string) {
-			ent.SetText(s)
-		}))
-		b.Observe("textColor", ObsFunc(func(c m32.Vec4) {
-			ent.SetColorv(c)
-		}))
-		b.Observe("fontScale", ObsFunc(func(v float32) {
-			ent.SetSize(v)
-		}))
-		b.Observe("textAlign", ObsFunc(func(a []text.Align) {
-			Alignment = *(*[2]text.Align)(a)
+		b.Observe("text", ObsFunc(func(s string) { ent.SetText(s) }))
+		b.Observe("textColor", ObsFunc(func(c m32.Vec4) { ent.SetColorv(c) }))
+		b.Observe("fontScale", ObsFunc(func(v float32) { ent.SetSize(v) }))
+		b.Observe("textAlign", ObsFunc(func(a [2]text.Align) {
+			Alignment = a
 			ent.SetAlignment(Alignment[0])
 		}))
-		b.Observe("overflow", ObsFunc(func(o text.Overflow) {
-			ent.SetOverflow(o)
-		}))
+		b.Observe("overflow", ObsFunc(func(o text.Overflow) { ent.SetOverflow(o) }))
+		b.Observe("material", ObsFunc(func(m gorge.Materialer) { ent.SetMaterial(m) }))
+		b.Observe("order", ObsFunc(func(o int) { ent.SetOrder(o) }))
+
 		root.Set("text", t)
 	}
 }

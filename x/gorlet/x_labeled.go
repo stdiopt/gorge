@@ -9,7 +9,7 @@ func Labeled(lbl string) Func {
 	return func(b *Builder) {
 		var (
 			fontScale = b.Prop("fontScale", 2)
-			textAlign = []text.Align{text.AlignEnd, text.AlignCenter}
+			textAlign = TextAlign(text.AlignEnd, text.AlignCenter)
 			text      = b.Prop("text", lbl)
 		)
 

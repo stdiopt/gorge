@@ -250,6 +250,19 @@ func (e *Entity) FillParent(n float32) {
 	e.SetRect(n)
 }
 
+// SetDimRect sets anchor and pivot to 0 and use rect from v... params.
+func (e *Entity) SetDimRect(v ...float32) {
+	e.SetAnchor(0)
+	e.SetPivot(0)
+	e.SetRect(v...)
+}
+
+// SetRelRect sets anchor to fill parent and use rect from v... params.
+func (e *Entity) SetRelRect(v ...float32) {
+	e.SetAnchor(0, 0, 1, 1)
+	e.SetRect(v...)
+}
+
 func (e *Entity) indexOf(c *Entity) int {
 	for i, c2 := range e.children {
 		if c == c2 {

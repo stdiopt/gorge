@@ -76,8 +76,9 @@ func polyEntity(n int) *gEntity {
 
 type graphicer interface {
 	Transform() *gorge.TransformComponent
-	Colorable() *gorge.ColorableComponent
-	Renderable() *gorge.RenderableComponent
+	SetColorv(m32.Vec4)
+	SetMaterial(gorge.Materialer)
+	SetOrder(int)
 }
 
 func rectElement(ent graphicer) Func {
@@ -94,10 +95,13 @@ func rectElement(ent graphicer) Func {
 			t.Scale[1] = r[3] - r[1]
 		})
 		b.Observe("color", ObsFunc(func(c m32.Vec4) {
-			ent.Colorable().SetColorv(c)
+			ent.SetColorv(c)
 		}))
 		b.Observe("material", ObsFunc(func(mat gorge.Materialer) {
-			ent.Renderable().SetMaterial(mat)
+			ent.SetMaterial(mat)
+		}))
+		b.Observe("order", ObsFunc(func(o int) {
+			ent.SetOrder(o)
 		}))
 		// Defaults
 		p.Set("color", m32.Color(0, 0, 0, .2))

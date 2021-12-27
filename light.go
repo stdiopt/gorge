@@ -24,7 +24,7 @@ type LightComponent struct {
 	InnerConeCos float32
 	OuterConeCos float32
 
-	CastShadows bool
+	CastShadows CastShadow
 }
 
 // NewLightComponent returns a New light component with some defaults (pointsLight)
@@ -62,7 +62,7 @@ func (l *LightComponent) SetRange(v float32) {
 
 // SetCastShadows convinient accessor that sets the CastShadows field and
 // returns self.
-func (l *LightComponent) SetCastShadows(v bool) {
+func (l *LightComponent) SetCastShadows(v CastShadow) {
 	l.CastShadows = v
 }
 

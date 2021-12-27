@@ -2,7 +2,29 @@ package gorge
 
 import (
 	"fmt"
+
+	"github.com/stdiopt/gorge/systems/render/gl"
 )
+
+// StencilFunc stencil function params.
+// "only describes whether OpenGL should pass or discard fragments based on the
+// stencil buffer's content, not how we can actually update the buffer."
+type StencilFunc struct {
+	Func gl.Enum
+	Ref  int
+	Mask uint32
+}
+
+// StencilOp sets the stencil operation for the material
+// contains three options of which we can specify for each option what action to take:
+// Fail: action to take if the stencil test fails.
+// ZFail: action to take if the stencil test passes, but the depth test fails.
+// ZPass: action to take if both the stencil and the depth test pass.
+type StencilOp struct {
+	Fail  gl.Enum
+	ZFail gl.Enum
+	ZPass gl.Enum
+}
 
 // Material the material
 type Material struct {
@@ -13,6 +35,13 @@ type Material struct {
 	Depth       DepthMode
 	DoubleSided bool
 	Blend       BlendType
+
+	/* New: stencil experiment */
+	// Create stencil groups?!
+	Stencil     bool
+	StencilMask uint32
+	StencilFunc StencilFunc
+	StencilOp   StencilOp
 
 	shaderProps
 }

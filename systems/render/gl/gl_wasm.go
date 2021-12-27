@@ -217,7 +217,7 @@ func (g Wrapper) ClearDepthf(d float32) {
 }
 
 func (g Wrapper) ClearStencil(s int) {
-	panic("not implemented")
+	g.Call("clearStencil", s)
 }
 
 func (g Wrapper) ColorMask(red, green, blue, alpha bool) {
@@ -730,7 +730,7 @@ func (g Wrapper) ShaderSource(s Shader, src string) {
 }
 
 func (g Wrapper) StencilFunc(fn Enum, ref int, mask uint32) {
-	panic("not implemented")
+	g.Call("stencilFunc", fn, ref, mask)
 }
 
 func (g Wrapper) StencilFuncSeparate(face, fn Enum, ref int, mask uint32) {
@@ -738,7 +738,7 @@ func (g Wrapper) StencilFuncSeparate(face, fn Enum, ref int, mask uint32) {
 }
 
 func (g Wrapper) StencilMask(mask uint32) {
-	panic("not implemented")
+	g.Call("stencilMask", mask)
 }
 
 func (g Wrapper) StencilMaskSeparate(face Enum, mask uint32) {
@@ -746,7 +746,7 @@ func (g Wrapper) StencilMaskSeparate(face Enum, mask uint32) {
 }
 
 func (g Wrapper) StencilOp(fail, zfail, zpass Enum) {
-	panic("not implemented")
+	g.Call("stencilOp", fail, zfail, zpass)
 }
 
 func (g Wrapper) StencilOpSeparate(face, sfail, dpfail, dppass Enum) {
