@@ -11,7 +11,7 @@ func TextButton(t string, clickfn func()) Func {
 		)
 
 		b.SetRoot(Button(clickfn))
-		b.SetProps(Props{
+		b.UseProps(Props{
 			"text":      text,
 			"fontScale": fontScale,
 			"textColor": textColor,

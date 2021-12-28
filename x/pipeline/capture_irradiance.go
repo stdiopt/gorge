@@ -1,15 +1,13 @@
 package pipeline
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
+// CaptureIrradiance processes envMap through a shader
 func (pl *PL) CaptureIrradiance(src, target string) PipelineFunc {
 	srcTex := src
 	dstTex := target
@@ -48,12 +46,6 @@ func (pl *PL) CaptureIrradiance(src, target string) PipelineFunc {
 					gl.FramebufferTexture2D(
 						gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
 						gl.Enum(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i), irradianceTex.ID, 0)
-					// TODO REMOVE
-					if v := gl.CheckFramebufferStatus(gl.DRAW_FRAMEBUFFER); v != gl.FRAMEBUFFER_COMPLETE {
-						fmt.Printf("Frame buffer not complete")
-						glerr := gl.GetError()
-						log.Printf("frame buffer error: %v, %v", v, glerr)
-					}
 
 					gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 

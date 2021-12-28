@@ -3,7 +3,6 @@ package debug
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"math"
 	"runtime"
 	"time"
@@ -31,7 +30,6 @@ type statSystem struct {
 	txt            *text.Entity
 	rendererStat   render.EventStat
 	updateDuration time.Duration
-	glw            *gl.Wrapper
 	glRenderer     string
 	glVersion      string
 }
@@ -80,7 +78,7 @@ func StatText(g *gorge.Context) {
 }
 
 // Stat inits stat system
-func Stat(g *gorge.Context) {
+func Stat(g *gorge.Context) error {
 	rc := resource.FromContext(g)
 	s := &statSystem{
 		gorge:      g,
@@ -91,8 +89,7 @@ func Stat(g *gorge.Context) {
 
 	font := &text.Font{}
 	if err := rc.Load(font, "_gorge/fonts/font.ttf", text.FontResolution(512)); err != nil {
-		log.Println("err:", err)
-		return
+		return err
 	}
 
 	s.camera = gorgeutil.NewOrthoCamera(20, -100, 100)
@@ -165,6 +162,7 @@ func Stat(g *gorge.Context) {
 			}
 		}
 	})
+	return nil
 }
 
 func (s *statSystem) recalc() {
@@ -184,7 +182,7 @@ func (s *statSystem) Update() string {
 	ws := s.gorge.ScreenSize()
 	fmt.Fprintf(buf, "GORGE (F9) runtime.GC (F10) statUpdate now\n")
 	fmt.Fprintf(buf, "Width: %.2f, Height: %.2f\n", ws[0], ws[1])
-	fmt.Fprintf(buf, "GL Wrapper: %v\n", s.glw)
+	fmt.Fprintf(buf, "GL Wrapper: %v\n", gl.Global())
 	fmt.Fprintf(buf, "GL Version: %v\n", s.glVersion)
 	fmt.Fprintf(buf, "GL Renderer: %v\n", s.glRenderer)
 

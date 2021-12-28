@@ -12,6 +12,15 @@ func (p Props) Clone() Props {
 	return cp
 }
 
+// Merge will merge properties p2 will override properties of receiver.
+func (p Props) Merge(p2 Props) Props {
+	ret := p.Clone()
+	for k, v := range p2 {
+		ret[k] = v
+	}
+	return ret
+}
+
 // Set a property to props.
 func (p Props) Set(k string, v interface{}) {
 	if v == nil {

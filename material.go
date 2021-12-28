@@ -6,26 +6,6 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
-// StencilFunc stencil function params.
-// "only describes whether OpenGL should pass or discard fragments based on the
-// stencil buffer's content, not how we can actually update the buffer."
-type StencilFunc struct {
-	Func gl.Enum
-	Ref  int
-	Mask uint32
-}
-
-// StencilOp sets the stencil operation for the material
-// contains three options of which we can specify for each option what action to take:
-// Fail: action to take if the stencil test fails.
-// ZFail: action to take if the stencil test passes, but the depth test fails.
-// ZPass: action to take if both the stencil and the depth test pass.
-type StencilOp struct {
-	Fail  gl.Enum
-	ZFail gl.Enum
-	ZPass gl.Enum
-}
-
 // Material the material
 type Material struct {
 	resourcer
@@ -82,6 +62,33 @@ func (m *Material) SetDepth(v DepthMode) {
 // SetDoubleSided sets material double sided prop.
 func (m *Material) SetDoubleSided(v bool) {
 	m.DoubleSided = true
+}
+
+// SetBlend sets the blend type for material.
+func (m *Material) SetBlend(v BlendType) {
+	m.Blend = v
+}
+
+// SetStencil sets the stencil property for material.
+func (m *Material) SetStencil(v bool) {
+	m.Stencil = v
+}
+
+// SetStencilMask sets the stencil mask for material.
+func (m *Material) SetStencilMask(v uint32) {
+	m.StencilMask = v
+}
+
+// SetStencilFunc sets the stencil func which
+// stencilFunc describes whether OpenGL should pass or discard fragments based
+// on the stencil buffer's content
+func (m *Material) SetStencilFunc(f gl.Enum, ref int, mask uint32) {
+	m.StencilFunc = StencilFunc{f, ref, mask}
+}
+
+// SetStencilOp describes the action when updating the stencil buffer.
+func (m *Material) SetStencilOp(fail, zfail, zpass gl.Enum) {
+	m.StencilOp = StencilOp{fail, zfail, zpass}
 }
 
 // Defines override shaderProp defines with hierarchy
@@ -159,3 +166,23 @@ const (
 	DepthRead
 	DepthNone
 )
+
+// StencilFunc stencil function params.
+// "only describes whether OpenGL should pass or discard fragments based on the
+// stencil buffer's content, not how we can actually update the buffer."
+type StencilFunc struct {
+	Func gl.Enum
+	Ref  int
+	Mask uint32
+}
+
+// StencilOp sets the stencil operation for the material
+// contains three options of which we can specify for each option what action to take:
+// Fail: action to take if the stencil test fails.
+// ZFail: action to take if the stencil test passes, but the depth test fails.
+// ZPass: action to take if both the stencil and the depth test pass.
+type StencilOp struct {
+	Fail  gl.Enum
+	ZFail gl.Enum
+	ZPass gl.Enum
+}

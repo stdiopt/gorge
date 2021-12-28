@@ -19,7 +19,8 @@ func Spinner(lbl string, fn func(float32)) Func {
 		)
 		var val float32 = -1
 
-		b.Use("fontScale", fontScale)
+		b.Global("fontScale", fontScale)
+
 		root := b.Root()
 		b.UseLayout(LayoutFlexHorizontal(1, 2))
 		b.BeginPanel()

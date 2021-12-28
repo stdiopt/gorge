@@ -27,7 +27,8 @@ func SpinnerVec3(fn func(m32.Vec3)) Func {
 			}
 		}
 
-		b.Use("fontScale", fontScale)
+		b.Global("fontScale", fontScale)
+
 		b.Use("color", background)
 		b.BeginPanel(LayoutFlexHorizontal(1))
 

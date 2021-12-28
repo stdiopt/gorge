@@ -28,7 +28,7 @@ func Window(def string) Func {
 		// b.Layout(gorgeui.AutoHeight(1))
 		b.BeginPanel()
 		// full.SetAnchor(0, 0, 1, 1)
-		b.SetProps(Props{
+		b.UseProps(Props{
 			"fontScale": titleFontScale,
 			"color":     titleColor,
 			"textColor": titleTextColor,

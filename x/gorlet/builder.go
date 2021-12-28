@@ -25,6 +25,7 @@ type nextData struct {
 	Rect   []float32
 	Anchor []float32
 	Pivot  []float32
+	Props  Props
 }
 
 // Builder used to build a guilet.
@@ -106,14 +107,19 @@ func (b *Builder) UsePivot(v ...float32) {
 
 // Use a property for the next widget.
 func (b *Builder) Use(k string, v interface{}) {
-	b.propStack.cur().Set(k, v)
+	if b.next.Props == nil {
+		b.next.Props = Props{}
+	}
+	b.next.Props.Set(k, v)
 }
 
-// SetProps a property for the next widget.
-func (b *Builder) SetProps(p Props) {
-	cur := b.propStack.cur()
+// UseProps a property for the next widget.
+func (b *Builder) UseProps(p Props) {
+	if b.next.Props == nil {
+		b.next.Props = Props{}
+	}
 	for k, v := range p {
-		cur.Set(k, v)
+		b.next.Props.Set(k, v)
 	}
 }
 
@@ -166,8 +172,21 @@ func (b Builder) BindProp(k string, v interface{}) {
 	})
 }
 
+// Global will set the prop to any added entity.
+func (b *Builder) Global(k string, v interface{}) {
+	b.propStack.cur().Set(k, v)
+}
+
+// GlobalProps will set the props to any added entity.
+func (b *Builder) GlobalProps(p Props) {
+	cur := b.propStack.cur()
+	for k, v := range p {
+		cur.Set(k, v)
+	}
+}
+
 // Save save props state onto stack.
-func (b Builder) Save() {
+func (b *Builder) Save() {
 	b.propStack.Save()
 }
 
@@ -182,6 +201,7 @@ func (b *Builder) Create(fn Func) *Entity {
 	e := Create(fn)
 
 	e.OnAdd(b.next.placement)
+
 	if b.next.layout != nil {
 		e.SetLayout(b.next.layout)
 	}
@@ -195,9 +215,12 @@ func (b *Builder) Create(fn Func) *Entity {
 	if len(b.next.Pivot) > 0 {
 		e.SetPivot(b.next.Pivot...)
 	}
-	b.next = nextData{}
 
-	b.setupProps(b.propStack.cur(), e)
+	// Merge props
+	props := b.propStack.cur().Merge(b.next.Props)
+	b.setupProps(e, props)
+
+	b.next = nextData{}
 
 	return e
 }
@@ -247,7 +270,7 @@ func (b *Builder) End() {
 	b.pop()
 }
 
-func (b *Builder) setupProps(props Props, e *Entity) {
+func (b *Builder) setupProps(e *Entity, props Props) {
 	for k, v := range props {
 		k, v := k, v
 

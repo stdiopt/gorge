@@ -13,6 +13,8 @@ func Init(glw *Wrapper) {
 	log.Println("GL Renderer:", glw.GetString(RENDERER))
 }
 
+func Global() *Wrapper { return wrapper }
+
 // This function redirects to wrapper which implements the platform specific GL
 // There could be an overhead but hopefully they will be inlined
 

@@ -1,9 +1,11 @@
 package gorlet
 
 import (
+	"log"
 	"reflect"
 	"runtime"
 	"strings"
+	"sync/atomic"
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
@@ -24,8 +26,21 @@ type (
 	ObserverFunc = func(interface{})
 )
 
+var Debug bool = false
+
+// debugCounter debug release stuff
+var debugCounter int64
+
+// DebugCounter returns the number of gorlets instantiated.
+func DebugCounter() int64 {
+	return atomic.LoadInt64(&debugCounter)
+}
+
+type gcref struct{ n int }
+
 // Entity is a gui component
 type Entity struct {
+	gcref *gcref
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
 
@@ -49,8 +64,23 @@ func Create(fn Func) *Entity {
 	ename := fi.Name()
 	ename = ename[strings.LastIndex(ename, "/")+1:]
 
+	g := &gcref{1}
+
+	// debug object release tracker
+	runtime.SetFinalizer(g, func(v interface{}) {
+		if Debug {
+			log.Println("Finalizing Gorlet OBJ:", ename, v)
+		}
+		atomic.AddInt64(&debugCounter, -1)
+	})
+	atomic.AddInt64(&debugCounter, 1)
+	if Debug {
+		log.Println("Creating gorlet:", ename)
+	}
+
 	// fi := runtime.FuncForPC((uintptr)unsafe.Pointer(&fn))
 	defEntity := &Entity{
+		gcref:         g,
 		name:          ename,
 		RectComponent: *gorgeui.NewRectComponent(),
 	}

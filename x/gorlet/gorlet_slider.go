@@ -20,6 +20,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handlerTextColor = b.Prop("textColor")
 			handlerColor     = b.Prop("handlerColor")
 		)
+		var valFmt string = "%.2f"
 		var val float32
 		var handlerSize float32 = 4
 		var track *Entity
@@ -74,7 +75,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			}
 			val = v
 			handler.SetAnchor(val, 0, val, 1)
-			handler.Set("text", fmt.Sprintf("%.2f", min+(val*(max-min))))
+			handler.Set("text", fmt.Sprintf(valFmt, min+(val*(max-min))))
 			if fn != nil {
 				fn(val)
 			}
@@ -84,6 +85,10 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handlerSize = f
 			handler.SetRect(0, 0, handlerSize/2, 0)
 			track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
+		}))
+		b.Observe("textFormat", ObsFunc(func(s string) {
+			valFmt = s
+			handler.Set("text", fmt.Sprintf(valFmt, min+(val*(max-min))))
 		}))
 
 		var dragging bool

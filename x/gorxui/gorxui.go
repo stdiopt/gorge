@@ -73,14 +73,14 @@ func read(r io.Reader) (gorlet.Func, error) {
 				continue
 			}
 			push(func(b *gorlet.Builder) {
-				b.Save()
+				// b.Save()
 				// add a label right here
 				b.Use("autoSize", true)
 				b.Use("textAlign", gorlet.TextAlign(text.AlignStart, text.AlignCenter))
 				b.Use("text", b.Prop("text", t))
 				b.UseAnchor(0)
 				b.Label("")
-				b.Restore()
+				// b.Restore()
 			})
 
 		case xml.StartElement:

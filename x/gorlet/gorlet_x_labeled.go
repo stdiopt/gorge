@@ -13,12 +13,14 @@ func Labeled(lbl string) Func {
 			text      = b.Prop("text", lbl)
 		)
 
+		b.GlobalProps(Props{
+			"fontScale": fontScale,
+		})
 		b.UseAnchor(0, 0, 1, 1)
 		b.UseRect(0)
 		b.BeginContainer(LayoutFlexHorizontal(1, 3))
 		{
 
-			b.Use("fontScale", fontScale)
 			b.Use("textAlign", textAlign)
 			b.Use("text", text)
 			b.UseRect(.3)
