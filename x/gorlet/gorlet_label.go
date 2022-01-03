@@ -12,7 +12,8 @@ import (
 // TextAlign returns the text alignment
 // 0 params it will align to start
 // 1 param will align both to same value
-// 2 params will align left to first param top to second param
+// 2 params will align horizontally to first param and vertically to second
+// param
 func TextAlign(a ...text.Align) [2]text.Align {
 	switch {
 	case len(a) == 0:

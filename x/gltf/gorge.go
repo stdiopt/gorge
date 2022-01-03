@@ -32,8 +32,8 @@ type gltfCreator struct {
 	gorge *gorge.Context
 	doc   *Doc
 
-	texRef  map[*Image]gorge.Resourcer
-	primRef map[*MeshPrimitive]gorge.Resourcer
+	texRef  map[*Image]*gorge.TextureData
+	primRef map[*MeshPrimitive]*gorge.MeshData
 
 	Textures   []*gorge.Texture
 	Materials  []*gorge.Material
@@ -51,8 +51,8 @@ func create(g *gorge.Context, doc *Doc) *GLTF {
 	c := gltfCreator{
 		gorge:   g,
 		doc:     doc,
-		texRef:  map[*Image]gorge.Resourcer{},
-		primRef: map[*MeshPrimitive]gorge.Resourcer{},
+		texRef:  map[*Image]*gorge.TextureData{},
+		primRef: map[*MeshPrimitive]*gorge.MeshData{},
 	}
 	c.processTextures()
 	c.processMaterials()

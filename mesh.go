@@ -142,7 +142,7 @@ func VertexFormatPNT() VertexFormat {
 type MeshData struct {
 	gpuResource
 
-	Name string
+	Source string
 
 	FrontFacing FrontFacing
 	// Describe format and indexes
@@ -237,7 +237,7 @@ func (d *MeshData) String() string {
 		ind = "<unknown>"
 	}
 	return fmt.Sprintf("MeshData: %s, %v verts: %v, ind: %v, upd: %v",
-		d.Name,
+		d.Source,
 		d.Format,
 		len(d.Vertices), ind, d.Updates,
 	)

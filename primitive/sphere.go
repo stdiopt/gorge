@@ -65,7 +65,7 @@ func SphereMeshData(sectorCount, stackCount int) *gorge.MeshData {
 	}
 
 	return &gorge.MeshData{
-		Name:     "primitive.Sphere",
+		Source:   "primitive.Sphere",
 		Format:   gorge.VertexFormatPTN(),
 		Vertices: verts,
 		Indices:  indices,

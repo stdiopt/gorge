@@ -63,9 +63,12 @@ func (s *system) HandleEvent(v event.Event) {
 	case gorge.EventResourceUpdate:
 		switch r := e.Resource.(type) {
 		case *gorge.TextureData:
-			s.renderer.textures.GetByRef(r)
+			// log.Println("Update received")
+			// s.renderer.textures.GetByRef(r)
+			s.renderer.textures.Update(r)
 		case *gorge.MeshData:
-			s.renderer.vbos.GetByRef(r)
+			// s.renderer.vbos.GetByRef(r)
+			s.renderer.vbos.Update(r)
 		}
 	}
 }

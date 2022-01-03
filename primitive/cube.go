@@ -12,7 +12,7 @@ func NewCube() *gorge.Mesh {
 // CubeMeshData returns a 1x1x1 cube meshData.
 func CubeMeshData() *gorge.MeshData {
 	return &gorge.MeshData{
-		Name:   "primitive.Cube:",
+		Source: "primitive.Cube:",
 		Format: gorge.VertexFormatPTN(),
 		Vertices: []float32{
 			// Front face

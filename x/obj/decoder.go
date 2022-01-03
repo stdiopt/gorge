@@ -258,7 +258,7 @@ func (m *MeshDataPTN) Data() *gorge.MeshData {
 	copy(verts, uverts)
 
 	return &gorge.MeshData{
-		Name:     m.Name,
+		Source:   m.Name,
 		Format:   gorge.VertexFormatPTN(),
 		Vertices: verts,
 		Indices:  m.Indices,

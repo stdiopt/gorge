@@ -33,7 +33,7 @@ func NewGimbal() *Gimbal {
 	root := gorge.NewTransformComponent()
 
 	line := gorge.NewMesh(&gorge.MeshData{
-		Name:   "gorgeutil.Gimbal",
+		Source: "gorgeutil.Gimbal",
 		Format: gorge.VertexFormatP(),
 		Vertices: []float32{
 			0, 0, 0,

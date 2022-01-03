@@ -10,6 +10,7 @@ type EventLoadStart struct {
 type EventLoadComplete struct {
 	Name     string
 	Resource interface{}
+	Err      error
 }
 
 // EventOpen is triggered when a resource is opened which differs from LoadStart

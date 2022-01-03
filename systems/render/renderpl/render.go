@@ -9,7 +9,7 @@ import (
 func Render(r *render.Context, next render.StepFunc) render.StepFunc {
 	return func(ri *render.Step) {
 		for _, qi := range ri.QueuesIndex {
-			// Clear stencil per queue, SLOW?!
+			// Clear stencil per queue, is it costy?!
 			if ri.StencilDirty { // Stencil is per queue
 				gl.StencilMask(0xFF)
 				gl.Clear(gl.STENCIL_BUFFER_BIT)

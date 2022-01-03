@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -113,7 +114,7 @@ func (r *Resource) Load(v interface{}, name string, opts ...interface{}) error {
 	if err := loader(&Context{r}, v, name, opts...); err != nil {
 		return err
 	}
-	go r.gorge.TriggerOnUpdate(EventLoadComplete{
+	go r.gorge.TriggerInMain(EventLoadComplete{
 		Name:     name,
 		Resource: v,
 	})
@@ -164,6 +165,7 @@ func (r *Resource) track(name string, ref *loadedRef) bool {
 	runtime.SetFinalizer(ref, func(_ interface{}) {
 		tracker.count--
 		if tracker.count == 0 {
+			log.Println("Releasing finalizer")
 			delete(r.tracker, name)
 		}
 	})
@@ -174,11 +176,6 @@ func (r *Resource) track(name string, ref *loadedRef) bool {
 // if the reference exists we update the loader reference with the specified
 // resource else it will load in background and update the loader reference once done.
 func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interface{}) {
-	r.gorge.Trigger(EventLoadStart{
-		Name:     name,
-		Resource: rs,
-	})
-
 	ref := &loadedRef{}
 	if _, ok := rs.(gorge.GPUResourcer); ok {
 		ref.res = gorge.NewGPUResource()
@@ -190,10 +187,21 @@ func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interf
 		return
 	}
 
+	r.gorge.Trigger(EventLoadStart{
+		Name:     name,
+		Resource: rs,
+	})
+
 	// Load into a new temporary resourcer and copy the gpu reference
 	go func() {
 		rr := reflect.New(reflect.TypeOf(rs).Elem()).Interface().(gorge.Resourcer)
-		if err := r.Load(rr, name, opts...); err != nil {
+		err := r.Load(rr, name, opts...)
+		r.gorge.TriggerInMain(EventLoadComplete{
+			Name:     name,
+			Resource: rs,
+			Err:      err,
+		})
+		if err != nil {
 			r.Error(err)
 			return
 		}
@@ -206,7 +214,7 @@ func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interf
 
 // UpdateResource triggers a resource event to allow systems to aknowldge the resource.
 func (r *Resource) UpdateResource(rr gorge.ResourceRef) {
-	r.gorge.TriggerOnUpdate(gorge.EventResourceUpdate{
+	r.gorge.TriggerInMain(gorge.EventResourceUpdate{
 		Resource: rr,
 	})
 }

@@ -21,15 +21,17 @@ type UI struct {
 	Order         int
 	Camera        cameraEntity
 
+	entities []gorge.Entity
+
 	gorge *gorge.Context
 }
 
 // New returns a new UI.
-func New(g gorger) *UI {
+func New() *UI {
 	e := &UI{
 		RectComponent: RectIdent(),
-		gorge:         g.Gorge(),
-		CullMask:      gorge.CullMaskUI, // default
+		// gorge:         g.Gorge(),
+		CullMask: gorge.CullMaskUI, // default
 	}
 	e.SetAnchor(0)
 	// e.SetPivot(.5)
@@ -86,6 +88,10 @@ func (w *UI) Rect() m32.Vec4 {
 // ScreenSize returns the screensize.
 func (w *UI) ScreenSize() m32.Vec2 { return w.gorge.ScreenSize() }
 
+func (w *UI) GetEntities() []gorge.Entity {
+	return w.entities
+}
+
 type parenter interface {
 	SetParent(gorge.Matrixer)
 	Parent() gorge.Matrixer
@@ -100,11 +106,33 @@ func (w *UI) Add(ents ...gorge.Entity) {
 			}
 		}
 	}
-	w.gorge.Add(ents...)
+	w.entities = append(w.entities, ents...)
+	if w.Attached && w.gorge != nil {
+		w.gorge.Add(ents...)
+	}
 }
 
 // Remove alias to remove entities from gorge.
-func (w *UI) Remove(ents ...gorge.Entity) { w.gorge.Remove(ents...) }
+func (w *UI) Remove(ents ...gorge.Entity) {
+	for _, e := range ents {
+		if r, ok := e.(parenter); ok {
+			if r.Parent() == w {
+				r.SetParent(nil)
+			}
+		}
+		for i, ee := range w.entities {
+			if ee == e {
+				t := w.entities
+				w.entities = append(w.entities[:i], w.entities[i+1:]...)
+				t[len(t)-1] = nil
+				break
+			}
+		}
+	}
+	if w.Attached && w.gorge != nil {
+		w.gorge.Remove(ents...)
+	}
+}
 
 type uiSorter []*UI
 

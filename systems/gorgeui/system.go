@@ -169,17 +169,19 @@ func (s *system) HandleEvent(v event.Event) {
 }
 
 func (s *system) addEntity(e Entity) {
+	el := e.Element()
+	el.Attached = true
+
 	if ui, ok := e.(*UI); ok {
 		if s.uis == nil {
 			s.uis = map[*UI]struct{}{}
 		}
 		s.uis[ui] = struct{}{}
+		ui.gorge = s.gorge
 		return
 	}
 	s.elems = append(s.elems, e)
 
-	el := e.Element()
-	el.Attached = true
 	if v, ok := e.(Attacher); ok {
 		v.Attached(e)
 	}

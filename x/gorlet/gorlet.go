@@ -161,6 +161,7 @@ func (e *Entity) GetEntities() []gorge.Entity {
 
 // Children returns this entity children.
 func (e *Entity) Children() []*Entity {
+	// Should it be fromClientArea?!
 	return e.children
 }
 

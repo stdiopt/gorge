@@ -2,7 +2,6 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // ListLayout layouter that will rearrange children vertically.
@@ -16,17 +15,13 @@ type ListLayout struct {
 // Layout implements layouter
 func (l *ListLayout) Layout(ent *Entity) {
 	cury := float32(0)
-	children := ent.GetEntities()
+	children := ent.Children()
 	for _, e := range children {
-		rt, ok := e.(interface{ RectTransform() *gorgeui.RectComponent })
-		if !ok {
-			continue
-		}
-		r := rt.RectTransform()
+		r := e.RectTransform()
 
-		rect := r.Rect()
-		h := rect[3] - rect[1]
-		if h < 3 {
+		h := r.Dim[1]
+		// Set a minimal height if 0
+		if h == 0 {
 			h = 3
 		}
 		r.SetAnchor(0, 0, 1, 0)

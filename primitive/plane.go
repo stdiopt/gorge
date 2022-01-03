@@ -51,7 +51,7 @@ func PlaneMeshData(d PlaneDir) *gorge.MeshData {
 	}
 
 	return &gorge.MeshData{
-		Name:     "primitive.Plane",
+		Source:   "primitive.Plane",
 		Format:   gorge.VertexFormatPTN(),
 		Vertices: vert,
 		Indices: []uint32{

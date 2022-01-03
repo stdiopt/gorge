@@ -88,6 +88,17 @@ func (m *vboManager) Get(mesh *gorge.Mesh) (*VBO, bool) {
 	return v, updated
 }
 
+func (m *vboManager) Update(r *gorge.MeshData) {
+	v, ok := r.GetGPU().(*VBO)
+	if !ok {
+		v = m.New(r)
+		r.SetGPU(v)
+	}
+	// Force an update
+	v.updates--
+	v.update(r)
+}
+
 func (m *vboManager) destroy(v *VBO) {
 	v.destroy()
 }

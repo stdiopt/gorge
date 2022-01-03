@@ -120,7 +120,7 @@ func (c Context) Plane(dir primitive.PlaneDir) *Renderable {
 
 // UI returns a gorgeui.New(gorge.Context) with the injected context.
 func (c Context) UI(cam cameraEntity) *gorgeui.UI {
-	ui := gorgeui.New(c)
+	ui := gorgeui.New()
 	ui.SetCamera(cam)
 	c.Add(ui)
 	return ui

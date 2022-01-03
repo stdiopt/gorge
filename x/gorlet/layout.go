@@ -2,7 +2,6 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // Direction for certain types of layouts
@@ -39,18 +38,15 @@ func MultiLayout(ls ...Layouter) LayoutFunc {
 // AutoHeight be resize to content.
 func AutoHeight(spacing float32) LayoutFunc {
 	return func(ent *Entity) {
-		children := ent.GetEntities()
+		children := ent.Children()
 
 		dim := m32.Vec2{}
 		for _, c := range children {
-			rt, ok := c.(gorgeui.RectTransformer)
-			if !ok {
-				continue
-			}
-			r := rt.RectTransform()
+			rect := c.Rect()
+			h := rect[3] - rect[1]
 
-			top := r.Position[1]
-			bottom := top + r.Dim[1]
+			top := c.Position[1]
+			bottom := top + h
 			dim[1] = m32.Max(bottom+spacing, dim[1])
 
 		}

@@ -25,7 +25,7 @@ func PolyMeshData(n int) *gorge.MeshData {
 		p = r.MulV3(p)
 	}
 	return &gorge.MeshData{
-		Name:     "primitive.Poly",
+		Source:   "primitive.Poly",
 		Format:   gorge.VertexFormatP(),
 		Vertices: points,
 		Indices:  nil,

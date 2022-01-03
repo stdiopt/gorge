@@ -106,6 +106,17 @@ func (m *textureManager) Get(tex *gorge.Texture) *Texture {
 	return t
 }
 
+func (m *textureManager) Update(r *gorge.TextureData) {
+	t, ok := r.GetGPU().(*Texture)
+	if !ok {
+		t = m.New(r)
+		r.SetGPU(t)
+	}
+	// Force an update
+	t.updates--
+	t.update(r)
+}
+
 // Texture is a opengl texture controller
 type Texture struct {
 	manager *textureManager // TODO: avoid putting manager here
