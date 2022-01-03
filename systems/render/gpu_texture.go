@@ -21,13 +21,13 @@ func newTextureManager(g *gorge.Context) *textureManager {
 	}
 
 	m.texInvalid = m.New(&gorge.TextureData{
-		Source: "texturemanager",
+		Source: "texturemanager.invalid",
 		Width:  1, Height: 1,
 		PixelData: []byte{255, 0, 255, 255},
 	})
 
 	m.texWhite = m.New(&gorge.TextureData{
-		Source: "texturemanager",
+		Source: "texturemanager.white",
 		Width:  1, Height: 1,
 		PixelData: []byte{255, 255, 255, 255},
 	})
@@ -35,7 +35,7 @@ func newTextureManager(g *gorge.Context) *textureManager {
 	return m
 }
 
-func (m *textureManager) New(r gpuResource) *Texture {
+func (m *textureManager) New(r gorge.ResourceRef) *Texture {
 	t := &Texture{
 		manager: m,
 		updates: -1,
@@ -70,11 +70,14 @@ func (m *textureManager) Bind(tex *gorge.Texture) {
 	t.bind(tex)
 }
 
-func (m *textureManager) GetByRef(gr gpuResource) *Texture {
-	t, ok := gr.GetGPU().(*Texture)
+func (m *textureManager) GetByRef(gr gorge.ResourceRef) *Texture {
+	if gr == nil {
+		return m.texWhite
+	}
+	t, ok := gorge.GetGPU(gr).(*Texture)
 	if !ok {
 		t = m.New(gr)
-		gr.SetGPU(t)
+		gorge.SetGPU(gr, t)
 		return t
 	}
 	if d, ok := gr.(*gorge.TextureData); ok {
@@ -88,29 +91,14 @@ func (m *textureManager) Get(tex *gorge.Texture) *Texture {
 		return m.texWhite
 	}
 
-	r := tex.Resource()
-	if r == nil {
-		return m.texWhite
-	}
-	gr := r.(gpuResource)
-
-	t, ok := gr.GetGPU().(*Texture)
-	if !ok {
-		t = m.New(gr)
-		gr.SetGPU(t)
-		return t
-	}
-	if d, ok := r.(*gorge.TextureData); ok {
-		t.update(d)
-	}
-	return t
+	return m.GetByRef(tex.Resource())
 }
 
 func (m *textureManager) Update(r *gorge.TextureData) {
-	t, ok := r.GetGPU().(*Texture)
+	t, ok := gorge.GetGPU(r).(*Texture)
 	if !ok {
 		t = m.New(r)
-		r.SetGPU(t)
+		gorge.SetGPU(r, t)
 	}
 	// Force an update
 	t.updates--

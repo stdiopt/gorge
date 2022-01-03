@@ -51,7 +51,7 @@ func FromContext(g *gorge.Context) *Context {
 // New returns a new UI
 func (c Context) New(cam cameraEntity) *UI {
 	ui := New()
-	ui.gorge = c.gorge
 	ui.SetCamera(cam)
+	c.gorge.Add(ui)
 	return ui
 }

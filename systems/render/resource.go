@@ -1,6 +1,6 @@
 package render
 
-type gpuResource interface {
+/*type gpuResource interface {
 	SetGPU(interface{})
 	GetGPU() interface{}
-}
+}*/

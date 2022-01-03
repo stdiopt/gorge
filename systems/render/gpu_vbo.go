@@ -26,7 +26,7 @@ func newVBOManager(
 	return m
 }
 
-func (m *vboManager) New(r gpuResource) *VBO {
+func (m *vboManager) New(r gorge.ResourceRef) *VBO {
 	v := &VBO{
 		manager: m,
 		updates: -1,
@@ -48,51 +48,32 @@ func (m *vboManager) New(r gpuResource) *VBO {
 	return v
 }
 
-func (m *vboManager) GetByRef(gr gpuResource) *VBO {
-	v, ok := gr.GetGPU().(*VBO)
+func (m *vboManager) GetByRef(gr gorge.ResourceRef) (*VBO, bool) {
+	v, ok := gorge.GetGPU(gr).(*VBO)
 	if !ok {
 		v = m.New(gr)
-		gr.SetGPU(v)
-		return v
+		gorge.SetGPU(gr, v)
+		return v, true
 	}
+	updated := false
 	if d, ok := gr.(*gorge.MeshData); ok {
-		v.update(d)
+		updated = v.update(d)
 	}
-	return v
+	return v, updated
 }
 
 func (m *vboManager) Get(mesh *gorge.Mesh) (*VBO, bool) {
 	if mesh == nil {
 		return nil, false
 	}
-	r := mesh.Resource()
-	if r == nil {
-		return nil, false
-	}
-	gr := r.(gpuResource)
-
-	v, ok := gr.GetGPU().(*VBO)
-	if !ok {
-		v = m.New(gr)
-		gr.SetGPU(v)
-		return v, true
-	}
-
-	updated := false
-	// Check if R is dynamic by checking with interface{ Data() *gorge.MeshData }
-	// instead of if checking the loader type
-	if d, ok := r.(*gorge.MeshData); ok {
-		updated = v.update(d)
-	}
-
-	return v, updated
+	return m.GetByRef(mesh.Resource())
 }
 
 func (m *vboManager) Update(r *gorge.MeshData) {
-	v, ok := r.GetGPU().(*VBO)
+	v, ok := gorge.GetGPU(r).(*VBO)
 	if !ok {
 		v = m.New(r)
-		r.SetGPU(v)
+		gorge.SetGPU(r, v)
 	}
 	// Force an update
 	v.updates--

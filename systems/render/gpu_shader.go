@@ -72,7 +72,7 @@ func newShaderManager(g *gorge.Context, vbos *vboManager) *shaderManager {
 	return m
 }
 
-func (m *shaderManager) New(r gpuResource) *Shader {
+func (m *shaderManager) New(r gorge.ResourceRef) *Shader {
 	s := &Shader{
 		manager:  m,
 		ubos:     map[string]struct{}{},

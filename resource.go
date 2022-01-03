@@ -60,21 +60,38 @@ func NewGPUResource() ResourceRef {
 }
 
 func (r *gpuResource) isResource()          {}
-func (r *gpuResource) SetGPU(v interface{}) { r.gpu = v }
-func (r *gpuResource) GetGPU() interface{}  { return r.gpu }
+func (r *gpuResource) setGPU(v interface{}) { r.gpu = v }
+func (r *gpuResource) getGPU() interface{}  { return r.gpu }
+
+// GetGPU returns gpu data from the resourceRef
+func GetGPU(r ResourceRef) interface{} {
+	if r, ok := r.(interface{ getGPU() interface{} }); ok {
+		return r.getGPU()
+	}
+	return nil
+}
+
+// SetGPU sets gpu data in the resourceRef
+func SetGPU(r ResourceRef, v interface{}) {
+	if r, ok := r.(interface{ setGPU(interface{}) }); ok {
+		r.setGPU(v)
+	}
+}
 
 // ResourceCopyRef mostly used by resources to load Data and copy gpu ref
 func ResourceCopyRef(a Resourcer, b ResourceRef) {
 	ar := a.Resource()
 	switch ar := ar.(type) {
 	case *gpuResource:
-		ar.SetGPU(b.(interface{ GetGPU() interface{} }).GetGPU())
+		SetGPU(ar, GetGPU(b))
+		// ar.setGPU(b.(interface{ getGPU() interface{} }).getGPU())
 	default:
 		panic(fmt.Sprintf("cannot copy referrer of %T", ar))
 	}
 }
 
 // Resource reference
+
 type resourceRef struct {
 	res ResourceRef
 }

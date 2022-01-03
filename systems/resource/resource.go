@@ -20,32 +20,16 @@ import (
 
 const gorgeStatic = "_gorge/"
 
-// System gorge system initializer func.
-/*func System(g *gorge.Context) {
-	log.Println("Initializing system")
-
-	lfs := layerfs.FS{}
-	s, err := fs.Sub(static.Assets, "src")
-	if err != nil {
-		panic(fmt.Errorf("static embed not found: %w", err))
-	}
-	lfs.Mount(gorgeStatic, s)
-
-	m := &Resource{
-		gorge: g,
-		fs:    lfs,
-	}
-
-	g.PutProp(func() *Context {
-		return &Context{m}
-	})
-}*/
+type refCounter struct {
+	count int
+	res   gorge.ResourceRef
+}
 
 // Resource the resource manager.
 type Resource struct {
-	gorge   *gorge.Context
-	fs      layerfs.FS
-	tracker map[string]*resTrack
+	gorge *gorge.Context
+	fs    layerfs.FS
+	refs  map[string]*refCounter
 }
 
 // AddFS adds a new file system with the prefix if a path exists it will overlay
@@ -106,19 +90,15 @@ func (r *Resource) Load(v interface{}, name string, opts ...interface{}) error {
 		Name:     name,
 		Resource: v,
 	})
-	ext := filepath.Ext(name)
-	loader := getLoader(v, filepath.Ext(name))
-	if loader == nil {
-		return fmt.Errorf("no driver for type: %T with ext: %v", v, ext)
-	}
-	if err := loader(&Context{r}, v, name, opts...); err != nil {
-		return err
-	}
-	go r.gorge.TriggerInMain(EventLoadComplete{
+
+	err := r.load(v, name, opts...)
+
+	r.gorge.Trigger(EventLoadComplete{
 		Name:     name,
 		Resource: v,
+		Err:      err,
 	})
-	return nil
+	return err
 }
 
 // MustLoad loads the resource if an error occurs it will be sent to gorge as an event.
@@ -132,46 +112,6 @@ func (r *Resource) Error(err error) {
 	r.gorge.Error(err)
 }
 
-// loadedRef will be used as a resource in Mesh or Texture
-// the purpose of this is avoid load duplication
-// if the resource is already loaded a new loadedRef with an existing resource ref
-type loadedRef struct {
-	res gorge.ResourceRef
-}
-
-func (r loadedRef) Resource() gorge.ResourceRef { return r.res }
-
-type resTrack struct {
-	count int
-	res   gorge.ResourceRef
-}
-
-// Tracks resource reference and overrides ref Resource referrer if already
-// exists
-func (r *Resource) track(name string, ref *loadedRef) bool {
-	if r.tracker == nil {
-		r.tracker = map[string]*resTrack{}
-	}
-	tracker, ok := r.tracker[name]
-	if !ok {
-		tracker = &resTrack{
-			count: 0,
-			res:   ref.res,
-		}
-		r.tracker[name] = tracker
-	}
-	tracker.count++
-	ref.res = tracker.res
-	runtime.SetFinalizer(ref, func(_ interface{}) {
-		tracker.count--
-		if tracker.count == 0 {
-			log.Println("Releasing finalizer")
-			delete(r.tracker, name)
-		}
-	})
-	return ok
-}
-
 // LoadRef sets a New loader reference and check if resource reference exists
 // if the reference exists we update the loader reference with the specified
 // resource else it will load in background and update the loader reference once done.
@@ -183,38 +123,82 @@ func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interf
 	rs.SetResourcer(ref)
 
 	// Bind the resource, if exists we reuse the resource ref
-	if ok := r.track(name, ref); ok {
+	if counter, ok := r.track(name, ref); ok {
+		ref.res = counter.res
 		return
 	}
 
-	r.gorge.Trigger(EventLoadStart{
-		Name:     name,
-		Resource: rs,
-	})
-
 	// Load into a new temporary resourcer and copy the gpu reference
 	go func() {
-		rr := reflect.New(reflect.TypeOf(rs).Elem()).Interface().(gorge.Resourcer)
-		err := r.Load(rr, name, opts...)
-		r.gorge.TriggerInMain(EventLoadComplete{
+		r.gorge.TriggerInMain(EventLoadStart{
 			Name:     name,
 			Resource: rs,
-			Err:      err,
 		})
-		if err != nil {
+		tmp := reflect.New(reflect.TypeOf(rs).Elem()).Interface().(gorge.Resourcer)
+		if err := r.load(tmp, name, opts...); err != nil {
+			r.gorge.TriggerInMain(EventLoadComplete{
+				Name:     name,
+				Resource: rs,
+				Err:      err,
+			})
+
 			r.Error(err)
 			return
 		}
-		res := rr.Resource()
-		r.UpdateResource(res)
-
-		gorge.ResourceCopyRef(rs, res)
+		r.gorge.RunInMain(func() {
+			res := tmp.Resource()
+			r.gorge.Trigger(gorge.EventResourceUpdate{
+				Resource: res,
+			})
+			r.gorge.Trigger(EventLoadComplete{
+				Name:     name,
+				Resource: rs,
+			})
+			gorge.ResourceCopyRef(rs, res)
+		})
 	}()
 }
 
-// UpdateResource triggers a resource event to allow systems to aknowldge the resource.
-func (r *Resource) UpdateResource(rr gorge.ResourceRef) {
-	r.gorge.TriggerInMain(gorge.EventResourceUpdate{
-		Resource: rr,
+// loadedRef will be used as a resource in Mesh or Texture
+// the purpose of this is avoid load duplication
+// if the resource is already loaded a new loadedRef with an existing resource ref
+type loadedRef struct {
+	res gorge.ResourceRef
+}
+
+func (r loadedRef) Resource() gorge.ResourceRef { return r.res }
+
+func (r *Resource) load(v interface{}, name string, opts ...interface{}) error {
+	ext := filepath.Ext(name)
+	loader := getLoader(v, ext)
+	if loader == nil {
+		return fmt.Errorf("no driver for type: %T with ext: %v", v, ext)
+	}
+	return loader(&Context{r}, v, name, opts...)
+}
+
+// Tracks resource reference and overrides ref Resource referrer if already
+// exists
+func (r *Resource) track(name string, ref *loadedRef) (*refCounter, bool) {
+	if r.refs == nil {
+		r.refs = map[string]*refCounter{}
+	}
+	tracker, ok := r.refs[name]
+	if !ok {
+		tracker = &refCounter{
+			count: 0,
+			res:   ref.res,
+		}
+		r.refs[name] = tracker
+	}
+	tracker.count++
+	// ref.res = tracker.res
+	runtime.SetFinalizer(ref, func(interface{}) {
+		tracker.count--
+		if tracker.count == 0 {
+			log.Println("Releasing finalizer")
+			delete(r.refs, name)
+		}
 	})
+	return tracker, ok
 }
