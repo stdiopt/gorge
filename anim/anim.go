@@ -29,6 +29,7 @@ type State int
 const (
 	StateStopped = State(iota)
 	StateRunning
+	StateFinished
 )
 
 // LoopType defines anim or track loop type.
@@ -48,12 +49,13 @@ type Animation struct {
 	startTime time.Time
 	curTime   float32
 	channels  []channeler
+	state     State
 
-	state State
+	endfn func()
 }
 
-// NewAnimation returns a new animation.
-func NewAnimation() *Animation {
+// New returns a new animation.
+func New() *Animation {
 	return &Animation{}
 }
 
@@ -65,6 +67,16 @@ func (a *Animation) SetScale(d time.Duration) {
 // SetLoop sets the looping mode for this track.
 func (a *Animation) SetLoop(l LoopType) {
 	a.loop = l
+}
+
+// SetEnd callback when the animation finishes it will call fn
+func (a *Animation) SetEnd(fn func()) {
+	a.endfn = fn
+}
+
+// State returns the current state of the animation.
+func (a *Animation) State() State {
+	return a.state
 }
 
 // Start animation.
@@ -117,6 +129,12 @@ func (a *Animation) update() {
 		}
 	}
 	curTime := a.loopTime(a.curTime, lastTime)
+	if curTime > lastTime {
+		a.state = StateFinished
+		if a.endfn != nil {
+			a.endfn()
+		}
+	}
 	// Check the loop property and the last channel time
 	for _, c := range a.channels {
 		c.Channel().Update(curTime)

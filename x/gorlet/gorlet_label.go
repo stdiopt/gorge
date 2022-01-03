@@ -63,17 +63,19 @@ func Label(t string) Func {
 
 			r := root.Rect()
 			// AutoSize is experimental and probably buggy.
-			// it doesn't take into account the anchoring.
+			// it will only resize each side if it is not anchored
 			if autoSize {
 				if p, ok := root.Parent().(gorgeui.Entity); ok {
 					rr := p.RectTransform().Rect()
-					// Only use parenting rect.
+					// Only use parenting rect.!?
 					r[0] = rr[0]
 					r[2] = rr[2]
 				}
-				root.Dim = m32.Vec2{
-					ent.Max[0],
-					ent.Max[1] - ent.Min[1],
+				if root.Anchor[0] == root.Anchor[2] {
+					root.Dim[0] = ent.Max[0]
+				}
+				if root.Anchor[1] == root.Anchor[3] {
+					root.Dim[1] = ent.Max[1] - ent.Min[1]
 				}
 			}
 
