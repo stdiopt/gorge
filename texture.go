@@ -4,10 +4,9 @@ import (
 	"fmt"
 )
 
-// TextureResourcer is a texture resourcer.
+// TextureResourcer is an interface to handle underlying texture data.
 type TextureResourcer interface {
 	Resource() ResourceRef
-	isResource()
 	isTexture()
 }
 
@@ -18,7 +17,6 @@ type TextureRef struct {
 
 // Resource implements the resourcer interface.
 func (r *TextureRef) Resource() ResourceRef { return r.Ref }
-func (r *TextureRef) isResource()           {}
 func (r *TextureRef) isTexture()            {}
 
 // Texture reference
@@ -44,8 +42,6 @@ func (t *Texture) GetResource() ResourceRef {
 
 // SetResourcer sets the resourcer for this texture.
 func (t *Texture) SetResourcer(r TextureResourcer) { t.Resourcer = r }
-
-func (t *Texture) isGPU() {}
 
 // GetWrap get the components of TextureWrap UVW
 func (t *Texture) GetWrap() (u, v, w TextureWrap) {

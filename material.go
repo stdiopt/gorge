@@ -6,6 +6,7 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
+// MaterialResourcer is the interface for material resources.
 type MaterialResourcer interface {
 	Resource() ResourceRef
 	isMaterial()

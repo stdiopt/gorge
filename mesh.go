@@ -6,6 +6,7 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+// MeshResourcer is an interface to handle underlying mesh data.
 type MeshResourcer interface {
 	Resource() ResourceRef
 	isMesh()
@@ -19,7 +20,6 @@ type MeshRef struct {
 // Resource returns the resource ref.
 func (r *MeshRef) Resource() ResourceRef { return r.Ref }
 func (r *MeshRef) isMesh()               {}
-func (r *MeshRef) isResource()           {}
 
 // Mesh representation
 type Mesh struct {
@@ -49,20 +49,8 @@ func (m Mesh) Clone() *Mesh {
 	}
 }
 
-// GetResource returns the underlying resource.
-func (m *Mesh) GetResource() ResourceRef {
-	if m.Resourcer == nil {
-		return nil
-	}
-	return m.Resourcer.Resource()
-}
-
 // SetResourcer will set the underlying mesh resourcer.
 func (m *Mesh) SetResourcer(r MeshResourcer) { m.Resourcer = r }
-
-// isGPU indicates this is a gpuResourcer so it should have
-// gpuResource in the resourcer
-func (m *Mesh) isGPU() {}
 
 // ReleaseData change the data ref to a gpu only resource.
 func (m *Mesh) ReleaseData(g *Context) {

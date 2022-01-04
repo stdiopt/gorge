@@ -113,7 +113,7 @@ func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 			Name:     name,
 			Resource: mesh,
 		})
-		tmp := &gorge.TextureData{}
+		tmp := &gorge.MeshData{}
 		if err := r.load(tmp, name, opts...); err != nil {
 			r.gorge.TriggerInMain(EventLoadComplete{
 				Name:     name,
