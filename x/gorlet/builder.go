@@ -66,8 +66,6 @@ func (b *Builder) UsePlacement(fn PlacementFunc) {
 	b.next.placement = fn
 }
 
-// TODO: maybe switch to WithLayout
-
 // UseLayout set next widget layout.
 func (b *Builder) UseLayout(fns ...Layouter) {
 	if len(fns) == 0 {

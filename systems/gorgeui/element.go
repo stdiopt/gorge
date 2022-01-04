@@ -4,8 +4,6 @@ import (
 	"github.com/stdiopt/gorge/core/event"
 )
 
-// TODO:
-
 type (
 	// Attacher interface used to automatically add an entity in the UI hierarchy.
 	Attacher interface{ Attached(e Entity) }

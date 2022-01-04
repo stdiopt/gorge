@@ -20,11 +20,13 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handlerTextColor = b.Prop("textColor")
 			handlerColor     = b.Prop("handlerColor")
 		)
-		var valFmt string = "%.2f"
-		var val float32
-		var handlerSize float32 = 4
-		var track *Entity
-		var handler *Entity
+		var (
+			valFmt      = "%.2f"
+			handlerSize = float32(4)
+			val         float32
+			track       *Entity
+			handler     *Entity
+		)
 
 		b.Use("color", backgroundColor)
 

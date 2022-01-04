@@ -65,13 +65,12 @@ func Label(t string) Func {
 			// AutoSize is experimental and probably buggy.
 			// it will only resize each side if it is not anchored
 			if autoSize {
+				pr := r
 				if p, ok := root.Parent().(gorgeui.Entity); ok {
-					rr := p.RectTransform().Rect()
-					// Only use parenting rect.!?
-					r[0] = rr[0]
-					r[2] = rr[2]
+					pr = p.RectTransform().Rect()
 				}
 				if root.Anchor[0] == root.Anchor[2] {
+					r[0], r[2] = pr[0], pr[2]
 					root.Dim[0] = ent.Max[0]
 				}
 				if root.Anchor[1] == root.Anchor[3] {

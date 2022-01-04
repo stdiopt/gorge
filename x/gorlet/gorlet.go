@@ -26,7 +26,8 @@ type (
 	ObserverFunc = func(interface{})
 )
 
-var Debug bool = false
+// Debug prints reference debug
+var Debug = false
 
 // debugCounter debug release stuff
 var debugCounter int64
@@ -92,7 +93,17 @@ func Create(fn Func) *Entity {
 		root: &curEntity{entity: defEntity},
 	}
 	fn(&b)
+
+	entityUpdate(b.root.entity)
 	return b.root.entity
+}
+
+func entityUpdate(ent *Entity) {
+	ent.HandleEvent(gorgeui.EventUpdate(0))
+	ent.Trigger(gorgeui.EventUpdate(0))
+	for _, c := range ent.Children() {
+		entityUpdate(c)
+	}
 }
 
 // XXX:
@@ -126,9 +137,6 @@ func (e *Entity) Client() *Entity {
 	}
 	return e.clientArea
 }
-
-// TODO: with clientArea we might not need Element since Listing childs
-// would be directly in the client area.?
 
 // SetClientArea is the child Entity where Add will put Entities.
 func (e *Entity) SetClientArea(c *Entity) {
@@ -244,6 +252,11 @@ func (e *Entity) Attached(ent gorgeui.Entity) {
 			}
 		}
 	}
+	// TODO: This will endup calling update multiple times since
+	// Attach is called in every added entity
+	// but should be ok since some updates depends on layouting
+	// which requires settling
+	entityUpdate(e)
 }
 
 // Set invoke any observer attached to the named propery.
