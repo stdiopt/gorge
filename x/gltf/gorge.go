@@ -77,11 +77,12 @@ func create(g *gorge.Context, doc *Doc) *GLTF {
 // ReleaseRawData releases the raw data from memory leaving the gpu ref only
 func (r *GLTF) ReleaseRawData(g *gorge.Context) {
 	for _, t := range r.Textures {
-		g.ResourceReleaseData(t)
+		t.ReleaseData(g)
+		// g.ResourceReleaseData(t)
 	}
 	for _, m := range r.Meshes {
 		for _, p := range m.primitives {
-			g.ResourceReleaseData(p.Mesh)
+			p.Mesh.ReleaseData(g)
 		}
 	}
 }

@@ -6,10 +6,16 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
+type MaterialResourcer interface {
+	Resource() ResourceRef
+	isMaterial()
+}
+
 // Material the material
 type Material struct {
-	resourcer
-	Name string
+	parent    *Material
+	Resourcer MaterialResourcer
+	Name      string
 	// Primitive stuff
 	Queue       int
 	Depth       DepthMode
@@ -38,11 +44,22 @@ func (m *Material) Material() *Material {
 
 // NewShaderMaterial returns a new material based on shader data
 // if ShaderData is nil it will use the default PBR material
-func NewShaderMaterial(r Resourcer) *Material {
+func NewShaderMaterial(r MaterialResourcer) *Material {
 	return &Material{
-		resourcer: resourcer{r},
+		Resourcer: r,
 	}
 }
+
+// Resource implements the resourcer interface.
+func (m *Material) GetResource() ResourceRef {
+	if m.Resourcer == nil {
+		return nil
+	}
+	return m.Resourcer.Resource()
+}
+
+// SetResourcer implements the resource setter interface.
+func (m *Material) SetResourcer(r MaterialResourcer) { m.Resourcer = r }
 
 func (m Material) String() string {
 	return fmt.Sprintf("(material: %q)", m.Name)
@@ -93,12 +110,11 @@ func (m *Material) SetStencilOp(fail, zfail, zpass gl.Enum) {
 
 // Defines override shaderProp defines with hierarchy
 func (m *Material) Defines() map[string]string {
-	pm, ok := m.Resourcer.(*Material)
-	if !ok {
+	if m.parent == nil {
 		return m.shaderProps.Defines()
 	}
 	ret := map[string]string{}
-	for k, v := range pm.Defines() {
+	for k, v := range m.parent.Defines() {
 		ret[k] = v
 	}
 	for k, v := range m.defines {
@@ -113,8 +129,8 @@ func (m *Material) DefinesHash() uint {
 		return 0
 	}
 	hash := uint(0)
-	if p, ok := m.Resourcer.(*Material); ok {
-		hash ^= p.DefinesHash()
+	if m.parent != nil {
+		hash ^= m.parent.DefinesHash()
 	}
 	hash ^= m.shaderProps.DefinesHash()
 	return hash
@@ -123,14 +139,13 @@ func (m *Material) DefinesHash() uint {
 // Get returns the material property for name or if the material has a Parent
 // material returns the property from parent else returns nil.
 func (m *Material) Get(name string) interface{} {
-	pm, ok := m.Resourcer.(*Material)
-	if !ok {
+	if m.parent == nil {
 		return m.shaderProps.Get(name)
 	}
 	if v := m.shaderProps.Get(name); v != nil {
 		return v
 	}
-	return pm.Get(name)
+	return m.parent.Get(name)
 }
 
 // GetTexture returns the texture for name
@@ -139,8 +154,8 @@ func (m *Material) GetTexture(name string) *Texture {
 		return t
 	}
 
-	if pm, ok := m.Resourcer.(*Material); ok {
-		return pm.GetTexture(name)
+	if m.parent != nil {
+		return m.parent.GetTexture(name)
 	}
 
 	return nil

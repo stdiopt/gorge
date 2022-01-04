@@ -1,55 +1,5 @@
 package gorge
 
-import (
-	"fmt"
-)
-
-// Different than previous loaders
-// we don't have the load method
-// instead we fire an load event in whatever loads stuff
-
-type resourcer struct {
-	Resourcer
-}
-
-func (r *resourcer) Resource() ResourceRef {
-	if r.Resourcer == nil {
-		return nil
-	}
-	return r.Resourcer.Resource()
-}
-
-func (r *resourcer) SetResourcer(rr Resourcer) {
-	r.Resourcer = rr
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-
-// ResourceRef Should pinpoint ResourceRef here
-type ResourceRef interface {
-	isResource()
-}
-
-// Resourcer anything that can fetch a resource
-type Resourcer interface {
-	Resource() ResourceRef
-}
-
-// ResourcerSetter mostly used in Texture or Mesh
-type ResourcerSetter interface {
-	Resourcer
-	SetResourcer(r Resourcer)
-}
-
-// GPUResourcer interface for some resources that are used in gpu.
-type GPUResourcer interface {
-	Resourcer
-	isGPU()
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-
-// GPUResource resource reference for textures, mesh, material
 type gpuResource struct {
 	gpu interface{}
 }
@@ -64,7 +14,7 @@ func (r *gpuResource) setGPU(v interface{}) { r.gpu = v }
 func (r *gpuResource) getGPU() interface{}  { return r.gpu }
 
 // GetGPU returns gpu data from the resourceRef
-func GetGPU(r ResourceRef) interface{} {
+func GetGPU(r interface{}) interface{} {
 	if r, ok := r.(interface{ getGPU() interface{} }); ok {
 		return r.getGPU()
 	}
@@ -72,14 +22,44 @@ func GetGPU(r ResourceRef) interface{} {
 }
 
 // SetGPU sets gpu data in the resourceRef
-func SetGPU(r ResourceRef, v interface{}) {
+func SetGPU(r, v interface{}) {
 	if r, ok := r.(interface{ setGPU(interface{}) }); ok {
 		r.setGPU(v)
 	}
 }
 
+// ////////////////////////////////////////////////////////////////////////////
+
+// ResourceRef Should pinpoint ResourceRef here
+type ResourceRef interface {
+	isResource()
+}
+
+// Resourcer anything that can fetch a resource
+/*type Resourcer interface {
+	Resource() ResourceRef
+}*/
+
+// ResourcerSetter mostly used in Texture or Mesh
+/*
+type ResourcerSetter interface {
+	Resourcer
+	SetResourcer(r Resourcer)
+}
+*/
+
+// GPUResourcer interface for some resources that are used in gpu.
+/*type GPUResourcer interface {
+	Resourcer
+	isGPU()
+}*/
+
+// ////////////////////////////////////////////////////////////////////////////
+
+// GPUResource resource reference for textures, mesh, material
+
 // ResourceCopyRef mostly used by resources to load Data and copy gpu ref
-func ResourceCopyRef(a Resourcer, b ResourceRef) {
+/*func ResourceCopyRef(a Resourcer, b ResourceRef) {
 	ar := a.Resource()
 	switch ar := ar.(type) {
 	case *gpuResource:
@@ -88,10 +68,10 @@ func ResourceCopyRef(a Resourcer, b ResourceRef) {
 	default:
 		panic(fmt.Sprintf("cannot copy referrer of %T", ar))
 	}
-}
+}*/
 
 // Resource reference
-
+/*
 type resourceRef struct {
 	res ResourceRef
 }
@@ -101,7 +81,7 @@ func (r *resourceRef) Resource() ResourceRef { return r.res }
 // ResourceReleaseData triggers an update resource event to sync with systems
 // for the specific and releases the underlying data, it will reuse the
 // resource ref which the data is already binded in gpu
-func (g *Gorge) ResourceReleaseData(r ResourcerSetter) {
+/*func (g *Gorge) ResourceReleaseData(r ResourcerSetter) {
 	curRes := r.Resource()
 
 	ref := &resourceRef{}
@@ -125,3 +105,4 @@ func (g *Gorge) ResourceRef(r ResourceRef) Resourcer {
 	}
 	return &resourceRef{r}
 }
+*/

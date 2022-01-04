@@ -1,15 +1,21 @@
 package gorge
 
+// AudioResourcer implements the resourcer interface.
+type AudioResourcer interface {
+	Resource() ResourceRef
+	isAudio()
+}
+
 // AudioFormat audio format for clipData.
 type AudioFormat int
 
 // AudioClip is the resource controller for audio (similar to material, texture, mesh).
 type AudioClip struct {
-	Resourcer
+	Resourcer AudioResourcer
 }
 
 // NewAudioClip creates a New audio clip based on resource.
-func NewAudioClip(ref Resourcer) *AudioClip {
+func NewAudioClip(ref AudioResourcer) *AudioClip {
 	return &AudioClip{ref}
 }
 
@@ -44,6 +50,8 @@ type AudioClipData struct {
 	Data    []byte
 	Updates int
 }
+
+func (AudioClipData) isAudio() {}
 
 // Resource implements the resourcer interface.
 func (d *AudioClipData) Resource() ResourceRef { return d }

@@ -6,39 +6,76 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+type MeshResourcer interface {
+	Resource() ResourceRef
+	isMesh()
+}
+
+// MeshRef is a mesh reference
+type MeshRef struct {
+	Ref ResourceRef
+}
+
+// Resource returns the resource ref.
+func (r *MeshRef) Resource() ResourceRef { return r.Ref }
+func (r *MeshRef) isMesh()               {}
+func (r *MeshRef) isResource()           {}
+
 // Mesh representation
 type Mesh struct {
-	resourcer
-	DrawMode DrawMode
+	Resourcer MeshResourcer
+	DrawMode  DrawMode
 
 	// This is for shaders like material
 	shaderProps
 }
 
 // NewMesh creates a new mesh with meshData
-func NewMesh(res Resourcer) *Mesh {
+func NewMesh(res MeshResourcer) *Mesh {
 	return &Mesh{
-		resourcer: resourcer{res},
+		Resourcer: res,
 	}
 }
 
 // Mesh implements mesher interface.
-func (m *Mesh) Mesh() *Mesh {
-	return m
-}
+func (m *Mesh) Mesh() *Mesh { return m }
 
 // Clone will clone the mesh and it's props.
 func (m Mesh) Clone() *Mesh {
 	return &Mesh{
-		resourcer:   resourcer{m.Resourcer},
+		Resourcer:   m.Resourcer,
 		DrawMode:    m.DrawMode,
 		shaderProps: m.copy(),
 	}
 }
 
+// GetResource returns the underlying resource.
+func (m *Mesh) GetResource() ResourceRef {
+	if m.Resourcer == nil {
+		return nil
+	}
+	return m.Resourcer.Resource()
+}
+
+// SetResourcer will set the underlying mesh resourcer.
+func (m *Mesh) SetResourcer(r MeshResourcer) { m.Resourcer = r }
+
 // isGPU indicates this is a gpuResourcer so it should have
 // gpuResource in the resourcer
 func (m *Mesh) isGPU() {}
+
+// ReleaseData change the data ref to a gpu only resource.
+func (m *Mesh) ReleaseData(g *Context) {
+	if _, ok := m.Resourcer.(*MeshRef); ok {
+		return
+	}
+	curRes := m.Resourcer
+	g.Trigger(EventResourceUpdate{Resource: curRes})
+
+	ref := &MeshRef{Ref: NewGPUResource()}
+	SetGPU(ref, GetGPU(curRes.Resource()))
+	m.Resourcer = ref
+}
 
 func (m Mesh) String() string {
 	return fmt.Sprintf("(mesh: drawType: %v, loader: %v)",
@@ -160,6 +197,8 @@ type MeshData struct {
 // Resource implements the resourcer interface so MeshData can be used directly
 // in the Mesh.
 func (d *MeshData) Resource() ResourceRef { return d }
+
+func (d *MeshData) isMesh() {}
 
 // CalcBounds calculate the bounding box for this mesh (slow)
 func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {

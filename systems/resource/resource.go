@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
-	"reflect"
 	"runtime"
 	"strings"
 
@@ -22,7 +21,7 @@ const gorgeStatic = "_gorge/"
 
 type refCounter struct {
 	count int
-	res   gorge.ResourceRef
+	ref   interface{} // gorge.ResourceRef
 }
 
 // Resource the resource manager.
@@ -115,6 +114,12 @@ func (r *Resource) Error(err error) {
 // LoadRef sets a New loader reference and check if resource reference exists
 // if the reference exists we update the loader reference with the specified
 // resource else it will load in background and update the loader reference once done.
+/*
+type loadedRef struct {
+	res gorge.ResourceRef
+}
+func (r loadedRef) Resource() gorge.ResourceRef { return r.res }
+
 func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interface{}) {
 	ref := &loadedRef{}
 	if _, ok := rs.(gorge.GPUResourcer); ok {
@@ -124,7 +129,7 @@ func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interf
 
 	// Bind the resource, if exists we reuse the resource ref
 	if counter, ok := r.track(name, ref); ok {
-		ref.res = counter.res
+		ref.res = counter.ref
 		return
 	}
 
@@ -157,16 +162,11 @@ func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interf
 			gorge.ResourceCopyRef(rs, res)
 		})
 	}()
-}
+}*/
 
 // loadedRef will be used as a resource in Mesh or Texture
 // the purpose of this is avoid load duplication
 // if the resource is already loaded a new loadedRef with an existing resource ref
-type loadedRef struct {
-	res gorge.ResourceRef
-}
-
-func (r loadedRef) Resource() gorge.ResourceRef { return r.res }
 
 func (r *Resource) load(v interface{}, name string, opts ...interface{}) error {
 	ext := filepath.Ext(name)
@@ -179,7 +179,7 @@ func (r *Resource) load(v interface{}, name string, opts ...interface{}) error {
 
 // Tracks resource reference and overrides ref Resource referrer if already
 // exists
-func (r *Resource) track(name string, ref *loadedRef) (*refCounter, bool) {
+func (r *Resource) track(name string, ref, v interface{}) (*refCounter, bool) {
 	if r.refs == nil {
 		r.refs = map[string]*refCounter{}
 	}
@@ -187,7 +187,7 @@ func (r *Resource) track(name string, ref *loadedRef) (*refCounter, bool) {
 	if !ok {
 		tracker = &refCounter{
 			count: 0,
-			res:   ref.res,
+			ref:   v,
 		}
 		r.refs[name] = tracker
 	}

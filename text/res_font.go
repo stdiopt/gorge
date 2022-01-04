@@ -165,7 +165,8 @@ func fontLoader(res *resource.Context, v interface{}, name string, opts ...inter
 		PixelData: img.Pix,
 	})
 	tex.FilterMode = gorge.TextureFilterLinear
-	res.Gorge().ResourceReleaseData(tex)
+	tex.ReleaseData(res.Gorge())
+	// res.Gorge().ResourceReleaseData(tex)
 
 	*fontOut = Font{
 		SpaceAdv: float32(adv>>6) / scale,

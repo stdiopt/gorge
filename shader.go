@@ -18,6 +18,7 @@ type ShaderData struct {
 
 // Resource implements a resourcer.
 func (d *ShaderData) Resource() ResourceRef { return d }
+func (d *ShaderData) isMaterial()           {}
 
 func (d *ShaderData) String() string {
 	return fmt.Sprintf("(shader name: %q)", d.Name)

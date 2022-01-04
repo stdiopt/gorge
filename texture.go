@@ -4,18 +4,46 @@ import (
 	"fmt"
 )
 
+// TextureResourcer is a texture resourcer.
+type TextureResourcer interface {
+	Resource() ResourceRef
+	isResource()
+	isTexture()
+}
+
+// TextureRef implements a texture resourcer.
+type TextureRef struct {
+	Ref ResourceRef
+}
+
+// Resource implements the resourcer interface.
+func (r *TextureRef) Resource() ResourceRef { return r.Ref }
+func (r *TextureRef) isResource()           {}
+func (r *TextureRef) isTexture()            {}
+
 // Texture reference
 type Texture struct {
-	resourcer
+	Resourcer  TextureResourcer
 	Name       string // just for reference and debugging
 	Wrap       [3]TextureWrap
 	FilterMode TextureFilter
 }
 
 // NewTexture returns a new texture based on resourcer.
-func NewTexture(r Resourcer) *Texture {
-	return &Texture{resourcer: resourcer{r}}
+func NewTexture(r TextureResourcer) *Texture {
+	return &Texture{Resourcer: r}
 }
+
+// GetResource returns the ResourceRef for this texture.
+func (t *Texture) GetResource() ResourceRef {
+	if t.Resourcer == nil {
+		return nil
+	}
+	return t.Resourcer.Resource()
+}
+
+// SetResourcer sets the resourcer for this texture.
+func (t *Texture) SetResourcer(r TextureResourcer) { t.Resourcer = r }
 
 func (t *Texture) isGPU() {}
 
@@ -42,6 +70,20 @@ func (t *Texture) SetWrapUVW(uvw ...TextureWrap) {
 	default:
 		copy(t.Wrap[:], uvw)
 	}
+}
+
+// ReleaseData change underlying resourcer with a gpu only reference.
+func (t *Texture) ReleaseData(g *Context) {
+	if _, ok := t.Resourcer.(*TextureRef); ok {
+		return
+	}
+	curRes := t.Resourcer.Resource()
+	g.Trigger(EventResourceUpdate{Resource: curRes})
+
+	gpuRef := NewGPUResource()
+	SetGPU(gpuRef, GetGPU(curRes))
+
+	t.Resourcer = &TextureRef{Ref: gpuRef}
 }
 
 // TextureFormat texture pixel format
@@ -125,10 +167,12 @@ func (d *TextureData) String() string {
 	)
 }
 
+func (d *TextureData) isTexture() {}
+
 // Resource implements the resourcer interface.
 func (d *TextureData) Resource() ResourceRef { return d }
 
-// ////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // Experiment, single pixel color texture
 // /////
 type texture = Texture

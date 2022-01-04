@@ -63,10 +63,10 @@ func (m *vboManager) GetByRef(gr gorge.ResourceRef) (*VBO, bool) {
 }
 
 func (m *vboManager) Get(mesh *gorge.Mesh) (*VBO, bool) {
-	if mesh == nil {
+	if mesh == nil || mesh.Resourcer == nil {
 		return nil, false
 	}
-	return m.GetByRef(mesh.Resource())
+	return m.GetByRef(mesh.Resourcer.Resource())
 }
 
 func (m *vboManager) Update(r *gorge.MeshData) {
