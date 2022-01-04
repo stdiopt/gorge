@@ -6,6 +6,7 @@ import (
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/x/gorlet"
 )
 
@@ -19,20 +20,111 @@ const (
 	SeverityError
 )
 
+var ctxKey = struct{ string }{"notify"}
+
 // EventNotify the notification event to be triggered in gorge.
 type EventNotify struct {
 	Message  string
 	Severity Severity
 }
 
-func Info(g *gorge.Context, s string) {
-	g.Trigger(EventNotify{
-		Message:  s,
-		Severity: SeverityInfo,
-	})
+type system struct {
+	gorge *gorge.Context
+	uiCam *gorgeutil.Camera
+	ui    *gorgeui.UI
+	cards []*card
+}
+
+func (s *system) createNotification(e EventNotify) {
+	w := gorlet.Create(notifyWidget(e))
+	w.SetAnchor(1, 1, 1, 1)
+	w.SetRect(-21, w.Dim[1], 20, 0)
+	s.ui.Add(w)
+
+	card := &card{
+		Widget:  w,
+		Timeout: 5,
+	}
+	card.Enter = anim.New()
+	card.Enter.Start()
+	{
+		ch := anim.NewChannelFuncf32(func(v float32) {
+			w.Set("opacity", v)
+		})
+		ch.SetKey(0, 0)
+		ch.SetKey(.5, 1)
+		card.Enter.AddChannel(ch)
+	}
+
+	card.Exit = anim.New()
+	card.Exit.Start()
+	{
+		const animTime = .3
+		ch := anim.NewChannelFuncf32(func(v float32) {
+			w.Position[0] = v
+		})
+		ch.SetKey(0, -w.Dim[0]-1)
+		ch.SetKey(animTime, 0)
+
+		opch := anim.NewChannelFuncf32(func(v float32) {
+			w.Set("opacity", v)
+		})
+		opch.SetKey(0, 1)
+		opch.SetKey(animTime, 0)
+
+		card.Exit.AddChannel(ch)
+		card.Exit.AddChannel(opch)
+	}
+
+	s.cards = append(s.cards, card)
+}
+
+func (s *system) HandleEvent(e event.Event) {
+	switch e := e.(type) {
+	case EventNotify:
+		s.createNotification(e)
+		// Should build a card
+	case gorge.EventUpdate:
+		if len(s.cards) == 0 {
+			return
+		}
+		curV := float32(0) //-(cards[0].Widget.Dim[1] + 1)
+		t := s.cards
+		for i := len(s.cards) - 1; i >= 0; i-- {
+			c := t[i]
+			if c.Timeout <= 0 {
+				c.Exit.UpdateDelta(e.DeltaTime())
+				if c.Exit.State() == anim.StateFinished {
+					s.ui.Remove(c.Widget)
+					s.cards = append(s.cards[:i], s.cards[i+1:]...)
+				}
+			}
+			c.Enter.UpdateDelta(e.DeltaTime())
+			// curV := -float32(i+1) * (5 + 1)
+			curV -= c.Widget.Dim[1] + 1
+
+			pos := c.Widget.Position
+			pos[1] = curV
+
+			c.Widget.Position = c.Widget.Position.Lerp(pos, e.DeltaTime()*10)
+			c.Timeout -= e.DeltaTime()
+		}
+		if len(t) > len(s.cards) {
+			for i := range t[len(s.cards):] {
+				t[len(s.cards)+i] = nil
+			}
+		}
+	}
+}
+
+// System  initializes notification system in gorge.
+func System(g *gorge.Context) error {
+	FromContext(g)
+	return nil
 }
 
 // System will handle notification events and create cards.
+/*
 func System(g *gorge.Context) error {
 	u := gorgeutil.FromContext(g)
 	uiCam := u.UICamera()
@@ -121,6 +213,7 @@ func System(g *gorge.Context) error {
 	})
 	return nil
 }
+*/
 
 // card is a card that can be shown on the screen
 type card struct {
