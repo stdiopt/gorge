@@ -35,7 +35,7 @@ func newTextureManager(g *gorge.Context) *textureManager {
 	return m
 }
 
-func (m *textureManager) New(r gorge.ResourceRef) *Texture {
+func (m *textureManager) New(r gorge.TextureResource) *Texture {
 	t := &Texture{
 		manager: m,
 		updates: -1,
@@ -70,28 +70,28 @@ func (m *textureManager) Bind(tex *gorge.Texture) {
 	t.bind(tex)
 }
 
-func (m *textureManager) GetByRef(gr gorge.ResourceRef) *Texture {
-	if gr == nil {
+func (m *textureManager) GetByRef(r gorge.TextureResource) *Texture {
+	if r == nil {
 		return m.texWhite
 	}
-	t, ok := gorge.GetGPU(gr).(*Texture)
+	t, ok := gorge.GetGPU(r).(*Texture)
 	if !ok {
-		t = m.New(gr)
-		gorge.SetGPU(gr, t)
+		t = m.New(r)
+		gorge.SetGPU(r, t)
 		return t
 	}
-	if d, ok := gr.(*gorge.TextureData); ok {
+	if d, ok := r.(*gorge.TextureData); ok {
 		t.update(d)
 	}
 	return t
 }
 
 func (m *textureManager) Get(tex *gorge.Texture) *Texture {
-	if tex == nil || tex.Resourcer == nil {
+	if tex == nil {
 		return m.texWhite
 	}
 
-	return m.GetByRef(tex.Resourcer.Resource())
+	return m.GetByRef(tex.Resourcer)
 }
 
 func (m *textureManager) Update(r *gorge.TextureData) {

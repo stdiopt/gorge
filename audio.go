@@ -2,7 +2,6 @@ package gorge
 
 // AudioResourcer implements the resourcer interface.
 type AudioResourcer interface {
-	Resource() ResourceRef
 	isAudio()
 }
 
@@ -45,13 +44,9 @@ func (a *AudioListener) AudioListenerComponent() *AudioListener { return a }
 
 // AudioClipData base audio data.
 type AudioClipData struct {
-	ResourceRef
 	Format  AudioFormat
 	Data    []byte
 	Updates int
 }
 
 func (AudioClipData) isAudio() {}
-
-// Resource implements the resourcer interface.
-func (d *AudioClipData) Resource() ResourceRef { return d }

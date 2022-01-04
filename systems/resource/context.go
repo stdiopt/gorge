@@ -48,15 +48,15 @@ func FromContext(g *gorge.Context) *Context {
 func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 	tex := gorge.NewTexture(nil)
 
-	ref := &gorge.TextureRef{
-		Ref: gorge.NewGPUResource(),
-	}
+	gpu := &gorge.GPU{}
+	ref := &gorge.TextureRef{GPU: gpu}
 	tex.SetResourcer(ref)
 
 	// Bind the resource, if exists we reuse the resource ref
-	counter, ok := r.track(name, ref, ref.Resource())
+	counter, ok := r.track(name, ref, gpu)
 	if ok {
-		ref.Ref = counter.ref.(gorge.ResourceRef)
+		ref.GPU = counter.ref.(*gorge.GPU)
+		// gorge.SetGPU(ref, gorge.GetGPU(counter.ref))
 		return tex
 	}
 
@@ -96,14 +96,14 @@ func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 	mesh := gorge.NewMesh(nil)
 
-	ref := &gorge.MeshRef{
-		Ref: gorge.NewGPUResource(),
-	}
+	gpu := &gorge.GPU{}
+	ref := &gorge.MeshRef{GPU: gpu}
 	mesh.SetResourcer(ref)
 
 	// Bind the resource, if exists we reuse the resource ref
-	if counter, ok := r.track(name, ref, ref.Resource()); ok {
-		ref.Ref = counter.ref.(gorge.ResourceRef)
+	counter, ok := r.track(name, ref, gpu)
+	if ok {
+		ref.GPU = counter.ref.(*gorge.GPU)
 		return mesh
 	}
 
@@ -125,15 +125,15 @@ func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 			return
 		}
 		r.gorge.RunInMain(func() {
-			res := tmp
 			r.gorge.Trigger(gorge.EventResourceUpdate{
-				Resource: res,
+				Resource: tmp,
 			})
 			r.gorge.Trigger(EventLoadComplete{
 				Name:     name,
 				Resource: mesh,
 			})
-			gorge.SetGPU(mesh.Resourcer.Resource(), gorge.GetGPU(res))
+			// gorge.SetGPU(mesh.Resourcer.Resource(), gorge.GetGPU(res))
+			gorge.SetGPU(counter.ref, gorge.GetGPU(tmp))
 		})
 	}()
 	return mesh

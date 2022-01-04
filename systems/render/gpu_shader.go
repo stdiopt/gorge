@@ -72,7 +72,7 @@ func newShaderManager(g *gorge.Context, vbos *vboManager) *shaderManager {
 	return m
 }
 
-func (m *shaderManager) New(r gorge.ResourceRef) *Shader {
+func (m *shaderManager) New(r gorge.ShaderResource) *Shader {
 	s := &Shader{
 		manager:  m,
 		ubos:     map[string]struct{}{},
@@ -104,7 +104,7 @@ func (m *shaderManager) GetX(r *gorge.RenderableComponent) *Shader {
 
 	sd := m.defRaw
 
-	res := mat.GetResource()
+	res := mat.Resourcer
 	if s, ok := res.(*gorge.ShaderData); ok && s != nil {
 		sd = s
 	}

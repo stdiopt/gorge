@@ -82,7 +82,7 @@ func (r *GLTF) ReleaseRawData(g *gorge.Context) {
 	}
 	for _, m := range r.Meshes {
 		for _, p := range m.primitives {
-			p.Mesh.ReleaseData(g)
+			p.ReleaseData(g)
 		}
 	}
 }
@@ -317,7 +317,7 @@ func (c *gltfCreator) processNodes() {
 			// Create Primitives here
 			for _, r := range node.mesh.primitives {
 				// Clone mesh too
-				primMesh := r.Mesh.Clone()
+				primMesh := r.Clone()
 				primMesh.Define("HAS_SINGLE_INSTANCE")
 				p := gorgeutil.NewRenderable(primMesh, r.Material)
 				p.SetParent(node)
@@ -333,7 +333,7 @@ func (c *gltfCreator) processNodes() {
 				fn := func(_ float32) {
 					for i, ni := range node.skin.Joints {
 						m := node.Mat4().Inv()
-						m = m.Mul(c.Nodes[ni].Mat4())
+						m = m.Mul(nodes[ni].Mat4())
 						m = m.Mul(node.skin.Matrices[i])
 						// This should be set somewhere automatically within mesh
 						primMesh.Set(fmt.Sprintf("u_jointMatrix[%d]", i), m)

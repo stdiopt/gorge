@@ -9,16 +9,21 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+// ShaderResource is a shader resource interface.
+type ShaderResource interface {
+	isShader()
+	isGPU()
+}
+
 // ShaderData contains shaders sources
 type ShaderData struct {
-	gpuResource
+	GPU
 	Name string
 	Src  []byte
 }
 
 // Resource implements a resourcer.
-func (d *ShaderData) Resource() ResourceRef { return d }
-func (d *ShaderData) isMaterial()           {}
+func (d *ShaderData) isShader() {}
 
 func (d *ShaderData) String() string {
 	return fmt.Sprintf("(shader name: %q)", d.Name)

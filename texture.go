@@ -4,44 +4,35 @@ import (
 	"fmt"
 )
 
-// TextureResourcer is an interface to handle underlying texture data.
-type TextureResourcer interface {
-	Resource() ResourceRef
+// TextureResource is an interface to handle underlying texture data.
+type TextureResource interface {
 	isTexture()
+	isGPU()
 }
 
 // TextureRef implements a texture resourcer.
 type TextureRef struct {
-	Ref ResourceRef
+	*GPU
 }
 
 // Resource implements the resourcer interface.
-func (r *TextureRef) Resource() ResourceRef { return r.Ref }
-func (r *TextureRef) isTexture()            {}
+func (r *TextureRef) isTexture() {}
 
 // Texture reference
 type Texture struct {
-	Resourcer  TextureResourcer
+	Resourcer  TextureResource
 	Name       string // just for reference and debugging
 	Wrap       [3]TextureWrap
 	FilterMode TextureFilter
 }
 
 // NewTexture returns a new texture based on resourcer.
-func NewTexture(r TextureResourcer) *Texture {
+func NewTexture(r TextureResource) *Texture {
 	return &Texture{Resourcer: r}
 }
 
-// GetResource returns the ResourceRef for this texture.
-func (t *Texture) GetResource() ResourceRef {
-	if t.Resourcer == nil {
-		return nil
-	}
-	return t.Resourcer.Resource()
-}
-
 // SetResourcer sets the resourcer for this texture.
-func (t *Texture) SetResourcer(r TextureResourcer) { t.Resourcer = r }
+func (t *Texture) SetResourcer(r TextureResource) { t.Resourcer = r }
 
 // GetWrap get the components of TextureWrap UVW
 func (t *Texture) GetWrap() (u, v, w TextureWrap) {
@@ -73,13 +64,13 @@ func (t *Texture) ReleaseData(g *Context) {
 	if _, ok := t.Resourcer.(*TextureRef); ok {
 		return
 	}
-	curRes := t.Resourcer.Resource()
+	curRes := t.Resourcer
 	g.Trigger(EventResourceUpdate{Resource: curRes})
 
-	gpuRef := NewGPUResource()
+	gpuRef := &TextureRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
 
-	t.Resourcer = &TextureRef{Ref: gpuRef}
+	t.Resourcer = gpuRef
 }
 
 // TextureFormat texture pixel format
@@ -145,13 +136,21 @@ const (
 
 // TextureData is the data for the texture
 type TextureData struct {
-	gpuResource
+	GPU
 
 	Source        string
 	Format        TextureFormat
 	Width, Height int
 	PixelData     []byte
 	Updates       int
+}
+
+// CreateRef creates a texture gpu reference.
+func (d *TextureData) CreateRef(g *Context) *TextureRef {
+	ref := &TextureRef{&GPU{}}
+	g.Trigger(EventResourceUpdate{Resource: d})
+	SetGPU(ref, GetGPU(d))
+	return ref
 }
 
 func (d *TextureData) String() string {
@@ -164,9 +163,6 @@ func (d *TextureData) String() string {
 }
 
 func (d *TextureData) isTexture() {}
-
-// Resource implements the resourcer interface.
-func (d *TextureData) Resource() ResourceRef { return d }
 
 //////////////////////////////////////////////////////////////////////////////
 // Experiment, single pixel color texture

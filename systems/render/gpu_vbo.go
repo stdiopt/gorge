@@ -26,7 +26,7 @@ func newVBOManager(
 	return m
 }
 
-func (m *vboManager) New(r gorge.ResourceRef) *VBO {
+func (m *vboManager) New(r gorge.MeshResource) *VBO {
 	v := &VBO{
 		manager: m,
 		updates: -1,
@@ -48,25 +48,25 @@ func (m *vboManager) New(r gorge.ResourceRef) *VBO {
 	return v
 }
 
-func (m *vboManager) GetByRef(gr gorge.ResourceRef) (*VBO, bool) {
-	v, ok := gorge.GetGPU(gr).(*VBO)
+func (m *vboManager) GetByRef(r gorge.MeshResource) (*VBO, bool) {
+	v, ok := gorge.GetGPU(r).(*VBO)
 	if !ok {
-		v = m.New(gr)
-		gorge.SetGPU(gr, v)
+		v = m.New(r)
+		gorge.SetGPU(r, v)
 		return v, true
 	}
 	updated := false
-	if d, ok := gr.(*gorge.MeshData); ok {
+	if d, ok := r.(*gorge.MeshData); ok {
 		updated = v.update(d)
 	}
 	return v, updated
 }
 
 func (m *vboManager) Get(mesh *gorge.Mesh) (*VBO, bool) {
-	if mesh == nil || mesh.Resourcer == nil {
+	if mesh == nil {
 		return nil, false
 	}
-	return m.GetByRef(mesh.Resourcer.Resource())
+	return m.GetByRef(mesh.Resourcer)
 }
 
 func (m *vboManager) Update(r *gorge.MeshData) {

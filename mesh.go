@@ -2,28 +2,28 @@ package gorge
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/stdiopt/gorge/m32"
 )
 
-// MeshResourcer is an interface to handle underlying mesh data.
-type MeshResourcer interface {
-	Resource() ResourceRef
+// MeshResource is an interface to handle underlying mesh data.
+type MeshResource interface {
 	isMesh()
+	isGPU()
 }
 
 // MeshRef is a mesh reference
 type MeshRef struct {
-	Ref ResourceRef
+	*GPU
 }
 
 // Resource returns the resource ref.
-func (r *MeshRef) Resource() ResourceRef { return r.Ref }
-func (r *MeshRef) isMesh()               {}
+func (r *MeshRef) isMesh() {}
 
 // Mesh representation
 type Mesh struct {
-	Resourcer MeshResourcer
+	Resourcer MeshResource
 	DrawMode  DrawMode
 
 	// This is for shaders like material
@@ -31,7 +31,7 @@ type Mesh struct {
 }
 
 // NewMesh creates a new mesh with meshData
-func NewMesh(res MeshResourcer) *Mesh {
+func NewMesh(res MeshResource) *Mesh {
 	return &Mesh{
 		Resourcer: res,
 	}
@@ -50,19 +50,20 @@ func (m Mesh) Clone() *Mesh {
 }
 
 // SetResourcer will set the underlying mesh resourcer.
-func (m *Mesh) SetResourcer(r MeshResourcer) { m.Resourcer = r }
+func (m *Mesh) SetResourcer(r MeshResource) { m.Resourcer = r }
 
 // ReleaseData change the data ref to a gpu only resource.
 func (m *Mesh) ReleaseData(g *Context) {
 	if _, ok := m.Resourcer.(*MeshRef); ok {
 		return
 	}
+	log.Println("Release resource")
 	curRes := m.Resourcer
 	g.Trigger(EventResourceUpdate{Resource: curRes})
 
-	ref := &MeshRef{Ref: NewGPUResource()}
-	SetGPU(ref, GetGPU(curRes.Resource()))
-	m.Resourcer = ref
+	gpuRef := &MeshRef{&GPU{}}
+	SetGPU(gpuRef, GetGPU(curRes))
+	m.Resourcer = gpuRef
 }
 
 func (m Mesh) String() string {
@@ -165,7 +166,7 @@ func VertexFormatPNT() VertexFormat {
 
 // MeshData raw mesh data
 type MeshData struct {
-	gpuResource
+	GPU
 
 	Source string
 
@@ -184,9 +185,15 @@ type MeshData struct {
 
 // Resource implements the resourcer interface so MeshData can be used directly
 // in the Mesh.
-func (d *MeshData) Resource() ResourceRef { return d }
-
 func (d *MeshData) isMesh() {}
+
+// CreateRef uses gorge to update mesh and retrieve gpu only reference.
+func (d *MeshData) CreateRef(g *Context) *MeshRef {
+	ref := &MeshRef{&GPU{}}
+	g.Trigger(EventResourceUpdate{Resource: d})
+	SetGPU(ref, GetGPU(d))
+	return ref
+}
 
 // CalcBounds calculate the bounding box for this mesh (slow)
 func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {

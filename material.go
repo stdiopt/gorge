@@ -6,16 +6,10 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
-// MaterialResourcer is the interface for material resources.
-type MaterialResourcer interface {
-	Resource() ResourceRef
-	isMaterial()
-}
-
 // Material the material
 type Material struct {
 	parent    *Material
-	Resourcer MaterialResourcer
+	Resourcer ShaderResource
 	Name      string
 	// Primitive stuff
 	Queue       int
@@ -45,22 +39,12 @@ func (m *Material) Material() *Material {
 
 // NewShaderMaterial returns a new material based on shader data
 // if ShaderData is nil it will use the default PBR material
-func NewShaderMaterial(r MaterialResourcer) *Material {
-	return &Material{
-		Resourcer: r,
-	}
-}
-
-// Resource implements the resourcer interface.
-func (m *Material) GetResource() ResourceRef {
-	if m.Resourcer == nil {
-		return nil
-	}
-	return m.Resourcer.Resource()
+func NewShaderMaterial(r ShaderResource) *Material {
+	return &Material{Resourcer: r}
 }
 
 // SetResourcer implements the resource setter interface.
-func (m *Material) SetResourcer(r MaterialResourcer) { m.Resourcer = r }
+func (m *Material) SetResourcer(r ShaderResource) { m.Resourcer = r }
 
 func (m Material) String() string {
 	return fmt.Sprintf("(material: %q)", m.Name)
