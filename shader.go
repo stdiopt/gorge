@@ -66,7 +66,7 @@ func (s *shaderProps) ResetProps() {
 	s.definesHash = 0
 }
 
-func (s *shaderProps) SetTexture(name string, t *Texture) {
+func (s *shaderProps) SetTexture(name string, t Texturer) {
 	if s.samplers == nil {
 		s.samplers = map[string]*Texture{}
 	}
@@ -75,7 +75,7 @@ func (s *shaderProps) SetTexture(name string, t *Texture) {
 		delete(s.samplers, name)
 		return
 	}
-	s.samplers[name] = t
+	s.samplers[name] = t.Texture()
 }
 
 // Set properties by name

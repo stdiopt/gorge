@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+// Texturer used to fetch a texture from a texture controller.
+type Texturer interface {
+	Texture() *Texture
+}
+
 // TextureResource is an interface to handle underlying texture data.
 type TextureResource interface {
 	isTexture()
@@ -30,6 +35,9 @@ type Texture struct {
 func NewTexture(r TextureResource) *Texture {
 	return &Texture{Resourcer: r}
 }
+
+// Texture implements Texturer
+func (t *Texture) Texture() *Texture { return t }
 
 // SetResourcer sets the resourcer for this texture.
 func (t *Texture) SetResourcer(r TextureResource) { t.Resourcer = r }
@@ -171,7 +179,7 @@ type texture = Texture
 
 // ColorTexture helper for a single color texture.
 type ColorTexture struct {
-	TextureData
+	texture
 }
 
 // NewColorTexture returns a single pixel colored texture
@@ -183,7 +191,10 @@ func NewColorTexture(r, g, b, a float32) *ColorTexture {
 
 // SetColor sets color data for underlying texture.
 func (t *ColorTexture) SetColor(r, g, b, a float32) {
-	tex := &t.TextureData
+	if t.Resourcer == nil {
+		t.Resourcer = &TextureData{}
+	}
+	tex := t.Resourcer.(*TextureData)
 	if len(tex.PixelData) == 0 {
 		tex.Format = TextureFormatRGBA
 		tex.Width = 1
