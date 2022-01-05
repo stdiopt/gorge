@@ -46,17 +46,13 @@ func FromContext(g *gorge.Context) *Context {
 
 // Texture helper that returns a texture with a resourcer ref
 func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
-	tex := gorge.NewTexture(nil)
-
-	gpu := &gorge.GPU{}
-	ref := &gorge.TextureRef{GPU: gpu}
-	tex.SetResourcer(ref)
+	ref := &gorge.TextureRef{GPU: &gorge.GPU{}}
+	tex := gorge.NewTexture(ref)
 
 	// Bind the resource, if exists we reuse the resource ref
-	counter, ok := r.track(name, ref, gpu)
+	counter, ok := r.track(name, ref, ref.GPU)
 	if ok {
 		ref.GPU = counter.ref.(*gorge.GPU)
-		// gorge.SetGPU(ref, gorge.GetGPU(counter.ref))
 		return tex
 	}
 
@@ -94,14 +90,12 @@ func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 
 // Mesh helper that returns a mesh with a resourcer ref
 func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
-	mesh := gorge.NewMesh(nil)
-
-	gpu := &gorge.GPU{}
-	ref := &gorge.MeshRef{GPU: gpu}
+	ref := &gorge.MeshRef{GPU: &gorge.GPU{}}
+	mesh := gorge.NewMesh(ref)
 	mesh.SetResourcer(ref)
 
 	// Bind the resource, if exists we reuse the resource ref
-	counter, ok := r.track(name, ref, gpu)
+	counter, ok := r.track(name, ref, ref.GPU)
 	if ok {
 		ref.GPU = counter.ref.(*gorge.GPU)
 		return mesh
@@ -138,21 +132,6 @@ func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 	}()
 	return mesh
 }
-
-/*
-func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
-	tex := gorge.NewTexture(nil)
-	r.LoadRef(tex, name, opts...)
-	return tex
-}
-
-// Mesh helper that returns a mesh with a resourcer ref
-func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
-	mesh := gorge.NewMesh(nil)
-	r.LoadRef(mesh, name, opts...)
-	return mesh
-}
-*/
 
 // Material loads everytime right away
 func (r *Context) Material(name string, opts ...interface{}) *gorge.Material {

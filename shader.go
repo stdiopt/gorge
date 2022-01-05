@@ -80,8 +80,8 @@ func (s *shaderProps) SetTexture(name string, t Texturer) {
 
 // Set properties by name
 func (s *shaderProps) Set(name string, v interface{}) {
-	if t, ok := v.(*Texture); ok {
-		s.SetTexture(name, t)
+	if t, ok := v.(Texturer); ok {
+		s.SetTexture(name, t.Texture())
 		return
 	}
 	if s.props == nil {

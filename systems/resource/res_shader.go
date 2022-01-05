@@ -45,7 +45,7 @@ func materialLoader(res *Context, v interface{}, name string, _ ...interface{}) 
 		return err
 	}
 
-	mat.Resourcer = &shaderData
+	mat.Resource = &shaderData
 
 	return nil
 }

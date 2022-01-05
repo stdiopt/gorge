@@ -91,7 +91,7 @@ func (m *textureManager) Get(tex *gorge.Texture) *Texture {
 		return m.texWhite
 	}
 
-	return m.GetByRef(tex.Resourcer)
+	return m.GetByRef(tex.Resource)
 }
 
 func (m *textureManager) Update(r *gorge.TextureData) {

@@ -15,17 +15,9 @@ type TextureResource interface {
 	isGPU()
 }
 
-// TextureRef implements a texture resourcer.
-type TextureRef struct {
-	*GPU
-}
-
-// Resource implements the resourcer interface.
-func (r *TextureRef) isTexture() {}
-
 // Texture reference
 type Texture struct {
-	Resourcer  TextureResource
+	Resource   TextureResource
 	Name       string // just for reference and debugging
 	Wrap       [3]TextureWrap
 	FilterMode TextureFilter
@@ -33,14 +25,11 @@ type Texture struct {
 
 // NewTexture returns a new texture based on resourcer.
 func NewTexture(r TextureResource) *Texture {
-	return &Texture{Resourcer: r}
+	return &Texture{Resource: r}
 }
 
 // Texture implements Texturer
 func (t *Texture) Texture() *Texture { return t }
-
-// SetResourcer sets the resourcer for this texture.
-func (t *Texture) SetResourcer(r TextureResource) { t.Resourcer = r }
 
 // GetWrap get the components of TextureWrap UVW
 func (t *Texture) GetWrap() (u, v, w TextureWrap) {
@@ -57,6 +46,11 @@ func (t *Texture) SetFilterMode(f TextureFilter) {
 	t.FilterMode = f
 }
 
+// SetResource sets the resourcer for this texture.
+func (t *Texture) SetResource(r TextureResource) {
+	t.Resource = r
+}
+
 // SetWrapUVW texture wrap for U, V, W
 func (t *Texture) SetWrapUVW(uvw ...TextureWrap) {
 	switch len(uvw) {
@@ -69,16 +63,16 @@ func (t *Texture) SetWrapUVW(uvw ...TextureWrap) {
 
 // ReleaseData change underlying resourcer with a gpu only reference.
 func (t *Texture) ReleaseData(g *Context) {
-	if _, ok := t.Resourcer.(*TextureRef); ok {
+	if _, ok := t.Resource.(*TextureRef); ok {
 		return
 	}
-	curRes := t.Resourcer
+	curRes := t.Resource
 	g.Trigger(EventResourceUpdate{Resource: curRes})
 
 	gpuRef := &TextureRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
 
-	t.Resourcer = gpuRef
+	t.Resource = gpuRef
 }
 
 // TextureFormat texture pixel format
@@ -191,10 +185,11 @@ func NewColorTexture(r, g, b, a float32) *ColorTexture {
 
 // SetColor sets color data for underlying texture.
 func (t *ColorTexture) SetColor(r, g, b, a float32) {
-	if t.Resourcer == nil {
-		t.Resourcer = &TextureData{}
+	tex, ok := t.Resource.(*TextureData)
+	if !ok {
+		tex = &TextureData{}
+		t.Resource = tex
 	}
-	tex := t.Resourcer.(*TextureData)
 	if len(tex.PixelData) == 0 {
 		tex.Format = TextureFormatRGBA
 		tex.Width = 1
@@ -210,7 +205,7 @@ func (t *ColorTexture) SetColor(r, g, b, a float32) {
 
 // ValueTexture helper for a single valued texture.
 type ValueTexture struct {
-	TextureData
+	texture
 }
 
 // NewValueTexture returns a single pixel colored texture
@@ -222,7 +217,11 @@ func NewValueTexture(v float32) *ValueTexture {
 
 // SetValue sets the texture Value
 func (t *ValueTexture) SetValue(v float32) {
-	tex := &t.TextureData
+	tex, ok := t.Resource.(*TextureData)
+	if !ok {
+		tex = &TextureData{}
+		t.Resource = tex
+	}
 	if len(tex.PixelData) == 0 {
 		tex.Format = TextureFormatGray
 		tex.Width = 1

@@ -8,9 +8,9 @@ import (
 
 // Material the material
 type Material struct {
-	parent    *Material
-	Resourcer ShaderResource
-	Name      string
+	parent   *Material
+	Resource ShaderResource
+	Name     string
 	// Primitive stuff
 	Queue       int
 	Depth       DepthMode
@@ -40,11 +40,11 @@ func (m *Material) Material() *Material {
 // NewShaderMaterial returns a new material based on shader data
 // if ShaderData is nil it will use the default PBR material
 func NewShaderMaterial(r ShaderResource) *Material {
-	return &Material{Resourcer: r}
+	return &Material{Resource: r}
 }
 
 // SetResourcer implements the resource setter interface.
-func (m *Material) SetResourcer(r ShaderResource) { m.Resourcer = r }
+func (m *Material) SetResourcer(r ShaderResource) { m.Resource = r }
 
 func (m Material) String() string {
 	return fmt.Sprintf("(material: %q)", m.Name)

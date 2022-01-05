@@ -2,7 +2,6 @@ package gorge
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/stdiopt/gorge/m32"
 )
@@ -13,18 +12,10 @@ type MeshResource interface {
 	isGPU()
 }
 
-// MeshRef is a mesh reference
-type MeshRef struct {
-	*GPU
-}
-
-// Resource returns the resource ref.
-func (r *MeshRef) isMesh() {}
-
 // Mesh representation
 type Mesh struct {
-	Resourcer MeshResource
-	DrawMode  DrawMode
+	Resource MeshResource
+	DrawMode DrawMode
 
 	// This is for shaders like material
 	shaderProps
@@ -33,7 +24,7 @@ type Mesh struct {
 // NewMesh creates a new mesh with meshData
 func NewMesh(res MeshResource) *Mesh {
 	return &Mesh{
-		Resourcer: res,
+		Resource: res,
 	}
 }
 
@@ -43,39 +34,46 @@ func (m *Mesh) Mesh() *Mesh { return m }
 // Clone will clone the mesh and it's props.
 func (m Mesh) Clone() *Mesh {
 	return &Mesh{
-		Resourcer:   m.Resourcer,
+		Resource:    m.Resource,
 		DrawMode:    m.DrawMode,
 		shaderProps: m.copy(),
 	}
 }
 
-// SetResourcer will set the underlying mesh resourcer.
-func (m *Mesh) SetResourcer(r MeshResource) { m.Resourcer = r }
-
 // ReleaseData change the data ref to a gpu only resource.
 func (m *Mesh) ReleaseData(g *Context) {
-	if _, ok := m.Resourcer.(*MeshRef); ok {
+	if _, ok := m.Resource.(*MeshData); !ok {
 		return
 	}
-	log.Println("Release resource")
-	curRes := m.Resourcer
+	curRes := m.Resource
 	g.Trigger(EventResourceUpdate{Resource: curRes})
+
+	/*{ // free data arrays test
+		r := m.Resource.(*MeshData)
+		r.Vertices = nil
+		r.Indices = nil
+	}*/
 
 	gpuRef := &MeshRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
-	m.Resourcer = gpuRef
+	m.Resource = gpuRef
 }
 
 func (m Mesh) String() string {
 	return fmt.Sprintf("(mesh: drawType: %v, loader: %v)",
 		m.DrawMode,
-		m.Resourcer,
+		m.Resource,
 	)
 }
 
 // GetDrawMode returns the mesh drawmode.
 func (m *Mesh) GetDrawMode() DrawMode {
 	return m.DrawMode
+}
+
+// SetResourcer will set the underlying mesh resourcer.
+func (m *Mesh) SetResourcer(r MeshResource) {
+	m.Resource = r
 }
 
 // Mesh draw type

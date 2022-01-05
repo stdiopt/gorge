@@ -51,7 +51,7 @@ func textureLoader(res *Context, v interface{}, name string, _ ...interface{}) e
 	if err := textureDataLoader(res, &texData, name); err != nil {
 		return err
 	}
-	tex.Resourcer = &texData
+	tex.Resource = &texData
 
 	return nil
 }

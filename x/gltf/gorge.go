@@ -85,6 +85,17 @@ func (r *GLTF) ReleaseRawData(g *gorge.Context) {
 			p.ReleaseData(g)
 		}
 	}
+
+	// Mesh entities are cloned so is the underlying resource
+	for _, n := range r.Nodes {
+		for _, e := range n.entities {
+			e, ok := e.(*gorgeutil.Renderable)
+			if !ok {
+				continue
+			}
+			e.Mesh.ReleaseData(g)
+		}
+	}
 }
 
 // UpdateDelta to be manually called to trigger animations, morphs etc.
@@ -543,7 +554,6 @@ func (c *gltfCreator) getGPrimitive(prim *MeshPrimitive) *gorge.Mesh {
 		buf, sz, ty := c.doc.AccessorBuffer(ai)
 
 		if a == "COLOR_0" && sz == 3*4 {
-			log.Println("Attrib as color3")
 			attrib.Define = "HAS_VERTEX_COLOR_VEC3"
 		}
 
