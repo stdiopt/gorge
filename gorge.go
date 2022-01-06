@@ -194,14 +194,6 @@ func (g *Gorge) Error(err error) {
 	g.Trigger(EventError{err})
 }
 
-// UpdateResource triggers an EventResourceUpdate event
-// so the systems can garsp the resource (put textures in gpu, etc...).
-/*func (g *Gorge) UpdateResource(r ResourceRef) {
-	g.TriggerInMain(EventResourceUpdate{
-		Resource: r,
-	})
-}*/
-
 // Handlers helpers
 
 // HandleUpdate adds a listener that filters events and calls fn if it is the

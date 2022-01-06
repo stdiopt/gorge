@@ -43,13 +43,13 @@ func NewMesh(res MeshResourcer) *Mesh {
 func (m *Mesh) Mesh() *Mesh { return m }
 
 // Clone will clone the mesh and it's props.
-/*func (m Mesh) Clone() *Mesh {
+func (m *Mesh) Clone() *Mesh {
 	return &Mesh{
-		Resource:    m.Resource,
+		Resourcer:   m,
 		DrawMode:    m.DrawMode,
 		shaderProps: m.copy(),
 	}
-}*/
+}
 
 // ReleaseData change the data ref to a gpu only resource.
 func (m *Mesh) ReleaseData(g *Context) {
@@ -76,7 +76,7 @@ func (m *Mesh) ReleaseData(g *Context) {
 func (m Mesh) String() string {
 	return fmt.Sprintf("(mesh: drawType: %v, loader: %v)",
 		m.DrawMode,
-		m.Resource(),
+		m.Resourcer,
 	)
 }
 
@@ -192,17 +192,9 @@ type MeshData struct {
 
 // Resource implements the resourcer interface so MeshData can be used directly
 // in the Mesh.
-func (d *MeshData) isMesh() {}
-
 func (d *MeshData) Resource() MeshResource { return d }
 
-// CreateRef uses gorge to update mesh and retrieve gpu only reference.
-func (d *MeshData) CreateRef(g *Context) *MeshRef {
-	ref := &MeshRef{&GPU{}}
-	g.Trigger(EventResourceUpdate{Resource: d})
-	SetGPU(ref, GetGPU(d))
-	return ref
-}
+func (d *MeshData) isMesh() {}
 
 // CalcBounds calculate the bounding box for this mesh (slow)
 func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {

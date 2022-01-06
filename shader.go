@@ -9,6 +9,11 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+// ShaderResourcer is the interface to return a shader resource.
+type ShaderResourcer interface {
+	Resource() ShaderResource
+}
+
 // ShaderResource is a shader resource interface.
 type ShaderResource interface {
 	isShader()
@@ -23,6 +28,8 @@ type ShaderData struct {
 }
 
 // Resource implements a resourcer.
+func (d *ShaderData) Resource() ShaderResource { return d }
+
 func (d *ShaderData) isShader() {}
 
 func (d *ShaderData) String() string {

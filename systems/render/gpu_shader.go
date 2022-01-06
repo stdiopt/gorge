@@ -104,7 +104,7 @@ func (m *shaderManager) GetX(r *gorge.RenderableComponent) *Shader {
 
 	sd := m.defRaw
 
-	res := mat.Resource
+	res := mat.Resource()
 	if s, ok := res.(*gorge.ShaderData); ok && s != nil {
 		sd = s
 	}

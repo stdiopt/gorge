@@ -37,6 +37,7 @@ type system struct {
 func (s *system) HandleEvent(v event.Event) {
 	switch e := v.(type) {
 	case gorge.EventAddEntity:
+		// Not a switch since the entity can be both a Camera and a Light.
 		if v, ok := e.Entity.(Camera); ok {
 			s.renderer.AddCamera(v)
 		}

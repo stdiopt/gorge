@@ -99,7 +99,7 @@ func (p *Processor) run() {
 		if p.source.Clip == nil {
 			continue
 		}
-		clip, ok := p.source.Clip.Resourcer.(*gorge.AudioClipData)
+		clip, ok := p.source.Clip.Resource().(*gorge.AudioClipData)
 		if !ok {
 			panic("panic loading audio clip")
 		}

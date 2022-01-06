@@ -111,63 +111,6 @@ func (r *Resource) Error(err error) {
 	r.gorge.Error(err)
 }
 
-// LoadRef sets a New loader reference and check if resource reference exists
-// if the reference exists we update the loader reference with the specified
-// resource else it will load in background and update the loader reference once done.
-/*
-type loadedRef struct {
-	res gorge.ResourceRef
-}
-func (r loadedRef) Resource() gorge.ResourceRef { return r.res }
-
-func (r *Resource) LoadRef(rs gorge.ResourcerSetter, name string, opts ...interface{}) {
-	ref := &loadedRef{}
-	if _, ok := rs.(gorge.GPUResourcer); ok {
-		ref.res = gorge.NewGPUResource()
-	}
-	rs.SetResourcer(ref)
-
-	// Bind the resource, if exists we reuse the resource ref
-	if counter, ok := r.track(name, ref); ok {
-		ref.res = counter.ref
-		return
-	}
-
-	// Load into a new temporary resourcer and copy the gpu reference
-	go func() {
-		r.gorge.TriggerInMain(EventLoadStart{
-			Name:     name,
-			Resource: rs,
-		})
-		tmp := reflect.New(reflect.TypeOf(rs).Elem()).Interface().(gorge.Resourcer)
-		if err := r.load(tmp, name, opts...); err != nil {
-			r.gorge.TriggerInMain(EventLoadComplete{
-				Name:     name,
-				Resource: rs,
-				Err:      err,
-			})
-
-			r.Error(err)
-			return
-		}
-		r.gorge.RunInMain(func() {
-			res := tmp.Resource()
-			r.gorge.Trigger(gorge.EventResourceUpdate{
-				Resource: res,
-			})
-			r.gorge.Trigger(EventLoadComplete{
-				Name:     name,
-				Resource: rs,
-			})
-			gorge.ResourceCopyRef(rs, res)
-		})
-	}()
-}*/
-
-// loadedRef will be used as a resource in Mesh or Texture
-// the purpose of this is avoid load duplication
-// if the resource is already loaded a new loadedRef with an existing resource ref
-
 func (r *Resource) load(v interface{}, name string, opts ...interface{}) error {
 	ext := filepath.Ext(name)
 	loader := getLoader(v, ext)
