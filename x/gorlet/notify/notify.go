@@ -47,9 +47,9 @@ func (s *system) createNotification(e EventNotify) {
 	card.Enter = anim.New()
 	card.Enter.Start()
 	{
-		ch := anim.AddChannelFuncf32(card.Enter, func(v float32) {
+		ch := anim.AddChannel(card.Enter, anim.Funcf32(func(v float32) {
 			w.Set("opacity", v)
-		})
+		}))
 		ch.SetKey(0, 0)
 		ch.SetKey(.5, 1)
 	}
@@ -58,18 +58,17 @@ func (s *system) createNotification(e EventNotify) {
 	card.Exit.Start()
 	{
 		const animTime = .3
-		ch := anim.AddChannelFuncf32(card.Exit, func(v float32) {
+		ch := anim.AddChannel(card.Exit, anim.Funcf32(func(v float32) {
 			w.Position[0] = v
-		})
+		}))
 		ch.SetKey(0, -w.Dim[0]-1)
 		ch.SetKey(animTime*2, 0)
 
-		opch := anim.AddChannelFuncf32(card.Exit, func(v float32) {
+		opch := anim.AddChannel(card.Exit, anim.Funcf32(func(v float32) {
 			w.Set("opacity", v)
-		})
+		}))
 		opch.SetKey(0, 1)
 		opch.SetKey(animTime, 0)
-
 	}
 
 	s.cards = append(s.cards, card)

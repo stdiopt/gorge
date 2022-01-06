@@ -464,10 +464,9 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 				weightProps[i] = fmt.Sprintf("u_morphWeights[%d]", i)
 			}
 
-			ch := anim.AddChannel(gAnim, anim.InterpolatorFunc(func(a, b interface{}, dt float32) {
-				va, vb := a.([]float32), b.([]float32)
-				for i := range va {
-					v := m32.Lerp(va[i], vb[i], dt) // Might be different according to interpolator
+			ch := anim.AddChannel(gAnim, anim.InterpolatorFunc[[]float32](func(a, b []float32, dt float32) {
+				for i := range a {
+					v := m32.Lerp(a[i], b[i], dt) // Might be different according to interpolator
 					// Set in every entity?
 					for _, e := range targetNode.entities {
 						p := e.(*gorgeutil.Renderable)

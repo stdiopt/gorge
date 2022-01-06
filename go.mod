@@ -1,6 +1,6 @@
 module github.com/stdiopt/gorge
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-gl/gl v0.0.0-20210501111010-69f74958bac0
