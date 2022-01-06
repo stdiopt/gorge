@@ -37,7 +37,7 @@ func meshLoader(res *Context, v interface{}, name string, opts ...interface{}) e
 		return err
 	}
 
-	mesh.Resource = &meshData
+	mesh.Resourcer = &meshData
 
 	return nil
 }

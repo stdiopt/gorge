@@ -62,7 +62,7 @@ func create(g *gorge.Context, doc *Doc) *GLTF {
 	c.processScenes()
 	c.processAnimations()
 
-	return &GLTF{
+	gltf := &GLTF{
 		Textures:   c.Textures,
 		Materials:  c.Materials,
 		Scenes:     c.Scenes,
@@ -72,6 +72,10 @@ func create(g *gorge.Context, doc *Doc) *GLTF {
 		Animations: c.Animations,
 		updateFn:   c.updateFn,
 	}
+	go c.gorge.RunInMain(func() {
+		gltf.ReleaseRawData(g)
+	})
+	return gltf
 }
 
 // ReleaseRawData releases the raw data from memory leaving the gpu ref only
@@ -87,7 +91,7 @@ func (r *GLTF) ReleaseRawData(g *gorge.Context) {
 	}
 
 	// Mesh entities are cloned so is the underlying resource
-	for _, n := range r.Nodes {
+	/*for _, n := range r.Nodes {
 		for _, e := range n.entities {
 			e, ok := e.(*gorgeutil.Renderable)
 			if !ok {
@@ -95,7 +99,7 @@ func (r *GLTF) ReleaseRawData(g *gorge.Context) {
 			}
 			e.Mesh.ReleaseData(g)
 		}
-	}
+	}*/
 }
 
 // UpdateDelta to be manually called to trigger animations, morphs etc.
@@ -328,7 +332,7 @@ func (c *gltfCreator) processNodes() {
 			// Create Primitives here
 			for _, r := range node.mesh.primitives {
 				// Clone mesh too
-				primMesh := r.Clone()
+				primMesh := gorge.NewMesh(r.Mesh) // .Clone()
 				primMesh.Define("HAS_SINGLE_INSTANCE")
 				p := gorgeutil.NewRenderable(primMesh, r.Material)
 				p.SetParent(node)

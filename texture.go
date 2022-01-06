@@ -9,6 +9,10 @@ type Texturer interface {
 	Texture() *Texture
 }
 
+type TextureResourcer interface {
+	Resource() TextureResource
+}
+
 // TextureResource is an interface to handle underlying texture data.
 type TextureResource interface {
 	isTexture()
@@ -17,15 +21,22 @@ type TextureResource interface {
 
 // Texture reference
 type Texture struct {
-	Resource   TextureResource
+	Resourcer  TextureResourcer
 	Name       string // just for reference and debugging
 	Wrap       [3]TextureWrap
 	FilterMode TextureFilter
 }
 
 // NewTexture returns a new texture based on resourcer.
-func NewTexture(r TextureResource) *Texture {
-	return &Texture{Resource: r}
+func NewTexture(r TextureResourcer) *Texture {
+	return &Texture{Resourcer: r}
+}
+
+func (t *Texture) Resource() TextureResource {
+	if t.Resourcer == nil {
+		return nil
+	}
+	return t.Resourcer.Resource()
 }
 
 // Texture implements Texturer
@@ -46,11 +57,6 @@ func (t *Texture) SetFilterMode(f TextureFilter) {
 	t.FilterMode = f
 }
 
-// SetResource sets the resourcer for this texture.
-func (t *Texture) SetResource(r TextureResource) {
-	t.Resource = r
-}
-
 // SetWrapUVW texture wrap for U, V, W
 func (t *Texture) SetWrapUVW(uvw ...TextureWrap) {
 	switch len(uvw) {
@@ -63,16 +69,16 @@ func (t *Texture) SetWrapUVW(uvw ...TextureWrap) {
 
 // ReleaseData change underlying resourcer with a gpu only reference.
 func (t *Texture) ReleaseData(g *Context) {
-	if _, ok := t.Resource.(*TextureRef); ok {
+	curRes := t.Resource()
+	if _, ok := curRes.(*TextureData); !ok {
 		return
 	}
-	curRes := t.Resource
 	g.Trigger(EventResourceUpdate{Resource: curRes})
 
 	gpuRef := &TextureRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
 
-	t.Resource = gpuRef
+	t.Resourcer = gpuRef
 }
 
 // TextureFormat texture pixel format
@@ -147,6 +153,9 @@ type TextureData struct {
 	Updates       int
 }
 
+// Resource implements TextureResourcer.
+func (d *TextureData) Resource() TextureResource { return d }
+
 // CreateRef creates a texture gpu reference.
 func (d *TextureData) CreateRef(g *Context) *TextureRef {
 	ref := &TextureRef{&GPU{}}
@@ -185,10 +194,10 @@ func NewColorTexture(r, g, b, a float32) *ColorTexture {
 
 // SetColor sets color data for underlying texture.
 func (t *ColorTexture) SetColor(r, g, b, a float32) {
-	tex, ok := t.Resource.(*TextureData)
+	tex, ok := t.Resource().(*TextureData)
 	if !ok {
 		tex = &TextureData{}
-		t.Resource = tex
+		t.Resourcer = tex
 	}
 	if len(tex.PixelData) == 0 {
 		tex.Format = TextureFormatRGBA
@@ -217,10 +226,10 @@ func NewValueTexture(v float32) *ValueTexture {
 
 // SetValue sets the texture Value
 func (t *ValueTexture) SetValue(v float32) {
-	tex, ok := t.Resource.(*TextureData)
+	tex, ok := t.Resource().(*TextureData)
 	if !ok {
 		tex = &TextureData{}
-		t.Resource = tex
+		t.Resourcer = tex
 	}
 	if len(tex.PixelData) == 0 {
 		tex.Format = TextureFormatGray

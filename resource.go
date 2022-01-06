@@ -27,11 +27,15 @@ func SetGPU(r, v interface{}) {
 // TextureRef implements a gpu only texture resource.
 type TextureRef struct{ *GPU }
 
+func (r *TextureRef) Resource() TextureResource { return r }
+
 // Resource implements the TextureResrouceresourcer interface.
 func (r *TextureRef) isTexture() {}
 
 // MeshRef implements a gpu only mesh resource
 type MeshRef struct{ *GPU }
+
+func (r *MeshRef) Resource() MeshResource { return r }
 
 // Resource returns the resource ref.
 func (r *MeshRef) isMesh() {}

@@ -6,6 +6,11 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
+// MeshResourcer is an interface for mesh resource providers.
+type MeshResourcer interface {
+	Resource() MeshResource
+}
+
 // MeshResource is an interface to handle underlying mesh data.
 type MeshResource interface {
 	isMesh()
@@ -14,38 +19,47 @@ type MeshResource interface {
 
 // Mesh representation
 type Mesh struct {
-	Resource MeshResource
-	DrawMode DrawMode
+	Resourcer MeshResourcer
+	DrawMode  DrawMode
 
 	// This is for shaders like material
 	shaderProps
 }
 
-// NewMesh creates a new mesh with meshData
-func NewMesh(res MeshResource) *Mesh {
-	return &Mesh{
-		Resource: res,
+// Resource implements MeshResourcer.
+func (m *Mesh) Resource() MeshResource {
+	if m.Resourcer == nil {
+		return nil
 	}
+	return m.Resourcer.Resource()
+}
+
+// NewMesh creates a new mesh with meshData
+func NewMesh(res MeshResourcer) *Mesh {
+	return &Mesh{Resourcer: res}
 }
 
 // Mesh implements mesher interface.
 func (m *Mesh) Mesh() *Mesh { return m }
 
 // Clone will clone the mesh and it's props.
-func (m Mesh) Clone() *Mesh {
+/*func (m Mesh) Clone() *Mesh {
 	return &Mesh{
 		Resource:    m.Resource,
 		DrawMode:    m.DrawMode,
 		shaderProps: m.copy(),
 	}
-}
+}*/
 
 // ReleaseData change the data ref to a gpu only resource.
 func (m *Mesh) ReleaseData(g *Context) {
-	if _, ok := m.Resource.(*MeshData); !ok {
+	if _, ok := m.Resource().(*MeshData); !ok {
 		return
 	}
-	curRes := m.Resource
+	curRes := m.Resource()
+	if _, ok := curRes.(*MeshData); !ok {
+		return
+	}
 	g.Trigger(EventResourceUpdate{Resource: curRes})
 
 	/*{ // free data arrays test
@@ -56,24 +70,19 @@ func (m *Mesh) ReleaseData(g *Context) {
 
 	gpuRef := &MeshRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
-	m.Resource = gpuRef
+	m.Resourcer = gpuRef
 }
 
 func (m Mesh) String() string {
 	return fmt.Sprintf("(mesh: drawType: %v, loader: %v)",
 		m.DrawMode,
-		m.Resource,
+		m.Resource(),
 	)
 }
 
 // GetDrawMode returns the mesh drawmode.
 func (m *Mesh) GetDrawMode() DrawMode {
 	return m.DrawMode
-}
-
-// SetResourcer will set the underlying mesh resourcer.
-func (m *Mesh) SetResourcer(r MeshResource) {
-	m.Resource = r
 }
 
 // Mesh draw type
@@ -184,6 +193,8 @@ type MeshData struct {
 // Resource implements the resourcer interface so MeshData can be used directly
 // in the Mesh.
 func (d *MeshData) isMesh() {}
+
+func (d *MeshData) Resource() MeshResource { return d }
 
 // CreateRef uses gorge to update mesh and retrieve gpu only reference.
 func (d *MeshData) CreateRef(g *Context) *MeshRef {

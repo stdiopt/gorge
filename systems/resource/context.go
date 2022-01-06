@@ -92,7 +92,6 @@ func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 	ref := &gorge.MeshRef{GPU: &gorge.GPU{}}
 	mesh := gorge.NewMesh(ref)
-	mesh.SetResourcer(ref)
 
 	// Bind the resource, if exists we reuse the resource ref
 	counter, ok := r.track(name, ref, ref.GPU)
