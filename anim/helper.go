@@ -7,9 +7,11 @@ type Channelf32 struct {
 	channel
 }
 
-// NewChannelf32 returns a New Channel32
-func NewChannelf32(f *float32) *Channelf32 {
-	return &Channelf32{*NewChannel(Float32(f))}
+// AddChannelf32 returns a New Channel32
+func AddChannelf32(a *Animation, f *float32) *Channelf32 {
+	c := &Channelf32{*NewChannel(Float32(f))}
+	a.AddChannel(c)
+	return c
 }
 
 // SetKey sets the key for the channel.
@@ -22,11 +24,11 @@ type ChannelFuncf32 struct {
 	channel
 }
 
-// NewChannelFuncf32 helper to create a channel with underlying Func32 interpolator.
-func NewChannelFuncf32(fn func(v float32)) *ChannelFuncf32 {
-	return &ChannelFuncf32{
-		*NewChannel(Funcf32(fn)),
-	}
+// AddChannelFuncf32 helper to create a channel with underlying Func32 interpolator.
+func AddChannelFuncf32(a *Animation, fn func(v float32)) *ChannelFuncf32 {
+	c := &ChannelFuncf32{*NewChannel(Funcf32(fn))}
+	a.AddChannel(c)
+	return c
 }
 
 // SetKey sets the key for the Channel.

@@ -7,20 +7,10 @@ import (
 	"github.com/stdiopt/gorge/m32"
 )
 
-type channeler interface {
-	Channel() *Channel
+type Channeler interface {
+	Update(float32)
+	EndTime() float32
 }
-
-// Interpolator interface for accepting interpolator structs.
-type Interpolator interface {
-	Interpolate(a, b interface{}, dt float32)
-}
-
-// InterpolatorFunc a func that implements the Interpolator interface.
-type InterpolatorFunc func(p, n interface{}, dt float32)
-
-// Interpolate implements the interpolator func.
-func (fn InterpolatorFunc) Interpolate(a, b interface{}, dt float32) { fn(a, b, dt) }
 
 // State represents the current anim state.
 type State int
@@ -48,7 +38,7 @@ type Animation struct {
 	scale     time.Duration
 	startTime time.Time
 	curTime   float32
-	channels  []channeler
+	channels  []Channeler
 	state     State
 
 	endfn func()
@@ -104,14 +94,14 @@ func (a *Animation) UpdateDelta(dt float32) {
 }
 
 // Channel adds a channel to animation.
-func (a *Animation) Channel(intp Interpolator) *Channel {
+/*func (a *Animation) Channel(intp Interpolator) *Channel {
 	c := &Channel{intp: intp}
 	a.channels = append(a.channels, c)
 	return c
-}
+}*/
 
 // AddChannel adds a channel to the animation.
-func (a *Animation) AddChannel(c channeler) {
+func (a *Animation) AddChannel(c Channeler) {
 	a.channels = append(a.channels, c)
 }
 
@@ -120,11 +110,7 @@ func (a *Animation) update() {
 	// the latest key will mandate where we are in the delta
 	var lastTime float32
 	for _, cc := range a.channels {
-		c := cc.Channel()
-		if len(c.keys) == 0 {
-			continue
-		}
-		if t := c.keys[len(c.keys)-1].time; t > lastTime {
+		if t := cc.EndTime(); t > lastTime {
 			lastTime = t
 		}
 	}
@@ -137,7 +123,7 @@ func (a *Animation) update() {
 	}
 	// Check the loop property and the last channel time
 	for _, c := range a.channels {
-		c.Channel().Update(curTime)
+		c.Update(curTime)
 	}
 }
 

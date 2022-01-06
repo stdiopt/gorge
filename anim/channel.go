@@ -1,5 +1,16 @@
 package anim
 
+// Interpolator interface for accepting interpolator structs.
+type Interpolator interface {
+	Interpolate(a, b interface{}, dt float32)
+}
+
+// InterpolatorFunc a func that implements the Interpolator interface.
+type InterpolatorFunc func(p, n interface{}, dt float32)
+
+// Interpolate implements the interpolator func.
+func (fn InterpolatorFunc) Interpolate(a, b interface{}, dt float32) { fn(a, b, dt) }
+
 // Channel contains keys
 type Channel struct {
 	intp Interpolator
@@ -18,8 +29,13 @@ func AddChannel(a *Animation, intp Interpolator) *Channel {
 	return c
 }
 
-// Channel returns the channel (to be embed in other structs)
-func (c *Channel) Channel() *Channel { return c }
+// EndTime returns the end time for the channel.
+func (c *Channel) EndTime() float32 {
+	if len(c.keys) == 0 {
+		return 0
+	}
+	return c.keys[len(c.keys)-1].time
+}
 
 // Update triggers the update and calls the key interpolators for the channel.
 func (c *Channel) Update(curTime float32) {

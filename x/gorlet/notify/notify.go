@@ -29,7 +29,6 @@ type EventNotify struct {
 }
 
 type system struct {
-	gorge *gorge.Context
 	uiCam *gorgeutil.Camera
 	ui    *gorgeui.UI
 	cards []*card
@@ -48,32 +47,29 @@ func (s *system) createNotification(e EventNotify) {
 	card.Enter = anim.New()
 	card.Enter.Start()
 	{
-		ch := anim.NewChannelFuncf32(func(v float32) {
+		ch := anim.AddChannelFuncf32(card.Enter, func(v float32) {
 			w.Set("opacity", v)
 		})
 		ch.SetKey(0, 0)
 		ch.SetKey(.5, 1)
-		card.Enter.AddChannel(ch)
 	}
 
 	card.Exit = anim.New()
 	card.Exit.Start()
 	{
 		const animTime = .3
-		ch := anim.NewChannelFuncf32(func(v float32) {
+		ch := anim.AddChannelFuncf32(card.Exit, func(v float32) {
 			w.Position[0] = v
 		})
 		ch.SetKey(0, -w.Dim[0]-1)
-		ch.SetKey(animTime, 0)
+		ch.SetKey(animTime*2, 0)
 
-		opch := anim.NewChannelFuncf32(func(v float32) {
+		opch := anim.AddChannelFuncf32(card.Exit, func(v float32) {
 			w.Set("opacity", v)
 		})
 		opch.SetKey(0, 1)
 		opch.SetKey(animTime, 0)
 
-		card.Exit.AddChannel(ch)
-		card.Exit.AddChannel(opch)
 	}
 
 	s.cards = append(s.cards, card)
@@ -98,8 +94,9 @@ func (s *system) HandleEvent(e event.Event) {
 					s.ui.Remove(c.Widget)
 					s.cards = append(s.cards[:i], s.cards[i+1:]...)
 				}
+			} else {
+				c.Enter.UpdateDelta(e.DeltaTime())
 			}
-			c.Enter.UpdateDelta(e.DeltaTime())
 			// curV := -float32(i+1) * (5 + 1)
 			curV -= c.Widget.Dim[1] + 1
 
@@ -122,98 +119,6 @@ func System(g *gorge.Context) error {
 	FromContext(g)
 	return nil
 }
-
-// System will handle notification events and create cards.
-/*
-func System(g *gorge.Context) error {
-	u := gorgeutil.FromContext(g)
-	uiCam := u.UICamera()
-	// uiCam.CullMask |= gorge.CullMaskUIDebug
-	// gorgeui.FromContext(g).Debug = gorgeui.DebugRects
-	ui := u.UI(uiCam)
-
-	cards := []*card{}
-	g.HandleFunc(func(e event.Event) {
-		switch e := e.(type) {
-		case EventNotify:
-			// Should build a card
-
-			w := gorlet.Create(notifyWidget(e))
-			w.SetAnchor(1, 1, 1, 1)
-			w.SetRect(-21, w.Dim[1], 20, 0)
-			ui.Add(w)
-
-			card := &card{
-				Widget:  w,
-				Timeout: 5,
-			}
-			card.Enter = anim.New()
-			card.Enter.Start()
-			{
-				ch := anim.NewChannelFuncf32(func(v float32) {
-					w.Set("opacity", v)
-				})
-				ch.SetKey(0, 0)
-				ch.SetKey(.5, 1)
-				card.Enter.AddChannel(ch)
-			}
-
-			card.Exit = anim.New()
-			card.Exit.Start()
-			{
-				const animTime = .3
-				ch := anim.NewChannelFuncf32(func(v float32) {
-					w.Position[0] = v
-				})
-				ch.SetKey(0, -w.Dim[0]-1)
-				ch.SetKey(animTime, 0)
-
-				opch := anim.NewChannelFuncf32(func(v float32) {
-					w.Set("opacity", v)
-				})
-				opch.SetKey(0, 1)
-				opch.SetKey(animTime, 0)
-
-				card.Exit.AddChannel(ch)
-				card.Exit.AddChannel(opch)
-			}
-
-			cards = append(cards, card)
-		case gorge.EventUpdate:
-			if len(cards) == 0 {
-				return
-			}
-			curV := float32(0) //-(cards[0].Widget.Dim[1] + 1)
-			t := cards
-			for i := len(cards) - 1; i >= 0; i-- {
-				c := t[i]
-				if c.Timeout <= 0 {
-					c.Exit.UpdateDelta(e.DeltaTime())
-					if c.Exit.State() == anim.StateFinished {
-						g.Remove(c.Widget)
-						cards = append(cards[:i], cards[i+1:]...)
-					}
-				}
-				c.Enter.UpdateDelta(e.DeltaTime())
-				// curV := -float32(i+1) * (5 + 1)
-				curV -= c.Widget.Dim[1] + 1
-
-				pos := c.Widget.Position
-				pos[1] = curV
-
-				c.Widget.Position = c.Widget.Position.Lerp(pos, e.DeltaTime()*10)
-				c.Timeout -= e.DeltaTime()
-			}
-			if len(t) > len(cards) {
-				for i := range t[len(cards):] {
-					t[len(cards)+i] = nil
-				}
-			}
-		}
-	})
-	return nil
-}
-*/
 
 // card is a card that can be shown on the screen
 type card struct {
