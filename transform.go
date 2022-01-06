@@ -103,8 +103,7 @@ func (c *TransformComponent) Parent() Matrixer {
 	return c.parent
 }
 
-// Mat4 returns the m32.Mat4 from the transformations
-// Multiply world * local
+// Mat4 returns the World m32.Mat4 from the transformations
 func (c *TransformComponent) Mat4() m32.Mat4 {
 	if c == nil {
 		return m32.M4Ident()
@@ -138,7 +137,7 @@ func (c *TransformComponent) Mat4() m32.Mat4 {
 // https://answers.unity.com/questions/402280/how-to-decompose-a-trs-matrix.html
 func (c *TransformComponent) SetMat4Decompose(m m32.Mat4) {
 	c.Position = m.Col(3).Vec3()
-	c.Rotation = m32.QLookAt(m.Col(2).Vec3(), m.Col(1).Vec3())
+	c.Rotation = m.Quat()
 	// Scale might not work if it has negative scales they say?
 	c.Scale = m32.Vec3{
 		m.Col(0).Len(),
@@ -275,12 +274,9 @@ func (c *TransformComponent) WorldPosition() m32.Vec3 {
 	return c.Mat4().Col(3).Vec3()
 }
 
-// WorldRotation returns world position
+// WorldRotation returns world rotation
 func (c *TransformComponent) WorldRotation() m32.Quat {
-	if c.parent != nil {
-		return c.Transform().Rotation.Add(c.Rotation)
-	}
-	return c.Rotation
+	return c.Mat4().Quat()
 }
 
 // Left returns World left of the transform

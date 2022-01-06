@@ -200,6 +200,11 @@ func (m Mat4) Sub(m2 Mat4) Mat4 {
 	}
 }
 
+// Quat returns the quaternion representation of this matrix.
+func (m Mat4) Quat() Quat {
+	return QLookAt(m.Col(2).Vec3(), m.Col(1).Vec3())
+}
+
 // ApproxEqual performs an element-wise approximate equality test between two
 // matrices, as if FloatEqual had been used.
 func (m Mat4) ApproxEqual(m2 Mat4) bool {
