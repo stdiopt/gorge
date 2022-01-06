@@ -11,6 +11,13 @@ func NewChannel(intp Interpolator) *Channel {
 	return &Channel{intp: intp}
 }
 
+// AddChannel creates and adds the channel to Animation.
+func AddChannel(a *Animation, intp Interpolator) *Channel {
+	c := NewChannel(intp)
+	a.AddChannel(c)
+	return c
+}
+
 // Channel returns the channel (to be embed in other structs)
 func (c *Channel) Channel() *Channel { return c }
 

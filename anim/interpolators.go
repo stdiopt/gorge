@@ -32,6 +32,16 @@ func Vec3(v *m32.Vec3) InterpolatorFunc {
 	}
 }
 
+// Vec3 interpolate a vec3 pointer
+func FuncVec3(fn func(m32.Vec3)) InterpolatorFunc {
+	return func(a, b interface{}, dt float32) {
+		va := a.(m32.Vec3)
+		vb := b.(m32.Vec3)
+
+		fn(va.Lerp(vb, dt))
+	}
+}
+
 // Vec4 interpolate a vec4 pointer
 func Vec4(v *m32.Vec4) InterpolatorFunc {
 	return func(a, b interface{}, dt float32) {

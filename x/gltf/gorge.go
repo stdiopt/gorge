@@ -423,45 +423,37 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 			ds = 3
 		}
 
-		var track *anim.Channel
-		var val []interface{}
+		// var track *anim.Channel[m32.Vec3]
+		// var val []interface{}
 		// We have to manually add node as we don't have it in gorge stuff
 		// Track translation for now
 		targetNode := c.Nodes[ch.Target.Node]
 		switch ch.Target.Path {
 		case "translation":
 			data := bufVec3Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
-			// XXX: debug condition Remove when done
-			if s.Interpolation == "CUBICSPLINE" {
-				for i, k := range keys {
-					log.Printf("Key info: %v -> %v,%v,%v",
-						k,
-						data[i*ds],
-						data[i*ds+1],
-						data[i*ds+2],
-					)
-				}
+			ch := anim.AddChannel(gAnim, anim.Vec3(&targetNode.Position))
+			for i, k := range keys {
+				kk := ch.SetKey(k, data[i*ds+off])
+				kk.SetEase(animEase(s.Interpolation))
 			}
-			for i := range keys {
-				val = append(val, data[i*ds+off])
-			}
-			track = gAnim.Channel(anim.Vec3(&targetNode.Position))
 		case "rotation":
 			data := bufVec4Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
 
-			track = gAnim.Channel(anim.Quat(&targetNode.Rotation))
-			for i := range keys {
-				v := data[i*ds+off]
-				// q := m32.Q{W: v[3], V: mgl32.Vec3{v[0], v[1], v[2]}}
-				// val = append(val, m32.Q(q))
-				val = append(val, m32.Quat(v))
+			ch := anim.AddChannel(gAnim, anim.Quat(&targetNode.Rotation))
+			for i, k := range keys {
+				kk := ch.SetKey(k, m32.Quat(data[i*ds+off]))
+				kk.SetEase(animEase(s.Interpolation))
 			}
 		case "scale":
 			data := bufVec3Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
 
-			track = gAnim.Channel(anim.Vec3(&targetNode.Scale))
-			for i := range keys {
-				val = append(val, data[i*ds+off])
+			ch := anim.AddChannel(gAnim, anim.Vec3(&targetNode.Scale))
+			//for i := range keys {
+			//	val = append(val, data[i*ds+off])
+			//}
+			for i, k := range keys {
+				kk := ch.SetKey(k, data[i*ds+off])
+				kk.SetEase(animEase(s.Interpolation))
 			}
 		case "weights":
 			data := bufF32Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
@@ -472,7 +464,7 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 				weightProps[i] = fmt.Sprintf("u_morphWeights[%d]", i)
 			}
 
-			track = gAnim.Channel(anim.InterpolatorFunc(func(a, b interface{}, dt float32) {
+			ch := anim.AddChannel(gAnim, anim.InterpolatorFunc(func(a, b interface{}, dt float32) {
 				va, vb := a.([]float32), b.([]float32)
 				for i := range va {
 					v := m32.Lerp(va[i], vb[i], dt) // Might be different according to interpolator
@@ -484,15 +476,16 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 				}
 			}))
 
-			for i := range keys {
+			for i, k := range keys {
 				kd := make([]float32, wlen)
 				off := i*ds*wlen + off
 				end := off + wlen
 				copy(kd, data[off:end])
-				val = append(val, kd)
+				kk := ch.SetKey(k, kd)
+				kk.SetEase(animEase(s.Interpolation))
 			}
 		}
-		for i, k := range keys {
+		/*for i, k := range keys {
 			kk := track.SetKey(k, val[i])
 			switch s.Interpolation {
 			case "LINEAR":
@@ -501,7 +494,7 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 			case "CUBICSPLINE":
 				log.Println("Cubic spline: not supported yet")
 			}
-		}
+		}*/
 
 	}
 	// Just mark as started, do not actually start animating
@@ -799,4 +792,18 @@ func gorgeSamplerWrap(w SamplerWrap) gorge.TextureWrap {
 		log.Printf("warning sampler wrapper didn't match any: %v", w)
 		return 0
 	}
+}
+
+func animEase(s string) func(float32) float32 {
+	switch s {
+	case "LINEAR":
+		// Default
+		return nil
+	case "STEP":
+		return anim.Step
+	case "CUBICSPLINE":
+		log.Println("Cubic spline: not supported yet")
+		return nil
+	}
+	return nil
 }
