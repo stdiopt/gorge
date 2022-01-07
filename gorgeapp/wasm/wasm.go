@@ -8,7 +8,6 @@ import (
 	"syscall/js"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -89,7 +88,7 @@ type wasmSystem struct {
 	// Width, Height    float64
 }
 
-func (s *wasmSystem) HandleEvent(v event.Event) {
+/*func (s *wasmSystem) HandleEvent(v event.Event) {
 	switch v.(type) {
 	case gorge.EventStart:
 		s.setupEvents()
@@ -109,14 +108,32 @@ func (s *wasmSystem) HandleEvent(v event.Event) {
 		})
 		js.Global().Call("requestAnimationFrame", ticker)
 	}
-}
+}*/
 
 func (s *wasmSystem) System(g *gorge.Context) error {
 	s.gorge = g
 	s.input = input.FromContext(g)
 	// g.PutProp(s.glctx)
 	s.checkCanvasSize()
-	g.Handle(s)
+	gorge.HandleFunc(g, func(gorge.EventStart) {
+		s.setupEvents()
+	})
+	gorge.HandleFunc(g, func(gorge.EventAfterStart) {
+		var prevFrameTime float64 = js.Global().Get("performance").Call("now").Float() / 1000
+		var ticker js.Func
+		ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
+			s.checkCanvasSize()
+			totalTime := args[0].Float() / 1000
+			dtSec := totalTime - prevFrameTime
+
+			s.gorge.Update(float32(dtSec))
+
+			prevFrameTime = totalTime
+			js.Global().Call("requestAnimationFrame", ticker)
+			return nil
+		})
+		js.Global().Call("requestAnimationFrame", ticker)
+	})
 	return nil
 }
 
@@ -261,7 +278,7 @@ func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) interface{} 
 			},
 		}
 	}
-	s.gorge.Trigger(input.EventPointer{
+	gorge.Trigger(s.gorge, input.EventPointer{
 		Type:     gtyp,
 		Pointers: pts,
 	})
