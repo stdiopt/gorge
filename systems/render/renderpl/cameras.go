@@ -14,8 +14,8 @@ func EachCamera(pipes ...PipelineFunc) PipelineFunc {
 	return func(r *render.Context, next render.StepFunc) render.StepFunc {
 		eachCamera := Pipeline(r, pipes...)
 		return func(p *render.Step) {
-			sort.Sort(cameraSorter(r.Cameras))
-			for _, c := range r.Cameras {
+			sort.Sort(cameraSorter(r.Cameras.Items()))
+			for _, c := range r.Cameras.Items() {
 				p.Camera = c
 				eachCamera(p)
 			}
@@ -38,7 +38,7 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 		height := p.Viewport[3]
 
 		// Defaults for default material
-		p.Lights = r.Lights
+		p.Lights = r.Lights.Items()
 
 		mat := p.Camera.Mat4()
 		p.Projection = cam.ProjectionWithAspect(width / height)

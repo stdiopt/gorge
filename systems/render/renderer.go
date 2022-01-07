@@ -6,6 +6,7 @@ package render
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/setlist"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/render/bufutil"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -14,8 +15,8 @@ import (
 // Render thing
 type Render struct {
 	gorge          *gorge.Context
-	Cameras        []Camera
-	Lights         []Light
+	Cameras        setlist.SetList[Camera]
+	Lights         setlist.SetList[Light]
 	Renderables    []*RenderableGroup
 	renderablesMap map[*gorge.RenderableComponent]*RenderableGroup
 
@@ -120,39 +121,22 @@ func (r *Render) GetVBO(mesh *gorge.Mesh) *VBO {
 
 // AddCamera adds a camera.
 func (r *Render) AddCamera(camera Camera) {
-	r.Cameras = append(r.Cameras, camera)
+	r.Cameras.Add(camera)
 }
 
 // RemoveCamera removes a specific camera if exists.
 func (r *Render) RemoveCamera(camera Camera) {
-	for i, c := range r.Cameras {
-		if c != camera {
-			continue
-		}
-		t := r.Cameras
-		r.Cameras = append(r.Cameras[:i], r.Cameras[i+1:]...)
-		// Remove last one since it was resliced
-		t[len(t)-1] = nil
-		break
-	}
+	r.Cameras.Remove(camera)
 }
 
 // AddLight adds a light to the light list.
 func (r *Render) AddLight(light Light) {
-	r.Lights = append(r.Lights, light)
+	r.Lights.Add(light)
 }
 
 // RemoveLight if exists.
 func (r *Render) RemoveLight(light Light) {
-	for i, l := range r.Lights {
-		if l != light {
-			continue
-		}
-		t := r.Lights
-		r.Lights = append(r.Lights[:i], r.Lights[i+1:]...)
-		t[len(t)-1] = nil
-		break
-	}
+	r.Lights.Remove(light)
 }
 
 // AddRenderable adds a renderable instance

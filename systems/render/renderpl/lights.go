@@ -146,9 +146,10 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 	return func(ri *render.Step) {
 		depthCubeIndex := 0
 		depth2DIndex := 0
-		for ti := 0; ti < len(r.Lights); ti++ {
+		lights := r.Lights.Items()
+		for ti := 0; ti < len(lights); ti++ {
 			lightDepthIndex := -1
-			light := r.Lights[ti]
+			light := lights[ti]
 			l := light.Light()
 			// t := light.Transform()
 			mat4 := light.Mat4()
@@ -189,7 +190,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 			lightsUBO.WriteOffset(lightNames[ti].Matrix, mat4)
 		}
 		// This should be on define
-		lightsUBO.WriteOffset("nLights", int32(len(r.Lights)))
+		lightsUBO.WriteOffset("nLights", int32(r.Lights.Len()))
 		lightsUBO.Flush()
 		ri.Ubos["Lights"] = lightsUBO.ID()
 		next(ri)

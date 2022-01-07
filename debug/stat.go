@@ -3,6 +3,7 @@ package debug
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"math"
 	"runtime"
 	"time"
@@ -51,6 +52,14 @@ func StatText(g *gorge.Context) {
 		preMark = time.Now()
 	})
 	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+		if ic.KeyUp(input.KeyF10) {
+			s.txt.SetText(s.Update())
+		}
+		if ic.KeyUp(input.KeyF9) {
+			runtime.GC()
+			s.txt.SetText(s.Update())
+		}
+
 		timeInterval -= float32(e)
 		if timeInterval > 0 {
 			return
@@ -60,15 +69,8 @@ func StatText(g *gorge.Context) {
 		fmt.Println("\033[01;37m-----------------------------------")
 		fmt.Println(s.Update())
 		fmt.Println("\033[0m")
-		if ic.KeyUp(input.KeyF10) {
-			s.txt.SetText(s.Update())
-		}
-		if ic.KeyUp(input.KeyF9) {
-			runtime.GC()
-			s.txt.SetText(s.Update())
-		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventRender) {
+	gorge.HandleFunc(g, func(gorge.EventRender) {
 		s.updateDuration = time.Since(preMark)
 	})
 	gorge.HandleFunc(g, func(e render.EventStat) {
@@ -132,6 +134,17 @@ func Stat(g *gorge.Context) error {
 	})
 	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
 		s.recalc()
+
+		if ic.KeyUp(input.KeyF10) {
+			log.Println("Update")
+			s.txt.SetText(s.Update())
+		}
+		if ic.KeyUp(input.KeyF9) {
+			log.Println("GC")
+			runtime.GC()
+			s.txt.SetText(s.Update())
+		}
+
 		timeInterval -= float32(e)
 		if timeInterval > 0 {
 			return
@@ -147,16 +160,8 @@ func Stat(g *gorge.Context) error {
 		plane.SetPosition(center[0], center[1], -0.01)
 
 		plane.SetScale(half[0]+padding, 0, half[1]+padding)
-
-		if ic.KeyUp(input.KeyF10) {
-			s.txt.SetText(s.Update())
-		}
-		if ic.KeyUp(input.KeyF9) {
-			runtime.GC()
-			s.txt.SetText(s.Update())
-		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventRender) {
+	gorge.HandleFunc(g, func(gorge.EventRender) {
 		s.updateDuration = time.Since(preMark)
 	})
 	gorge.HandleFunc(g, func(e render.EventStat) {
