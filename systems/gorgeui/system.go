@@ -5,37 +5,11 @@ import (
 	"sort"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/text"
 )
-
-// System initializes UI system in gorge.
-/*func System(g *gorge.Context, rc *resource.Context) error {
-	log.Println("Initializing system")
-	dbg := newDebugLines()
-	dbg.Queue = 200
-	dbg.SetCullMask(gorge.CullMaskUIDebug)
-	g.Add(dbg)
-
-	DefaultFont = &text.Font{}
-	if err := rc.Load(DefaultFont, "_gorge/fonts/font.ttf"); err != nil {
-		return err
-	}
-
-	s := &system{
-		gorge: g,
-		font:  DefaultFont,
-		dbg:   dbg,
-	}
-	g.Handle(s)
-	g.PutProp(func() *Context {
-		return &Context{s}
-	})
-	return nil
-}*/
 
 type system struct {
 	Debug DebugFlag
@@ -59,11 +33,8 @@ type system struct {
 	dbg        *debugLines
 }
 
-func (s *system) HandleEvent(v event.Event) {
-	switch e := v.(type) {
-	// TODO: Warning experimental code here
-	// TODO: Move this to or PostUpdate?!
-	case input.EventPointer:
+func (s *system) setupEvents(g *gorge.Context) {
+	gorge.HandleFunc(g, func(e input.EventPointer) {
 		s.deltaMouse = e.Pointers[0].Pos.Sub(s.curMouse)
 		s.curMouse = e.Pointers[0].Pos
 		hit, r := s.rayTest(s.curMouse)
@@ -142,13 +113,13 @@ func (s *system) HandleEvent(v event.Event) {
 			}
 			triggerOn(s.dragging, EventDrag{p})
 		}
-
-	case gorge.EventPreUpdate:
+	})
+	gorge.HandleFunc(g, func(gorge.EventPreUpdate) {
 		if s.Debug != 0 {
 			s.dbg.Clear()
 		}
-
-	case gorge.EventPostUpdate:
+	})
+	gorge.HandleFunc(g, func(e gorge.EventPostUpdate) {
 		for _, el := range s.elems {
 			triggerOn(el, EventUpdate(e.DeltaTime()))
 		}
@@ -156,16 +127,17 @@ func (s *system) HandleEvent(v event.Event) {
 		if s.Debug&DebugRects != 0 {
 			s.debugRects()
 		}
-
-	case gorge.EventAddEntity:
+	})
+	gorge.HandleFunc(g, func(e gorge.EventAddEntity) {
 		if v, ok := e.Entity.(Entity); ok {
 			s.addEntity(v)
 		}
-	case gorge.EventRemoveEntity:
+	})
+	gorge.HandleFunc(g, func(e gorge.EventRemoveEntity) {
 		if v, ok := e.Entity.(Entity); ok {
 			s.removeEntity(v)
 		}
-	}
+	})
 }
 
 func (s *system) addEntity(e Entity) {

@@ -20,12 +20,12 @@ func init() {
 // InitFunc type of function to initialize gorge.
 type InitFunc func(*Context) error
 
-// Or systems
-type systems struct {
-	kv map[interface{}]interface{}
-}
+// Or contexts
+//type contexts struct {
+//	contexts []any
+//}
 
-func (p *systems) addSystem(k, v interface{}) {
+/*func (p *contexts) addSystem(k, v interface{}) {
 	if p.kv == nil {
 		p.kv = make(map[interface{}]interface{})
 	}
@@ -35,19 +35,19 @@ func (p *systems) addSystem(k, v interface{}) {
 	p.kv[k] = v
 }
 
-func (p *systems) getSystem(k interface{}) interface{} {
+func (p *contexts) getSystem(k interface{}) interface{} {
 	if p.kv == nil {
 		return nil
 	}
 	return p.kv[k]
-}
+}*/
 
 type eventBus = event.Bus
 
 // Gorge main state manager and message bus
 type Gorge struct {
 	eventBus
-	systems
+	contexts []any
 	// tcore
 	// screenSize since this is shared between places
 	// Maybe create Device/Display so we can even use multiple displays

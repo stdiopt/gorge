@@ -105,12 +105,10 @@ func (p *Processor) run() {
 		}
 		p.cur = 0
 		updates := p.source.Updates
-		for {
+		for p.source.Playing && p.source.Clip != nil {
 			// There should some kind of lock for this
 			// or we handle changes via Update and update it here
-			if !p.source.Playing || p.source.Clip == nil {
-				break
-			}
+
 			if p.cur >= len(clip.Data) {
 				if !p.source.Loop {
 					p.source.Playing = false

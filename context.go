@@ -18,11 +18,21 @@ func (c *Context) Gorge() *Context {
 }
 
 // AddContext to gorge context.
-func AddContext(g *Context, k, v interface{}) {
-	g.addSystem(k, v)
+func AddContext[T comparable](g *Context, c T) T {
+	if _, ok := GetContext[T](g); ok {
+		panic("context already exists")
+	}
+	g.contexts = append(g.contexts, c)
+	return c
 }
 
 // GetContext gets a system from a gorge context.
-func GetContext(g *Context, k interface{}) interface{} {
-	return g.getSystem(k)
+func GetContext[T comparable](g *Context) (T, bool) {
+	for _, c := range g.contexts {
+		if c, ok := c.(T); ok {
+			return c, true
+		}
+	}
+	var z T
+	return z, false
 }

@@ -55,7 +55,7 @@ func (c *Context) Errorf(f string, args ...interface{}) {
 
 // FromContext returns a notify context from the given gorge context
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext[*Context](g); ok {
 		return ctx
 	}
 	u := gorgeutil.FromContext(g)
@@ -105,6 +105,6 @@ func FromContext(g *gorge.Context) *Context {
 		gorge:  g,
 		system: s,
 	}
-	gorge.AddContext(g, ctxKey, ctx)
+	gorge.AddContext(g, ctx)
 	return ctx
 }

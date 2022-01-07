@@ -17,7 +17,7 @@ type Context struct {
 
 // FromContext returns an audio context from a gorge.Context.
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext[*Context](g); ok {
 		return ctx
 	}
 
@@ -26,7 +26,7 @@ func FromContext(g *gorge.Context) *Context {
 		sources: map[*gorge.AudioSource]*Processor{},
 	}
 	ctx := &Context{audio}
-	gorge.AddContext(g, ctxKey, ctx)
+	gorge.AddContext(g, ctx)
 	// g.PutProp(&Context{audio})
 	g.AddHandler(audio)
 

@@ -17,7 +17,7 @@ type Context struct {
 
 // FromContext retrieve gorgeui context from gorge
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext[*Context](g); ok {
 		return ctx
 	}
 
@@ -25,7 +25,7 @@ func FromContext(g *gorge.Context) *Context {
 
 	log.Println("Initializing system")
 	dbg := newDebugLines()
-	dbg.SetQueue(200)
+	dbg.Material.SetQueue(200)
 	dbg.SetCullMask(gorge.CullMaskUIDebug)
 	g.Add(dbg)
 
@@ -41,11 +41,9 @@ func FromContext(g *gorge.Context) *Context {
 		font:  DefaultFont,
 		dbg:   dbg,
 	}
-	g.AddHandler(s)
+	s.setupEvents(g)
 
-	ctx := &Context{s}
-	gorge.AddContext(g, ctxKey, ctx)
-	return ctx
+	return gorge.AddContext(g, &Context{s})
 }
 
 // New returns a new UI

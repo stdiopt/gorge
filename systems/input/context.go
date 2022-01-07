@@ -6,8 +6,6 @@ import (
 	"github.com/stdiopt/gorge"
 )
 
-var ctxKey = struct{ string }{"input"}
-
 type input = Input
 
 // Context to be used in gorge systems
@@ -17,7 +15,7 @@ type Context struct {
 
 // FromContext returns a input.Context from a gorge.Context
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext[*Context](g); ok {
 		return ctx
 	}
 
@@ -26,10 +24,11 @@ func FromContext(g *gorge.Context) *Context {
 		keyManager:   keyManager{gorge: g},
 		mouseManager: mouseManager{gorge: g},
 	}
-	g.AddHandler(s)
-	ctx := &Context{s}
-	gorge.AddContext(g, ctxKey, ctx)
-	return ctx
+	gorge.HandleFunc(g, func(gorge.EventPostUpdate) {
+		s.keyManager.update()
+		s.mouseManager.update()
+	})
+	return gorge.AddContext(g, &Context{s})
 }
 
 // IsDown checks if wether a key or mouse button is pressed.

@@ -12,17 +12,16 @@ import (
 
 var ctxKey = struct{ string }{"resource"}
 
-type manager = Resource
+type resource = Resource
 
 // Context to be used in gorge systems
 type Context struct {
-	*manager
+	*resource
 }
 
 // FromContext returns a Context from a gorge Context
 func FromContext(g *gorge.Context) *Context {
-	var ret *Context
-	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext[*Context](g); ok {
 		return ctx
 	}
 	log.Println("Initializing system")
@@ -36,12 +35,7 @@ func FromContext(g *gorge.Context) *Context {
 
 	m := &Resource{gorge: g, fs: lfs}
 
-	ret = &Context{
-		manager: m,
-	}
-
-	gorge.AddContext(g, ctxKey, ret)
-	return ret
+	return gorge.AddContext(g, &Context{resource: m})
 }
 
 // Texture helper that returns a texture with a resourcer ref

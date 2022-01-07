@@ -19,14 +19,14 @@ type Context struct {
 // FromContext returns a Context from gorge Context
 // triggers an error and returns nil if doesn't exists.
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext[*Context](g); ok {
 		return ctx
 	}
 
 	log.Println("initializing system")
 	r := newRenderer(g)
 	ctx := &Context{render: r}
-	gorge.AddContext(g, ctxKey, ctx)
+	gorge.AddContext(g, ctx)
 
 	var (
 		totalTime      float32
