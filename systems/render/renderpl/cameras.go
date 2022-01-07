@@ -72,8 +72,7 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 		camMask := render.CullMask(cam.CullMask)
 		for _, re := range r.Renderables {
 			// Ignore if there is no instances
-			mlen := re.Instances.Len()
-			if mlen == 0 {
+			if re.Instances.Len() == 0 {
 				continue
 			}
 

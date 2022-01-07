@@ -2,7 +2,7 @@ package render
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/internal/setlist"
+	"github.com/stdiopt/gorge/core/setlist"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/render/bufutil"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -11,7 +11,7 @@ import (
 // RenderableGroup represents instance set of renderables
 type RenderableGroup struct {
 	// Instances
-	Instances    setlist.SetList
+	Instances    setlist.SetList[Renderable]
 	RenderNumber int
 
 	renderer   *Render
@@ -75,7 +75,7 @@ func (rg *RenderableGroup) Destroy() {
 
 // Front returns the first Renderable on this group.
 func (rg *RenderableGroup) Front() Renderable {
-	return rg.Instances.Front().Value.(Renderable)
+	return rg.Instances.Front()
 }
 
 // Update updates any related gpu buffer on the group based on pass
@@ -115,13 +115,12 @@ func (rg *RenderableGroup) Update(p *Step) {
 	}
 
 	offs := 0
-	for e := rg.Instances.Front(); e != nil; e = e.Next() {
-		mesh := e.Value.(Renderable)
+	for _, r := range rg.Instances.Items() {
 		// Do the transformations
-		m := mesh.Mat4()
+		m := r.Mat4()
 		um := m.Inv().Transpose() // New: Normal Matrix
 		color := m32.Vec4{1, 1, 1, 1}
-		if v, ok := mesh.(interface{ GetColor() m32.Vec4 }); ok {
+		if v, ok := r.(interface{ GetColor() m32.Vec4 }); ok {
 			color = v.GetColor()
 		}
 		totSize := unitSize
