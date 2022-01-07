@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/anim"
 	"github.com/stdiopt/gorge/gorgeutil"
 )
 
@@ -15,7 +16,7 @@ type Context struct {
 
 // Info sends a info notification.
 func (c *Context) Info(s string) {
-	c.gorge.Trigger(EventNotify{
+	gorge.Trigger(c.gorge, EventNotify{
 		Message:  s,
 		Severity: SeverityInfo,
 	})
@@ -23,7 +24,7 @@ func (c *Context) Info(s string) {
 
 // Warn sends a warn notification.
 func (c *Context) Warn(s string) {
-	c.gorge.Trigger(EventNotify{
+	gorge.Trigger(c.gorge, EventNotify{
 		Message:  s,
 		Severity: SeverityWarn,
 	})
@@ -31,7 +32,7 @@ func (c *Context) Warn(s string) {
 
 // Error sends a error notification.
 func (c *Context) Error(s string) {
-	c.gorge.Trigger(EventNotify{
+	gorge.Trigger(c.gorge, EventNotify{
 		Message:  s,
 		Severity: SeverityError,
 	})
@@ -54,7 +55,7 @@ func (c *Context) Errorf(f string, args ...interface{}) {
 
 // FromContext returns a notify context from the given gorge context
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetSystem(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
 		return ctx
 	}
 	u := gorgeutil.FromContext(g)
@@ -66,11 +67,44 @@ func FromContext(g *gorge.Context) *Context {
 		uiCam: uiCam,
 		ui:    ui,
 	}
-	g.Handle(s)
+	gorge.HandleFunc(g, s.createNotification)
+	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+		if len(s.cards) == 0 {
+			return
+		}
+		curV := float32(0) //-(cards[0].Widget.Dim[1] + 1)
+		t := s.cards
+		for i := len(s.cards) - 1; i >= 0; i-- {
+			c := t[i]
+			if c.Timeout <= 0 {
+				c.Exit.UpdateDelta(e.DeltaTime())
+				if c.Exit.State() == anim.StateFinished {
+					s.ui.Remove(c.Widget)
+					s.cards = append(s.cards[:i], s.cards[i+1:]...)
+				}
+			} else {
+				c.Enter.UpdateDelta(e.DeltaTime())
+			}
+			// curV := -float32(i+1) * (5 + 1)
+			curV -= c.Widget.Dim[1] + 1
+
+			pos := c.Widget.Position
+			pos[1] = curV
+
+			c.Widget.Position = c.Widget.Position.Lerp(pos, e.DeltaTime()*10)
+			c.Timeout -= e.DeltaTime()
+		}
+		if len(t) > len(s.cards) {
+			for i := range t[len(s.cards):] {
+				t[len(s.cards)+i] = nil
+			}
+		}
+	})
+
 	ctx := &Context{
 		gorge:  g,
 		system: s,
 	}
-	gorge.AddSystem(g, ctxKey, ctx)
+	gorge.AddContext(g, ctxKey, ctx)
 	return ctx
 }

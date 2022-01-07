@@ -2,7 +2,6 @@ package gorgeutil
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -50,13 +49,13 @@ func (c Context) UICamera() *Camera {
 // TrackballCamera returns a trackball camera controlled from pointer events.
 func (c Context) TrackballCamera() *CameraRig {
 	camRig := NewTrackballCamera(NewCamera())
-	uc := gorgeui.FromContext(c.Context)
-	c.HandleFunc(func(e event.Event) {
+	/*c.HandleFunc(func(e event.Event) {
 		if uc.Dragging() == nil {
 			camRig.HandleEvent(e)
 		}
-	})
+	})*/
 	c.Add(camRig)
+	c.AddHandler(camRig)
 	return camRig
 }
 

@@ -8,7 +8,6 @@ import (
 	"runtime"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -84,21 +83,19 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 
 	g := gorge.New(ggArgs...)
 
-	g.HandleFunc(func(e event.Event) {
-		switch v := e.(type) {
-		case gorge.EventCursorRelative:
-			if v { // set cursor to center on turn on
-				sx, sy := s.window.GetSize()
-				cx, cy := float64(sx/2), float64(sy/2)
-				s.window.SetCursorPos(cx, cy)
-			}
-			s.cursorRelative = bool(v)
-		case gorge.EventCursorHidden:
-			if v {
-				s.window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
-			} else {
-				s.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
-			}
+	gorge.HandleFunc(g, func(e gorge.EventCursorRelative) {
+		if e { // set cursor to center on turn on
+			sx, sy := s.window.GetSize()
+			cx, cy := float64(sx/2), float64(sy/2)
+			s.window.SetCursorPos(cx, cy)
+		}
+		s.cursorRelative = bool(e)
+	})
+	gorge.HandleFunc(g, func(e gorge.EventCursorHidden) {
+		if e {
+			s.window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+		} else {
+			s.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 		}
 	})
 

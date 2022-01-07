@@ -17,12 +17,12 @@ func (c *Context) Gorge() *Context {
 	return c
 }
 
-// AddSystem to gorge context.
-func AddSystem(g *Context, k, v interface{}) {
+// AddContext to gorge context.
+func AddContext(g *Context, k, v interface{}) {
 	g.addSystem(k, v)
 }
 
-// GetSystem gets a system from a gorge context.
-func GetSystem(g *Context, k interface{}) interface{} {
+// GetContext gets a system from a gorge context.
+func GetContext(g *Context, k interface{}) interface{} {
 	return g.getSystem(k)
 }

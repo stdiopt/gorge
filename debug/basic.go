@@ -184,7 +184,7 @@ func NewBasic(g *gorge.Context) *Basic {
 func AddBasic(g *gorge.Context) *Basic {
 	b := NewBasic(g)
 	g.Add(b)
-	g.Handle(b)
+	g.AddHandler(b)
 	return b
 }
 
@@ -194,6 +194,6 @@ func BasicSystem(g *gorge.Context) error {
 	thing := NewBasic(g)
 	// g.PutProp(thing)
 	g.Add(thing)
-	g.Handle(thing)
+	g.AddHandler(thing)
 	return nil
 }

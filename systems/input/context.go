@@ -17,7 +17,7 @@ type Context struct {
 
 // FromContext returns a input.Context from a gorge.Context
 func FromContext(g *gorge.Context) *Context {
-	if ctx, ok := gorge.GetSystem(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
 		return ctx
 	}
 
@@ -26,9 +26,9 @@ func FromContext(g *gorge.Context) *Context {
 		keyManager:   keyManager{gorge: g},
 		mouseManager: mouseManager{gorge: g},
 	}
-	g.Handle(s)
+	g.AddHandler(s)
 	ctx := &Context{s}
-	gorge.AddSystem(g, ctxKey, ctx)
+	gorge.AddContext(g, ctxKey, ctx)
 	return ctx
 }
 

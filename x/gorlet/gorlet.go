@@ -100,7 +100,9 @@ func Create(fn Func) *Entity {
 
 func entityUpdate(ent *Entity) {
 	ent.HandleEvent(gorgeui.EventUpdate(0))
-	ent.Trigger(gorgeui.EventUpdate(0))
+	// huh how to solve this?
+	event.Trigger(ent, gorgeui.EventUpdate(0))
+	// ent.Trigger(gorgeui.EventUpdate(0))
 	for _, c := range ent.Children() {
 		entityUpdate(c)
 	}

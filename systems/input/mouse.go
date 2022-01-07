@@ -40,7 +40,7 @@ func (m *mouseManager) SetScrollDelta(delta float32) {
 			0: {DeltaZ: delta, Pos: m.mpos},
 		},
 	}
-	m.gorge.Trigger(evt) // nolint: errcheck
+	gorge.Trigger(m.gorge, evt) // nolint: errcheck
 }
 
 func (m *mouseManager) SetCursorPosition(p m32.Vec2) {
@@ -54,7 +54,7 @@ func (m *mouseManager) SetCursorPosition(p m32.Vec2) {
 			0: {Pos: m.mpos},
 		},
 	}
-	m.gorge.Trigger(evt) // nolint: errcheck*/
+	gorge.Trigger(m.gorge, evt) // nolint: errcheck*/
 	// Trigger position event
 }
 
@@ -76,17 +76,17 @@ func (m *mouseManager) SetMouseButtonState(b MouseButton, s ActionState) {
 	m.buttonState[b] = s
 	switch s {
 	case ActionUp:
-		m.gorge.Trigger(EventMouseButtonUp{b, pd})
+		gorge.Trigger(m.gorge, EventMouseButtonUp{b, pd})
 		// legacy
-		m.gorge.Trigger(EventPointer{
+		gorge.Trigger(m.gorge, EventPointer{
 			Type: MouseUp,
 			Pointers: map[int]PointerData{
 				0: {Pos: m.mpos},
 			},
 		})
 	case ActionDown:
-		m.gorge.Trigger(EventMouseButtonDown{b, pd})
-		m.gorge.Trigger(EventPointer{
+		gorge.Trigger(m.gorge, EventMouseButtonDown{b, pd})
+		gorge.Trigger(m.gorge, EventPointer{
 			Type: MouseDown,
 			Pointers: map[int]PointerData{
 				0: {Pos: m.mpos},

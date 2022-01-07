@@ -3,7 +3,7 @@ package gorlet
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge/core/event"
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -81,7 +81,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			if fn != nil {
 				fn(val)
 			}
-			root.Trigger(EventValueChanged{val})
+			gorge.Trigger(root, EventValueChanged{val})
 		}))
 		b.Observe("handlerSize", ObsFunc(func(f float32) {
 			handlerSize = f
@@ -94,45 +94,53 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}))
 
 		var dragging bool
-		root.HandleFunc(func(e event.Event) {
-			switch e := e.(type) {
-			case gorgeui.EventPointerUp:
-				if dragging {
-					return
-				}
-				res := e.RayResult
-				r := track.Rect()
-				fullw := r[2] - r[0]
-
-				wp := root.WorldPosition()
-				v := (res.Position[0] - (wp[0] + r[0])) / fullw // Ray in thing position
-				v -= handlerSize / fullw / 2
-				v = m32.Clamp(v, 0, 1)
-				root.Set("value", v)
-			case gorgeui.EventDrag:
-				dragging = true
-				rect := track.Rect()
-				fullw := rect[2] - rect[0]
-
-				m := track.Mat4()
-				v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3()
-				v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
-				v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
-
-				ui := gorgeui.RootUI(root)
-				r := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Position)
-				res := ray.IntersectRect(r, v0, v1, v2)
-
-				wp := root.WorldPosition()
-				v := (res.Position[0] - (wp[0] + rect[0])) / fullw // Ray in thing position
-				v -= handlerSize / fullw / 2
-				v = m32.Clamp(v, 0, 1)
-
-				root.Set("value", v)
-			case gorgeui.EventDragEnd:
-				dragging = false
+		gorge.HandleFunc(root, func(e gorgeui.EventPointerUp) {
+			if dragging {
+				return
 			}
+			res := e.RayResult
+			r := track.Rect()
+			fullw := r[2] - r[0]
+
+			wp := root.WorldPosition()
+			v := (res.Position[0] - (wp[0] + r[0])) / fullw // Ray in thing position
+			v -= handlerSize / fullw / 2
+			v = m32.Clamp(v, 0, 1)
+			root.Set("value", v)
 		})
+		gorge.HandleFunc(root, func(e gorgeui.EventDrag) {
+			dragging = true
+			rect := track.Rect()
+			fullw := rect[2] - rect[0]
+
+			m := track.Mat4()
+			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3()
+			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
+			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
+
+			ui := gorgeui.RootUI(root)
+			r := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Position)
+			res := ray.IntersectRect(r, v0, v1, v2)
+
+			wp := root.WorldPosition()
+			v := (res.Position[0] - (wp[0] + rect[0])) / fullw // Ray in thing position
+			v -= handlerSize / fullw / 2
+			v = m32.Clamp(v, 0, 1)
+
+			root.Set("value", v)
+		})
+		gorge.HandleFunc(root, func(e gorgeui.EventDragEnd) {
+			dragging = false
+		})
+		/*
+			root.HandleFunc(func(e event.Event) {
+				switch e := e.(type) {
+				case gorgeui.EventPointerUp:
+				case gorgeui.EventDrag:
+				case gorgeui.EventDragEnd:
+				}
+			})
+		*/
 
 		root.Set("value", float32(0))
 	}

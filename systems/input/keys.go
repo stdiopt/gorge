@@ -25,9 +25,9 @@ func (m *keyManager) SetKeyState(key Key, s ActionState) {
 	m.keyState[key] = s
 	switch s {
 	case ActionUp:
-		m.gorge.Trigger(EventKeyUp{key})
+		gorge.Trigger(m.gorge, EventKeyUp{key})
 	case ActionDown:
-		m.gorge.Trigger(EventKeyDown{key})
+		gorge.Trigger(m.gorge, EventKeyDown{key})
 	}
 }
 

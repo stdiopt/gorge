@@ -22,7 +22,7 @@ type Context struct {
 // FromContext returns a Context from a gorge Context
 func FromContext(g *gorge.Context) *Context {
 	var ret *Context
-	if ctx, ok := gorge.GetSystem(g, ctxKey).(*Context); ok {
+	if ctx, ok := gorge.GetContext(g, ctxKey).(*Context); ok {
 		return ctx
 	}
 	log.Println("Initializing system")
@@ -40,7 +40,7 @@ func FromContext(g *gorge.Context) *Context {
 		manager: m,
 	}
 
-	gorge.AddSystem(g, ctxKey, ret)
+	gorge.AddContext(g, ctxKey, ret)
 	return ret
 }
 
@@ -58,13 +58,13 @@ func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 
 	// Load into a new temporary resourcer and copy the gpu reference
 	go func() {
-		r.gorge.TriggerInMain(EventLoadStart{
+		gorge.TriggerInMain(r.gorge, EventLoadStart{
 			Name:     name,
 			Resource: tex,
 		})
 		tmp := &gorge.TextureData{}
 		if err := r.load(tmp, name, opts...); err != nil {
-			r.gorge.TriggerInMain(EventLoadComplete{
+			gorge.TriggerInMain(r.gorge, EventLoadComplete{
 				Name:     name,
 				Resource: tex,
 				Err:      err,
@@ -74,10 +74,10 @@ func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 			return
 		}
 		r.gorge.RunInMain(func() {
-			r.gorge.Trigger(gorge.EventResourceUpdate{
+			gorge.Trigger(r.gorge, gorge.EventResourceUpdate{
 				Resource: tmp,
 			})
-			r.gorge.Trigger(EventLoadComplete{
+			gorge.Trigger(r.gorge, EventLoadComplete{
 				Name:     name,
 				Resource: tex,
 			})
@@ -102,13 +102,13 @@ func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 
 	// Load into a new temporary resourcer and copy the gpu reference
 	go func() {
-		r.gorge.TriggerInMain(EventLoadStart{
+		gorge.TriggerInMain(r.gorge, EventLoadStart{
 			Name:     name,
 			Resource: mesh,
 		})
 		tmp := &gorge.MeshData{}
 		if err := r.load(tmp, name, opts...); err != nil {
-			r.gorge.TriggerInMain(EventLoadComplete{
+			gorge.TriggerInMain(r.gorge, EventLoadComplete{
 				Name:     name,
 				Resource: mesh,
 				Err:      err,
@@ -118,10 +118,10 @@ func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 			return
 		}
 		r.gorge.RunInMain(func() {
-			r.gorge.Trigger(gorge.EventResourceUpdate{
+			gorge.Trigger(r.gorge, gorge.EventResourceUpdate{
 				Resource: tmp,
 			})
-			r.gorge.Trigger(EventLoadComplete{
+			gorge.Trigger(r.gorge, EventLoadComplete{
 				Name:     name,
 				Resource: mesh,
 			})

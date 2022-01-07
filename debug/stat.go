@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/primitive"
@@ -36,6 +35,7 @@ type statSystem struct {
 
 // StatText logs stats on default logger.
 func StatText(g *gorge.Context) {
+	ic := input.FromContext(g)
 	s := &statSystem{
 		gorge:      g,
 		glVersion:  gl.GetString(gl.VERSION),
@@ -47,39 +47,39 @@ func StatText(g *gorge.Context) {
 	timeInterval := float32(0)
 
 	var preMark time.Time
-	g.HandleFunc(func(e event.Event) {
-		switch e := e.(type) {
-		case gorge.EventPreUpdate:
-			preMark = time.Now()
-		case gorge.EventUpdate:
-			timeInterval -= float32(e)
-			if timeInterval > 0 {
-				return
-			}
-			timeInterval = timeInitial
-
-			fmt.Println("\033[01;37m-----------------------------------")
-			fmt.Println(s.Update())
-			fmt.Println("\033[0m")
-		case gorge.EventRender:
-			s.updateDuration = time.Since(preMark)
-		case render.EventStat:
-			s.rendererStat = e
-		case input.EventKeyUp:
-			switch e.Key {
-			case input.KeyF10:
-				s.txt.SetText(s.Update())
-			case input.KeyF9:
-				runtime.GC()
-				s.txt.SetText(s.Update())
-			}
+	gorge.HandleFunc(g, func(gorge.EventPreUpdate) {
+		preMark = time.Now()
+	})
+	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+		timeInterval -= float32(e)
+		if timeInterval > 0 {
+			return
 		}
+		timeInterval = timeInitial
+
+		fmt.Println("\033[01;37m-----------------------------------")
+		fmt.Println(s.Update())
+		fmt.Println("\033[0m")
+		if ic.KeyUp(input.KeyF10) {
+			s.txt.SetText(s.Update())
+		}
+		if ic.KeyUp(input.KeyF9) {
+			runtime.GC()
+			s.txt.SetText(s.Update())
+		}
+	})
+	gorge.HandleFunc(g, func(e gorge.EventRender) {
+		s.updateDuration = time.Since(preMark)
+	})
+	gorge.HandleFunc(g, func(e render.EventStat) {
+		s.rendererStat = e
 	})
 }
 
 // Stat inits stat system
 func Stat(g *gorge.Context) error {
 	rc := resource.FromContext(g)
+	ic := input.FromContext(g)
 	s := &statSystem{
 		gorge:      g,
 		glVersion:  gl.GetString(gl.VERSION),
@@ -127,40 +127,40 @@ func Stat(g *gorge.Context) error {
 	timeInterval := float32(0)
 
 	var preMark time.Time
-	g.HandleFunc(func(e event.Event) {
-		switch e := e.(type) {
-		case gorge.EventPreUpdate:
-			preMark = time.Now()
-		case gorge.EventUpdate:
-			s.recalc()
-			timeInterval -= float32(e)
-			if timeInterval > 0 {
-				return
-			}
-			timeInterval = timeInitial
-
-			s.txt.SetText(s.Update())
-
-			delta := s.txt.Max.Sub(s.txt.Min)
-			half := delta.Mul(0.5)
-			center := s.txt.Min.Add(half)
-			// Might be updated with new string
-			plane.SetPosition(center[0], center[1], -0.01)
-
-			plane.SetScale(half[0]+padding, 0, half[1]+padding)
-		case gorge.EventRender:
-			s.updateDuration = time.Since(preMark)
-		case render.EventStat:
-			s.rendererStat = e
-		case input.EventKeyUp:
-			switch e.Key {
-			case input.KeyF10:
-				s.txt.SetText(s.Update())
-			case input.KeyF9:
-				runtime.GC()
-				s.txt.SetText(s.Update())
-			}
+	gorge.HandleFunc(g, func(gorge.EventPreUpdate) {
+		preMark = time.Now()
+	})
+	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+		s.recalc()
+		timeInterval -= float32(e)
+		if timeInterval > 0 {
+			return
 		}
+		timeInterval = timeInitial
+
+		s.txt.SetText(s.Update())
+
+		delta := s.txt.Max.Sub(s.txt.Min)
+		half := delta.Mul(0.5)
+		center := s.txt.Min.Add(half)
+		// Might be updated with new string
+		plane.SetPosition(center[0], center[1], -0.01)
+
+		plane.SetScale(half[0]+padding, 0, half[1]+padding)
+
+		if ic.KeyUp(input.KeyF10) {
+			s.txt.SetText(s.Update())
+		}
+		if ic.KeyUp(input.KeyF9) {
+			runtime.GC()
+			s.txt.SetText(s.Update())
+		}
+	})
+	gorge.HandleFunc(g, func(e gorge.EventRender) {
+		s.updateDuration = time.Since(preMark)
+	})
+	gorge.HandleFunc(g, func(e render.EventStat) {
+		s.rendererStat = e
 	})
 	return nil
 }

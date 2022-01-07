@@ -93,8 +93,8 @@ func (g *Gorge) Start() error {
 		return err
 	}*/
 
-	g.Trigger(EventStart{})
-	g.Trigger(EventAfterStart{})
+	Trigger(g, EventStart{})
+	Trigger(g, EventAfterStart{})
 	return nil
 }
 
@@ -154,10 +154,10 @@ func (g *Gorge) Update(dt float32) {
 		close(sf.done)
 	default:
 	}
-	g.Trigger(EventPreUpdate(dt))
-	g.Trigger(EventUpdate(dt))
-	g.Trigger(EventPostUpdate(dt))
-	g.Trigger(EventRender(dt))
+	Trigger(g, EventPreUpdate(dt))
+	Trigger(g, EventUpdate(dt))
+	Trigger(g, EventPostUpdate(dt))
+	Trigger(g, EventRender(dt))
 }
 
 // Add adds an entity
@@ -165,7 +165,7 @@ func (g *Gorge) Update(dt float32) {
 func (g *Gorge) Add(ents ...Entity) {
 	for _, e := range ents {
 		EachEntity(e, func(e Entity) {
-			g.Trigger(EventAddEntity{e})
+			Trigger(g, EventAddEntity{e})
 		})
 	}
 }
@@ -175,7 +175,7 @@ func (g *Gorge) Add(ents ...Entity) {
 func (g *Gorge) Remove(ents ...Entity) {
 	for _, e := range ents {
 		EachEntity(e, func(e Entity) {
-			g.Trigger(EventRemoveEntity{e})
+			Trigger(g, EventRemoveEntity{e})
 		})
 	}
 }
@@ -183,35 +183,32 @@ func (g *Gorge) Remove(ents ...Entity) {
 // TriggerInMain does not trigger synchronous per say but does trigger in main loop
 // this is useful for GL related operations that depends on the specific thread it's running
 // since we don't control much threads
-func (g *Gorge) TriggerInMain(v interface{}) {
-	g.RunInMain(func() { g.Trigger(v) })
-}
+
+//func (g *Gorge) TriggerInMain(v interface{}) {
+//	g.RunInMain(func() { g.Trigger(v) })
+//}
 
 // Error persists an error in the event system
 // nolint: errcheck
 func (g *Gorge) Error(err error) {
 	log.Printf("[error] %v", err)
-	g.Trigger(EventError{err})
+	Trigger(g, EventError{err})
 }
 
 // Handlers helpers
 
 // HandleUpdate adds a listener that filters events and calls fn if it is the
 // EventUpdate.
-func (g *Gorge) HandleUpdate(fn func(EventUpdate)) {
-	g.HandleFunc(func(e event.Event) {
-		if e, ok := e.(EventUpdate); ok {
-			fn(e)
-		}
+func (g *Gorge) HandleUpdate(fn func(float32)) {
+	HandleFunc(g, func(e EventUpdate) {
+		fn(float32(e))
 	})
 }
 
 // HandleError registers a function that filters events and calls fn if event
 // is the EventError.
 func (g *Gorge) HandleError(fn func(err error)) {
-	g.HandleFunc(func(v event.Event) {
-		if e, ok := v.(EventError); ok {
-			fn(e.Err)
-		}
+	HandleFunc(g, func(e EventError) {
+		fn(e.Err)
 	})
 }

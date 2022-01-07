@@ -2,7 +2,6 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -54,13 +53,7 @@ func Label(t string) Func {
 		b.ClientArea()
 		b.EndContainer()
 
-		// Element maybe?
-		root.HandleFunc(func(e event.Event) {
-			_, ok := e.(gorgeui.EventUpdate) // Change to PreUpdate?
-			if !ok {
-				return
-			}
-
+		gorge.HandleFunc(root, func(gorgeui.EventUpdate) {
 			r := root.Rect()
 			// AutoSize is experimental and probably buggy.
 			// it will only resize each side if it is not anchored

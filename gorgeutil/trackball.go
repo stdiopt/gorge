@@ -4,6 +4,7 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/input"
 )
 
@@ -15,7 +16,8 @@ type CameraRig struct {
 
 	lastP *m32.Vec2
 
-	dragging bool
+	dragging      bool
+	disableEvents bool
 }
 
 // GetEntities returns the underlying camera entities.
@@ -24,41 +26,48 @@ func (r *CameraRig) GetEntities() []gorge.Entity {
 }
 
 // HandleEvent implements the event handler interface.
-func (r *CameraRig) HandleEvent(ee event.Event) {
-	e, ok := ee.(input.EventPointer)
-	if !ok {
-		return
-	}
-	if r.lastP == nil {
-		r.lastP = &m32.Vec2{}
-		*r.lastP = e.Pointers[0].Pos
-		return
-	}
-	delta := e.Pointers[0].Pos.Sub(*r.lastP)
-	*r.lastP = e.Pointers[0].Pos
-	if e.Type == input.MouseWheel {
-		t := r.Camera.Transform()
-		dist := t.WorldPosition().Len()
-		multiplier := dist * 0.005
-		t.Translate(0, 0, e.Pointers[0].DeltaZ*multiplier)
-		if t.Position[2] < 0 {
-			t.Position[2] = 0
+func (r *CameraRig) HandleEvent(e event.Event) {
+	switch e := e.(type) {
+	case gorgeui.EventDragEnd:
+		r.disableEvents = false
+	case gorgeui.EventDragBegin:
+		r.disableEvents = true
+	case input.EventPointer:
+		if r.disableEvents {
+			return
 		}
-	}
-	if e.Type == input.MouseDown {
-		r.dragging = true
-	}
-	if e.Type == input.MouseUp {
-		r.dragging = false
-	}
 
-	// If dragging or pointer move
-	if r.dragging || e.Type == input.PointerMove {
-		if len(e.Pointers) == 1 {
-			scale := float32(0.005)
-			v := m32.Vec2{delta[1], -delta[0]}.Mul(scale)
-			r.Vert.Rotate(-v[0], 0, 0)
-			r.Transform().Rotate(0, v[1], 0)
+		if r.lastP == nil {
+			r.lastP = &m32.Vec2{}
+			*r.lastP = e.Pointers[0].Pos
+			return
+		}
+		delta := e.Pointers[0].Pos.Sub(*r.lastP)
+		*r.lastP = e.Pointers[0].Pos
+		if e.Type == input.MouseWheel {
+			t := r.Camera.Transform()
+			dist := t.WorldPosition().Len()
+			multiplier := dist * 0.005
+			t.Translate(0, 0, e.Pointers[0].DeltaZ*multiplier)
+			if t.Position[2] < 0 {
+				t.Position[2] = 0
+			}
+		}
+		if e.Type == input.MouseDown {
+			r.dragging = true
+		}
+		if e.Type == input.MouseUp {
+			r.dragging = false
+		}
+
+		// If dragging or pointer move
+		if r.dragging || e.Type == input.PointerMove {
+			if len(e.Pointers) == 1 {
+				scale := float32(0.005)
+				v := m32.Vec2{delta[1], -delta[0]}.Mul(scale)
+				r.Vert.Rotate(-v[0], 0, 0)
+				r.Transform().Rotate(0, v[1], 0)
+			}
 		}
 	}
 }

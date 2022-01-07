@@ -70,9 +70,7 @@ func (r *Resource) LoadString(name string) (string, error) {
 
 // Open opens a reousrce based on the configured sourcer.
 func (r *Resource) Open(name string) (io.ReadCloser, error) {
-	r.gorge.Trigger(EventOpen{
-		Name: name,
-	})
+	gorge.Trigger(r.gorge, EventOpen{Name: name})
 	if strings.HasPrefix(name, gorgeStatic) {
 		data, err := static.Data(name[len(gorgeStatic):])
 		if err != nil {
@@ -85,14 +83,14 @@ func (r *Resource) Open(name string) (io.ReadCloser, error) {
 
 // Load stuff
 func (r *Resource) Load(v interface{}, name string, opts ...interface{}) error {
-	r.gorge.Trigger(EventLoadStart{
+	gorge.Trigger(r.gorge, EventLoadStart{
 		Name:     name,
 		Resource: v,
 	})
 
 	err := r.load(v, name, opts...)
 
-	r.gorge.Trigger(EventLoadComplete{
+	gorge.Trigger(r.gorge, EventLoadComplete{
 		Name:     name,
 		Resource: v,
 		Err:      err,

@@ -1,6 +1,7 @@
 package gorlet
 
 import (
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 )
 
@@ -52,7 +53,7 @@ func SpinnerVec3(fn func(m32.Vec3)) Func {
 			y.Set("value", v[1])
 			z.Set("value", v[2])
 			fn(val)
-			root.Trigger(EventValueChanged{Value: val})
+			gorge.Trigger(root, EventValueChanged{Value: val})
 		}))
 	}
 }

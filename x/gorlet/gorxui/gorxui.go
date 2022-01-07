@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stdiopt/gorge/core/event"
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/text"
@@ -166,24 +166,16 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 	if a.Name.Space == "a" {
 		switch a.Name.Local {
 		case "click":
-			e.HandleFunc(func(ee event.Event) {
-				_, ok := ee.(gorgeui.EventPointerUp)
-				if !ok {
-					return
-				}
-				root.Trigger(EventAction{a.Value, e})
+			gorge.HandleFunc(e, func(evt gorgeui.EventPointerUp) {
+				gorge.Trigger(root, EventAction{a.Value, e})
 			})
 		default:
-			e.HandleFunc(func(ee event.Event) {
-				evt, ok := ee.(EventAction)
-				if !ok {
-					return
-				}
+			gorge.HandleFunc(e, func(evt EventAction) {
 				if evt.Action != a.Name.Local {
 					return
 				}
 
-				root.Trigger(EventAction{a.Value, e})
+				gorge.Trigger(root, EventAction{a.Value, e})
 			})
 			log.Println("Unknown action", a.Name.Local)
 		}

@@ -1,5 +1,25 @@
 package gorge
 
+import "github.com/stdiopt/gorge/core/event"
+
+type gorger interface {
+	Gorge() *Context
+}
+
+func TriggerInMain[T any](g gorger, e T) {
+	g.Gorge().RunInMain(func() {
+		Trigger(g.Gorge(), e)
+	})
+}
+
+func Trigger[T any](b event.Buser, v T) {
+	event.Trigger(b, v)
+}
+
+func HandleFunc[T any](b event.Buser, fn func(T)) {
+	event.HandleFunc(b, fn)
+}
+
 // EventPreUpdate type
 type EventPreUpdate float32
 

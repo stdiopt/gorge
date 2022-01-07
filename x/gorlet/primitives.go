@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -85,10 +84,7 @@ func rectElement(ent graphicer) Func {
 	return func(b *Builder) {
 		p := b.Root()
 		p.AddElement(ent)
-		p.HandleFunc(func(e event.Event) {
-			if _, ok := e.(gorgeui.EventUpdate); !ok {
-				return
-			}
+		gorge.HandleFunc(p, func(gorgeui.EventUpdate) {
 			r := p.Rect()
 			t := ent.Transform()
 			t.Scale[0] = r[2] - r[0]

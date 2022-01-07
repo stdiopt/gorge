@@ -86,14 +86,11 @@ func HasParent(e Entity, parent Entity) bool {
 	return hasParent
 }
 
-func triggerOn(e Entity, v interface{}) bool {
+func triggerOn[T any](e Entity, v T) bool {
 	if h, ok := e.(event.Handler); ok {
 		// Direct on thing
 		h.HandleEvent(v)
 	}
-
-	if h, ok := e.(event.Trigger); ok {
-		h.Trigger(v)
-	}
+	gorge.Trigger(e.Element(), v)
 	return true
 }

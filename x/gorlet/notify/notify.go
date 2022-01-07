@@ -3,7 +3,6 @@ package notify
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/anim"
-	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -72,45 +71,6 @@ func (s *system) createNotification(e EventNotify) {
 	}
 
 	s.cards = append(s.cards, card)
-}
-
-func (s *system) HandleEvent(e event.Event) {
-	switch e := e.(type) {
-	case EventNotify:
-		s.createNotification(e)
-		// Should build a card
-	case gorge.EventUpdate:
-		if len(s.cards) == 0 {
-			return
-		}
-		curV := float32(0) //-(cards[0].Widget.Dim[1] + 1)
-		t := s.cards
-		for i := len(s.cards) - 1; i >= 0; i-- {
-			c := t[i]
-			if c.Timeout <= 0 {
-				c.Exit.UpdateDelta(e.DeltaTime())
-				if c.Exit.State() == anim.StateFinished {
-					s.ui.Remove(c.Widget)
-					s.cards = append(s.cards[:i], s.cards[i+1:]...)
-				}
-			} else {
-				c.Enter.UpdateDelta(e.DeltaTime())
-			}
-			// curV := -float32(i+1) * (5 + 1)
-			curV -= c.Widget.Dim[1] + 1
-
-			pos := c.Widget.Position
-			pos[1] = curV
-
-			c.Widget.Position = c.Widget.Position.Lerp(pos, e.DeltaTime()*10)
-			c.Timeout -= e.DeltaTime()
-		}
-		if len(t) > len(s.cards) {
-			for i := range t[len(s.cards):] {
-				t[len(s.cards)+i] = nil
-			}
-		}
-	}
 }
 
 // System  initializes notification system in gorge.

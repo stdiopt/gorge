@@ -1,139 +1,82 @@
-// Package event simpler event
 package event
 
-import (
-	"fmt"
-	"reflect"
-	"sync"
-)
+type Event any
 
-// Event is the raw event interface which accepts anything.
-type Event interface{}
-
-// HandlerFunc is the handler type for an event handler.
-type HandlerFunc func(Event)
-
-// HandleEvent implements the event.Handler interface.
-func (fn HandlerFunc) HandleEvent(v Event) { fn(v) }
-
-// Handler interface for event handler.
 type Handler interface {
-	HandleEvent(v Event)
+	HandleEvent(Event)
+}
+type HandlerFunc[T any] func(T)
+
+type Buser interface {
+	bus() *Bus
 }
 
-// Trigger interface for even triggers chaining.
-type Trigger interface {
-	Trigger(v Event)
-}
-
-// Bus it's the event bus that holds listeners and triggers events.
 type Bus struct {
-	mu sync.Mutex
-
-	listeners []Handler
-
-	// provides a way to check if the comparable handler was registered already
-	comparables map[Handler]struct{}
-	pool        *sync.Pool
+	listeners  []any // slices
+	handlers   []Handler
+	handlerSet map[Handler]struct{}
 }
 
-// HandleFunc adds a func based listener.
-func (b *Bus) HandleFunc(fn func(v Event)) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+func (b *Bus) bus() *Bus { return b }
 
-	b.handle(HandlerFunc(fn))
-}
-
-// Handle adds a Listener that handles events.
-func (b *Bus) Handle(h Handler) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.handle(h)
-}
-
-// RemoveHandler remove an handler if the handler is a comparable type (i.e.
-// not a func).
-func (b *Bus) RemoveHandler(h Handler) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.remove(h)
-}
-
-// Trigger broadcast a message across all listeners
-// Pool reason:
-//   Although it's a bit extra for triggers which handles updates it's also
-//   SAFE: We work with a copied slice instead of the original since an handler
-//   can manipulate the original slice by calling Handler or triggering even
-//   other event This way we avoid alocating slice copies everytime we call
-//   trigger by reusing previous slices from the pool, the only drawBack will
-//   be that these slices will get stuck in the pool
-func (b *Bus) Trigger(v Event) {
-	if b.pool == nil {
-		b.pool = &sync.Pool{
-			New: func() interface{} {
-				return &listenerSlice{
-					listeners: []Handler{},
-				}
-			},
-		}
+func (b *Bus) AddHandler(h Handler) {
+	if b.handlerSet == nil {
+		b.handlerSet = make(map[Handler]struct{})
 	}
-	p := b.pool.Get().(*listenerSlice)
-	// Copy listeners so we can manipulate the original in some Handle call by
-	// adding handlers or triggering new things, also this will avoid
-	// alocations of new listener slice
-	b.mu.Lock()
-	p.listeners = append(p.listeners[:0], b.listeners...)
-	b.mu.Unlock()
-
-	for i, h := range p.listeners {
-		h.HandleEvent(v)
-		p.listeners[i] = nil // deref the handler from the slice copy
-	}
-
-	b.pool.Put(p)
-}
-
-func (b *Bus) handle(h Handler) {
-	b.listeners = append(b.listeners, h)
-
-	typ := reflect.TypeOf(h)
-	if !typ.Comparable() {
+	if _, ok := b.handlerSet[h]; ok {
 		return
 	}
-	if b.comparables == nil {
-		b.comparables = map[Handler]struct{}{}
-	}
-	if _, ok := b.comparables[h]; ok {
-		panic(fmt.Errorf("event handler already registered: %T", h))
-	}
-	b.comparables[h] = struct{}{}
+	b.handlers = append(b.handlers, h)
+	b.handlerSet[h] = struct{}{}
 }
 
-func (b *Bus) remove(h Handler) {
-	typ := reflect.TypeOf(h)
-	// if h is not a comparable we can't do much
-	if !typ.Comparable() {
+func (b *Bus) Remove(h Handler) {
+	if b.handlerSet == nil {
 		return
 	}
-
-	if b.comparables == nil {
-		return
-	}
-	delete(b.comparables, h)
-
-	for i, hh := range b.listeners {
-		if h == hh {
-			t := b.listeners
-			b.listeners = append(b.listeners[:i], b.listeners[i+1:]...)
-			t[len(t)-1] = nil // remove last one as it was copied
+	delete(b.handlerSet, h)
+	for i, v := range b.handlers {
+		if v == h {
+			t := b.handlers
+			b.handlers = append(b.handlers[:i], b.handlers[i+1:]...)
+			t[len(t)-1] = nil
 			return
 		}
 	}
 }
 
-type listenerSlice struct {
-	listeners []Handler
+func Trigger[T any](bb Buser, v T) {
+	b := bb.bus()
+	var t []HandlerFunc[T]
+	for _, l := range b.listeners {
+		if tt, ok := l.([]HandlerFunc[T]); ok {
+			t = tt
+			break
+		}
+	}
+	for _, fn := range t {
+		fn(v)
+	}
+	for _, h := range b.handlers {
+		h.HandleEvent(v)
+	}
+}
+
+func HandleFunc[T any](bb Buser, h HandlerFunc[T]) {
+	b := bb.bus()
+
+	i, l := search[T](bb)
+	if i != -1 {
+		b.listeners[i] = append(l, h)
+	}
+	b.listeners = append(b.listeners, []HandlerFunc[T]{h})
+}
+
+func search[T any](bb Buser) (int, []HandlerFunc[T]) {
+	for i, l := range bb.bus().listeners {
+		if tt, ok := l.([]HandlerFunc[T]); ok {
+			return i, tt
+		}
+	}
+	return -1, nil
 }

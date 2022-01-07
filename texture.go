@@ -73,7 +73,7 @@ func (t *Texture) ReleaseData(g *Context) {
 	if _, ok := curRes.(*TextureData); !ok {
 		return
 	}
-	g.Trigger(EventResourceUpdate{Resource: curRes})
+	Trigger(g, EventResourceUpdate{Resource: curRes})
 
 	gpuRef := &TextureRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
@@ -159,7 +159,7 @@ func (d *TextureData) Resource() TextureResource { return d }
 // CreateRef creates a texture gpu reference.
 func (d *TextureData) CreateRef(g *Context) *TextureRef {
 	ref := &TextureRef{&GPU{}}
-	g.Trigger(EventResourceUpdate{Resource: d})
+	Trigger(g, EventResourceUpdate{Resource: d})
 	SetGPU(ref, GetGPU(d))
 	return ref
 }

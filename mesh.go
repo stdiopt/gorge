@@ -60,7 +60,7 @@ func (m *Mesh) ReleaseData(g *Context) {
 	if _, ok := curRes.(*MeshData); !ok {
 		return
 	}
-	g.Trigger(EventResourceUpdate{Resource: curRes})
+	Trigger(g, EventResourceUpdate{Resource: curRes})
 
 	/*{ // free data arrays test
 		r := m.Resource.(*MeshData)
