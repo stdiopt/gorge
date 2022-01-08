@@ -26,7 +26,7 @@ func Render(r *render.Context, next render.StepFunc) render.StepFunc {
 				vao := re.VAO(nil)
 				gl.BindVertexArray(vao)
 				drawMode := render.DrawMode(re.Renderable().GetDrawMode())
-				r.Draw(drawMode, re.VBO(), uint32(mlen))
+				r.Draw(drawMode, re.VBO(), re.Count)
 				gl.BindVertexArray(gl.Null)
 			}
 		}

@@ -46,7 +46,7 @@ func newRenderer(g *gorge.Context) *Render {
 	gl.CullFace(gl.BACK)
 
 	// should be on material
-	gl.Enable(gl.BLEND)
+	gl.Disable(gl.BLEND)
 	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
 	bm := newBufferManager(g)
@@ -248,7 +248,7 @@ func (r *Render) PassShadow(ri *Step, s *Shader) {
 
 			drawMode := DrawMode(group.Renderable().GetDrawMode())
 			gl.BindVertexArray(vao)
-			r.Draw(drawMode, group.vbo, uint32(mlen))
+			r.Draw(drawMode, group.vbo, group.Count)
 			gl.BindVertexArray(gl.Null)
 		}
 	}
@@ -269,9 +269,13 @@ func (r *Render) SetupShader(
 
 	// avoid this calls by storing the state globally?
 	switch mat.Blend {
+	case gorge.BlendDisable:
+		gl.Disable(gl.BLEND)
 	case gorge.BlendOneOneMinusSrcAlpha:
+		gl.Enable(gl.BLEND)
 		gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 	case gorge.BlendOneOne:
+		gl.Enable(gl.BLEND)
 		gl.BlendFunc(gl.ONE, gl.ONE)
 	}
 

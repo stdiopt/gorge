@@ -6,7 +6,7 @@ import (
 )
 
 // MakeGrid creates a generic 3D grid.
-func MakeGrid(gridSize float32) *gorgeutil.Renderable {
+func MakeGrid(gridSize float32) *gorgeutil.Entity {
 	shdr := gorge.ShaderData{
 		Name: "_native/grid.glsl",
 		Src: []byte(`#version 300 es

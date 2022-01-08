@@ -431,7 +431,8 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 		switch ch.Target.Path {
 		case "translation":
 			data := bufVec3Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
-			ch := anim.AddChannel(gAnim, anim.Vec3(&targetNode.Position))
+			ch := anim.AddChannel(gAnim, anim.Vec3)
+			ch.On(anim.Ptr(&targetNode.Position))
 			for i, k := range keys {
 				kk := ch.SetKey(k, data[i*ds+off])
 				kk.SetEase(animEase(s.Interpolation))
@@ -439,7 +440,8 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 		case "rotation":
 			data := bufVec4Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
 
-			ch := anim.AddChannel(gAnim, anim.Quat(&targetNode.Rotation))
+			ch := anim.AddChannel(gAnim, anim.Quat)
+			ch.On(anim.Ptr(&targetNode.Rotation))
 			for i, k := range keys {
 				kk := ch.SetKey(k, m32.Quat(data[i*ds+off]))
 				kk.SetEase(animEase(s.Interpolation))
@@ -447,7 +449,8 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 		case "scale":
 			data := bufVec3Slice(acBuf(c.doc.AccessorBuffer(s.Output)))
 
-			ch := anim.AddChannel(gAnim, anim.Vec3(&targetNode.Scale))
+			ch := anim.AddChannel(gAnim, anim.Vec3)
+			ch.On(anim.Ptr(&targetNode.Scale))
 			//for i := range keys {
 			//	val = append(val, data[i*ds+off])
 			//}
@@ -464,15 +467,16 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 				weightProps[i] = fmt.Sprintf("u_morphWeights[%d]", i)
 			}
 
-			ch := anim.AddChannel(gAnim, anim.InterpolatorFunc[[]float32](func(a, b []float32, dt float32) {
+			ch := anim.AddChannel(gAnim, anim.InterpolatorFunc[[]float32](func(a, b []float32, dt float32) []float32 {
 				for i := range a {
 					v := m32.Lerp(a[i], b[i], dt) // Might be different according to interpolator
 					// Set in every entity?
 					for _, e := range targetNode.entities {
-						p := e.(*gorgeutil.Renderable)
+						p := e.(*gorgeutil.Entity)
 						p.Mesh.Set(weightProps[i], v)
 					}
 				}
+				return nil
 			}))
 
 			for i, k := range keys {
@@ -484,16 +488,6 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 				kk.SetEase(animEase(s.Interpolation))
 			}
 		}
-		/*for i, k := range keys {
-			kk := track.SetKey(k, val[i])
-			switch s.Interpolation {
-			case "LINEAR":
-			case "STEP":
-				kk.SetEase(anim.Step)
-			case "CUBICSPLINE":
-				log.Println("Cubic spline: not supported yet")
-			}
-		}*/
 
 	}
 	// Just mark as started, do not actually start animating

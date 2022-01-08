@@ -88,7 +88,7 @@ func (c Context) SpotLight() *Light {
 }
 
 // Renderable creates and adds a renderable to gorge context.
-func (c Context) Renderable(mesh gorge.Mesher, mat gorge.Materialer) *Renderable {
+func (c Context) Renderable(mesh gorge.Mesher, mat gorge.Materialer) *Entity {
 	r := NewRenderable(mesh, mat)
 	c.Add(r)
 	return r
@@ -97,21 +97,21 @@ func (c Context) Renderable(mesh gorge.Mesher, mat gorge.Materialer) *Renderable
 // This might be moved to primitives again
 
 // Sphere Creates and adds a sphere renderable.
-func (c Context) Sphere(sector, stack int) *Renderable {
+func (c Context) Sphere(sector, stack int) *Entity {
 	r := NewSphere(sector, stack)
 	c.Add(r)
 	return r
 }
 
 // Cube creates and adds a cube.
-func (c Context) Cube() *Renderable {
+func (c Context) Cube() *Entity {
 	r := NewCube()
 	c.Add(r)
 	return r
 }
 
 // Plane creates and adds a plane.
-func (c Context) Plane(dir primitive.PlaneDir) *Renderable {
+func (c Context) Plane(dir primitive.PlaneDir) *Entity {
 	r := NewPlane(dir)
 	c.Add(r)
 	return r

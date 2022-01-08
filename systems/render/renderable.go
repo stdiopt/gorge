@@ -13,6 +13,7 @@ type RenderableGroup struct {
 	// Instances
 	Instances    setlist.SetList[Renderable]
 	RenderNumber int
+	Count        uint32
 
 	renderer   *Render
 	renderable *gorge.RenderableComponent
@@ -101,6 +102,7 @@ func (rg *RenderableGroup) Update(p *Step) {
 			delete(rg.shaderVAO, rg.shader.attribsHash)
 		}
 
+		// Recache stuff
 		rg.material = rg.renderable.Material
 		rg.shader = s
 		rg.hash = hash
@@ -115,7 +117,16 @@ func (rg *RenderableGroup) Update(p *Step) {
 	}
 
 	offs := 0
+	rg.Count = 0
 	for _, r := range rg.Instances.Items() {
+		if v, ok := r.(interface{ RenderDisable() bool }); ok {
+			// Could check transform Disable going upward parent
+			// if some parent is disable, this is disabled
+			if v.RenderDisable() {
+				continue
+			}
+		}
+
 		// Do the transformations
 		m := r.Mat4()
 		um := m.Inv().Transpose() // New: Normal Matrix
@@ -128,6 +139,7 @@ func (rg *RenderableGroup) Update(p *Step) {
 		rg.tro.WriteAt(m[:], offs+4)
 		rg.tro.WriteAt(um[:], offs+4+16)
 		offs += totSize
+		rg.Count++
 	}
 	rg.tro.Flush()
 	rg.RenderNumber = p.RenderNumber

@@ -83,6 +83,7 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 		gl.BindFramebuffer(gl.FRAMEBUFFER, targetFBO)
 		gl.BindVertexArray(skyboxVAO)
 		gl.FrontFace(gl.CCW)
+		gl.Disable(gl.BLEND)
 		shader.Bind()
 		shader.Set("lightDir", lightDir)
 		for i := 0; i < 6; i++ {

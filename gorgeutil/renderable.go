@@ -5,8 +5,8 @@ import (
 	"github.com/stdiopt/gorge/primitive"
 )
 
-// Renderable entity.
-type Renderable struct {
+// Entity entity.
+type Entity struct {
 	Name string
 	gorge.TransformComponent
 	*gorge.RenderableComponent
@@ -26,8 +26,8 @@ type Renderable struct {
 }*/
 
 // NewRenderable returns a new renderable.
-func NewRenderable(mesh gorge.Mesher, mat gorge.Materialer) *Renderable {
-	return &Renderable{
+func NewRenderable(mesh gorge.Mesher, mat gorge.Materialer) *Entity {
+	return &Entity{
 		TransformComponent:  gorge.TransformIdent(),
 		RenderableComponent: gorge.NewRenderableComponent(mesh, mat),
 		ColorableComponent:  gorge.NewColorableComponent(1, 1, 1, 1),
@@ -35,15 +35,15 @@ func NewRenderable(mesh gorge.Mesher, mat gorge.Materialer) *Renderable {
 }
 
 // SetName sets renderable name.
-func (r *Renderable) SetName(n string) {
+func (r *Entity) SetName(n string) {
 	r.Name = n
 }
 
 // NewPlane returns a new plane.
-func NewPlane(dir primitive.PlaneDir) *Renderable {
+func NewPlane(dir primitive.PlaneDir) *Entity {
 	mat := gorge.NewMaterial()
 	mesh := primitive.NewPlane(dir)
-	return &Renderable{
+	return &Entity{
 		TransformComponent:  gorge.TransformIdent(),
 		RenderableComponent: gorge.NewRenderableComponent(mesh, mat),
 		ColorableComponent:  gorge.NewColorableComponent(1, 1, 1, 1),
@@ -51,10 +51,10 @@ func NewPlane(dir primitive.PlaneDir) *Renderable {
 }
 
 // NewSphere returns a new renderable sphere.
-func NewSphere(sector, stack int) *Renderable {
+func NewSphere(sector, stack int) *Entity {
 	mat := gorge.NewMaterial()
 	mesh := primitive.NewSphere(sector, stack)
-	return &Renderable{
+	return &Entity{
 		TransformComponent:  gorge.TransformIdent(),
 		RenderableComponent: gorge.NewRenderableComponent(mesh, mat),
 		ColorableComponent:  gorge.NewColorableComponent(1, 1, 1, 1),
@@ -62,10 +62,10 @@ func NewSphere(sector, stack int) *Renderable {
 }
 
 // NewCube returns a new renderable cube.
-func NewCube() *Renderable {
+func NewCube() *Entity {
 	mat := gorge.NewMaterial()
 	mesh := primitive.NewCube()
-	return &Renderable{
+	return &Entity{
 		TransformComponent:  gorge.TransformIdent(),
 		RenderableComponent: gorge.NewRenderableComponent(mesh, mat),
 		ColorableComponent:  gorge.NewColorableComponent(1, 1, 1, 1),

@@ -189,6 +189,7 @@ func CameraSkybox(r *render.Context, srcMap string) render.StepFunc {
 		gl.Disable(gl.STENCIL_TEST)
 		gl.Clear(gl.DEPTH_BUFFER_BIT)
 		gl.DepthMask(false)
+		gl.Disable(gl.BLEND)
 		{
 			gl.FrontFace(gl.CCW)
 			gl.BindVertexArray(skyboxVAO)

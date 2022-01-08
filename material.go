@@ -159,6 +159,8 @@ const (
 	BlendOneOneMinusSrcAlpha = BlendType(iota)
 	// BlendOneOne - gl.ONE, gl.ONE
 	BlendOneOne
+	// BlendDisable - disable blending
+	BlendDisable
 )
 
 // DepthMode handle depth R&W types on render
