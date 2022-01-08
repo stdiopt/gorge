@@ -1375,23 +1375,19 @@ func (g *Wrapper) FramebufferTextureLayer(
 
 // conv will convert a slice to a typedarray
 //
-//  Use js Copy bytes here and a temporary byte array + dataview
-//
 //  []float32 -> Float32Array
 //  []float64 -> Float32Array (for Wrapper purposes)
 func conv(data interface{}) (unsafe.Pointer, int) {
-	var blen int
 	switch v := data.(type) {
 	case []byte:
-		blen = len(v)
+		return unsafe.Pointer(&v[0]), len(v)
 	case []uint16:
-		blen = len(v) * 2
+		return unsafe.Pointer(&v[0]), len(v) * 2
 	case []uint32:
-		blen = len(v) * 4
+		return unsafe.Pointer(&v[0]), len(v) * 4
 	case []float32:
-		blen = len(v) * 4
+		return unsafe.Pointer(&v[0]), len(v) * 4
 	default:
 		panic(fmt.Sprintf("Buffer type not implemented: %T", data))
 	}
-	return gl.Ptr(data), blen
 }

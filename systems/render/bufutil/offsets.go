@@ -35,12 +35,12 @@ func (b *NamedOffset) WriteOffset(name string, v interface{}) {
 
 	// move this to a common write func
 	// var blen int
-	var data interface{}
+	var data []byte
 	switch v := v.(type) {
 	case m32.Mat4:
-		data = v[:] // []float32
+		data = AsBytes(v[:]) // []float32
 	case m32.Vec3:
-		data = v[:] // []float32
+		data = AsBytes(v[:]) // []float32
 	case bool:
 		if !v {
 			data = []byte{0, 0, 0, 0}
@@ -62,10 +62,10 @@ func (b *NamedOffset) WriteOffset(name string, v interface{}) {
 			byte(v >> 24),
 		}
 	case float32: // just pass a single float32
-		data = []float32{v}
+		data = AsBytes([]float32{v})
 	default:
 		panic(fmt.Errorf("unhandled type: %T", v))
 	}
 
-	b.buffer.WriteAt(data, offs)
+	b.WriteAt(data, offs)
 }

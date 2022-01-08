@@ -20,28 +20,6 @@ func init() {
 // InitFunc type of function to initialize gorge.
 type InitFunc func(*Context) error
 
-// Or contexts
-//type contexts struct {
-//	contexts []any
-//}
-
-/*func (p *contexts) addSystem(k, v interface{}) {
-	if p.kv == nil {
-		p.kv = make(map[interface{}]interface{})
-	}
-	if _, ok := p.kv[k]; ok {
-		panic("this system was already set")
-	}
-	p.kv[k] = v
-}
-
-func (p *contexts) getSystem(k interface{}) interface{} {
-	if p.kv == nil {
-		return nil
-	}
-	return p.kv[k]
-}*/
-
 type eventBus = event.Bus
 
 // Gorge main state manager and message bus

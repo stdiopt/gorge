@@ -70,7 +70,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 	}
 
 	lightsUBO := bufutil.NewNamedOffset(
-		bufutil.NewCached(
+		bufutil.NewCached[byte](
 			r.NewBuffer(gl.UNIFORM_BUFFER, gl.DYNAMIC_DRAW),
 		),
 		1168,

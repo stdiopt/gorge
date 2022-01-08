@@ -4,6 +4,7 @@ import (
 	"runtime"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/systems/render/bufutil"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
@@ -122,7 +123,7 @@ func (v *VBO) upload(data *gorge.MeshData, dynamic bool) {
 
 	v.vbo.Init(len(data.Vertices) * 4)
 	v.vbo.usage = bufUsage
-	v.vbo.WriteAt(data.Vertices, 0)
+	v.vbo.WriteAt(bufutil.AsBytes(data.Vertices), 0)
 	v.vbo.Flush()
 
 	bsz := 1
@@ -144,7 +145,7 @@ func (v *VBO) upload(data *gorge.MeshData, dynamic bool) {
 	if v.ElementsLen > 0 {
 		v.ebo.usage = bufUsage
 		v.ebo.Init(int(v.ElementsLen) * bsz) // *4 depends on type
-		v.ebo.WriteAt(data.Indices, 0)
+		v.ebo.WriteAt(bufutil.AsBytes(data.Indices), 0)
 		v.ebo.Flush()
 	}
 	v.updates = data.Updates

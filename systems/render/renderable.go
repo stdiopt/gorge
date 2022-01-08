@@ -20,7 +20,7 @@ type RenderableGroup struct {
 	// VAO per shader attrib hash
 	shaderVAO map[uint]gl.VertexArray
 
-	tro *bufutil.Cachedf32
+	tro *bufutil.Cached[float32]
 
 	vbo    *VBO
 	shader *Shader
@@ -40,7 +40,7 @@ func (rg *RenderableGroup) init() bool {
 	}
 	rg.shaderVAO = map[uint]gl.VertexArray{}
 
-	rg.tro = bufutil.NewCachedf32(rg.renderer.buffers.New(gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW))
+	rg.tro = bufutil.NewCached[float32](rg.renderer.buffers.New(gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW))
 	rg.tro.Init(4 + 16 + 16) // 1 position
 
 	return true

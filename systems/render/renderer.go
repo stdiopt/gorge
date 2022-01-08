@@ -55,7 +55,7 @@ func newRenderer(g *gorge.Context) *Render {
 	textures := newTextureManager(g)
 
 	cameraUBO := bufutil.NewNamedOffset(
-		bufutil.NewCached(bm.New(gl.UNIFORM_BUFFER, gl.DYNAMIC_DRAW)),
+		bufutil.NewCached[byte](bm.New(gl.UNIFORM_BUFFER, gl.DYNAMIC_DRAW)),
 		96,
 		bufutil.OffsetSpec{
 			"VP":      0,

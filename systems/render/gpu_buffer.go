@@ -13,7 +13,7 @@ type Bufferer interface {
 	Init(sz int)
 	Destroy()
 	Bind()
-	WriteAt(data interface{}, offs int)
+	WriteAt(data []byte, offs int)
 	Flush()
 	Size() int
 }
@@ -89,7 +89,7 @@ func (b *buffer) ID() gl.Buffer { return b.buf }
 
 func (b *buffer) Bind() { gl.BindBuffer(b.target, b.buf) }
 
-func (b *buffer) WriteAt(data interface{}, offs int) {
+func (b *buffer) WriteAt(data []byte, offs int) {
 	if b.size == 0 {
 		return
 	}

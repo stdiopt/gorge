@@ -1,29 +1,39 @@
 package bufutil
 
-// Cached buffer allow to write data locally and call flush to sync.
-type Cached struct {
+import "unsafe"
+
+// Although the native benchmarks shows equal performance on copying bytes and
+// floats, having a specific Type has more performance on wasm
+
+// Cachedf32 holds a float32 buffer.
+type Cached[T number] struct {
 	buffer
-	data []byte
+	data []T
 }
 
-// NewCached returns a new Cached buffer that writes to b on flush.
-func NewCached(b buffer) *Cached {
-	return &Cached{buffer: b}
+func NewCached[T number](b buffer) *Cached[T] {
+	return &Cached[T]{
+		buffer: b,
+	}
 }
 
-// Init initializes a buffer with specific byte size.
-func (b *Cached) Init(sz int) {
-	b.data = make([]byte, sz)
-	b.buffer.Init(sz)
+func (c *Cached[T]) Init(sz int) {
+	var t T
+	bsz := int(unsafe.Sizeof(t))
+
+	c.data = make([]T, sz)
+	c.buffer.Init(sz * bsz)
 }
 
-// WriteAt writes data at offset.
-func (b *Cached) WriteAt(data interface{}, offs int) {
-	copy(b.data[offs:], asBytes(data))
+func (c *Cached[T]) WriteAt(data []T, offs int) {
+	copy(c.data[offs:], data)
 }
 
-// Flush writes the buffer to the underlying buffer controller.
-func (b *Cached) Flush() {
-	b.buffer.WriteAt(b.data, 0)
-	b.buffer.Flush()
+func (c *Cached[T]) Flush() {
+	c.buffer.WriteAt(AsBytes(c.data), 0)
+	c.buffer.Flush()
+}
+
+func (c *Cached[T]) Size() int {
+	return len(c.data)
 }
