@@ -29,19 +29,20 @@ func System(g *gorge.Context) error {
 		if !ok {
 			return
 		}
+		em.Emitter().Particles.destroy(g)
 		for i, eem := range emitters {
 			if eem == em {
 				t := emitters
 				emitters = append(emitters[:i], emitters[i+1:]...)
 				t[len(t)-1] = nil
 				break
-
 			}
 		}
 	})
 	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
 		for _, em := range emitters {
-			update(g, em, e.DeltaTime())
+			em.Emitter().Particles.update(em, e.DeltaTime())
+			// update(g, em, e.DeltaTime())
 		}
 	})
 

@@ -1,8 +1,6 @@
 package particle
 
 import (
-	"math/rand"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 )
@@ -17,20 +15,24 @@ type EmitterComponent struct { // Component
 	Renderable *gorge.RenderableComponent
 	Local      bool
 	Count      int
-	LifeScale  [2]float32
 	Rate       float32 // Number of particles per second
 
-	ColorFunc func(float32) m32.Vec4
-	ScaleFunc func(float32) m32.Vec3
+	LifeFunc      func() float32
+	TranslateFunc func(float32) m32.Vec3
+	ColorFunc     func(float32) m32.Vec4
+	ScaleFunc     func(float32) m32.Vec3
 
 	// tracked particles
-	particles  []Entity
+	Particles typedParticle
+	// particles  []Entity
 	count      int
 	lastEmited int
 }
 
+// bad?!
 func (c *EmitterComponent) Emitter() *EmitterComponent { return c }
 
+/*
 func update(g *gorge.Context, em emitter, dt float32) {
 	c := em.Emitter()
 	if c.count < c.Count {
@@ -59,55 +61,49 @@ func update(g *gorge.Context, em emitter, dt float32) {
 			created++
 		}
 
-		dts := p.lifeScale * dt
-		p.life -= dts
+		p.age += dt
 		// log.Println("p.Life:", p.life)
-		if p.life <= 0 {
+		if p.age >= p.life {
 			p.enabled = false
 			continue
 		}
-		p.Translate(
-			(2*rand.Float32()-1)*0.2*dts,
-			(8*rand.Float32()-1)*0.2*dts,
-			(2*rand.Float32()-1)*0.2*dts,
-		)
+		lifeStage := p.age / p.life
+		if c.TranslateFunc != nil {
+			p.Translatev(c.TranslateFunc(lifeStage))
+		}
 		if c.ScaleFunc != nil {
-			p.SetScalev(c.ScaleFunc(1 - p.life))
-		} else {
-			p.SetScale(p.Scale[0] + dts)
+			p.SetScalev(c.ScaleFunc(lifeStage))
 		}
 
 		if c.ColorFunc != nil {
-			p.ColorableComponent.Color = c.ColorFunc(1 - p.life)
-		} else {
-			p.SetColor(
-				p.life,
-				p.life*0.2,
-				p.life*0.1,
-				p.life*0.1,
-			)
+			p.SetColorv(c.ColorFunc(lifeStage))
 		}
 
-		p.rot += dts * p.rotFactor * p.life * 10
+		// p.rot += p.age * p.rotFactor * p.life * 10
 
 		// This might be something to handle
 		if c.Camera != nil {
 			camT := c.Camera.Transform()
-			forward := camT.Forward().Normalize()
-			axisAngle := m32.QAxisAngle(forward, p.rot)
-			p.SetRotation(axisAngle.Mul(camT.Mat4().Quat()))
+			// forward := camT.Forward().Normalize()
+			// axisAngle := m32.QAxisAngle(forward, p.rot)
+			// p.SetRotation(axisAngle.Mul(camT.Mat4().Quat()))
+			p.SetRotation(camT.Mat4().Quat())
 		}
 
 	}
 	// emit particles
 }
-
 func initParticle(em emitter, p *Entity) {
 	const origin = 0.2
 	c := em.Emitter()
+	p.age = 0
 	p.life = 1
-	p.lifeScale = c.LifeScale[0] + rand.Float32()*(c.LifeScale[1]-c.LifeScale[0])
-	p.rotFactor = (-1 + rand.Float32()*2)
+	if c.LifeFunc != nil {
+		p.life = c.LifeFunc()
+	}
+
+	// p.lifeScale = c.LifeScale[0] + rand.Float32()*(c.LifeScale[1]-c.LifeScale[0])
+	// p.rotFactor = (-1 + rand.Float32()*2)
 
 	p.RenderableComponent = c.Renderable
 	p.ColorableComponent = *gorge.NewColorableComponent(
@@ -131,3 +127,4 @@ func initParticle(em emitter, p *Entity) {
 	)
 	p.SetScale(rand.Float32())
 }
+*/

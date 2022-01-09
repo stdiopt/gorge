@@ -107,6 +107,12 @@ func (c *Channel[T]) SetKey(ct float32, v T) *Key[T] {
 	return kf
 }
 
+func (C *Channel[T]) SetKeys(m map[float32]T) {
+	for k, v := range m {
+		C.SetKey(k, v)
+	}
+}
+
 // Key is the animation key on a animation channel.
 type Key[T any] struct {
 	val    T
