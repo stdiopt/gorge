@@ -2,7 +2,6 @@ package m32
 
 import (
 	"math"
-	"math/rand"
 )
 
 // Vec3 an float32 array of size 3 with methods for vector operations.
@@ -21,6 +20,11 @@ func (v Vec3) Sub(v2 Vec3) Vec3 {
 // Mul returns a new vec3 based on the multiplication of vec3*scalar.
 func (v Vec3) Mul(c float32) Vec3 {
 	return Vec3{v[0] * c, v[1] * c, v[2] * c}
+}
+
+// MulVec3 multiplies each element by the corresponding element of v2.
+func (v Vec3) MulVec3(v2 Vec3) Vec3 {
+	return Vec3{v[0] * v2[0], v[1] * v2[1], v[2] * v2[2]}
 }
 
 // Len returns the vec3 len.
@@ -89,12 +93,3 @@ func Left() Vec3 { return Vec3{-1, 0, 0} }
 
 // Right returns a vector pointing left
 func Right() Vec3 { return Vec3{1, 0, 0} }
-
-// V3Rand returns a random vec3 with values in [0,1].
-func V3Rand() Vec3 {
-	return Vec3{
-		rand.Float32(),
-		rand.Float32(),
-		rand.Float32(),
-	}
-}

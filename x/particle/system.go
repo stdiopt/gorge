@@ -1,8 +1,6 @@
 package particle
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 )
@@ -21,8 +19,11 @@ func System(g *gorge.Context) error {
 		if !ok {
 			return
 		}
+		ec := em.Emitter()
+		if ec.Particles == nil {
+			ec.Particles = &Particles[Entity]{}
+		}
 		em.Emitter().Particles.init(g, em)
-		log.Println("Adding emitter:", em)
 		emitters = append(emitters, em)
 	})
 	gorge.HandleFunc(g, func(e gorge.EventRemoveEntity) {
@@ -43,7 +44,6 @@ func System(g *gorge.Context) error {
 	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
 		for _, em := range emitters {
 			em.Emitter().Particles.update(em, e.DeltaTime())
-			// update(g, em, e.DeltaTime())
 		}
 	})
 

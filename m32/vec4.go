@@ -2,7 +2,6 @@ package m32
 
 import (
 	"math"
-	"math/rand"
 )
 
 type (
@@ -64,6 +63,11 @@ func (v Vec4) Mul(c float32) Vec4 {
 	return Vec4{v[0] * c, v[1] * c, v[2] * c, v[3] * c}
 }
 
+// MulVec4 multiplies each element of v with each element of v2.
+func (v Vec4) MulVec4(v2 Vec4) Vec4 {
+	return Vec4{v[0] * v2[0], v[1] * v2[1], v[2] * v2[2], v[3] * v2[3]}
+}
+
 // Vec2 returns a vec2 based on first and second element.
 func (v Vec4) Vec2() Vec2 {
 	return Vec2{v[0], v[1]}
@@ -89,15 +93,5 @@ func (v Vec4) Lerp(b Vec4, t float32) Vec4 {
 		v[1] + t*(b[1]-v[1]),
 		v[2] + t*(b[2]-v[2]),
 		v[3] + t*(b[3]-v[3]),
-	}
-}
-
-// V4Rand returns a vec4 with random values between [0,1]
-func V4Rand() Vec4 {
-	return Vec4{
-		rand.Float32(),
-		rand.Float32(),
-		rand.Float32(),
-		rand.Float32(),
 	}
 }

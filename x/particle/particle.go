@@ -5,22 +5,23 @@ import (
 	"github.com/stdiopt/gorge/systems/render"
 )
 
-type ParticleComponent struct {
+type Component struct {
 	*gorge.RenderableComponent
-	enabled bool
-	age     float32
-	life    float32
+	enabled  bool
+	Age      float32
+	Life     float32
+	Rotation float32
 }
 
-func (p *ParticleComponent) Particle() *ParticleComponent { return p }
+func (p *Component) Particle() *Component { return p }
 
-func (p *ParticleComponent) RenderDisable() bool {
+func (p *Component) RenderDisable() bool {
 	return !p.enabled
 }
 
 // Single particle
 type Entity struct {
-	ParticleComponent
+	Component
 	gorge.TransformComponent
 	gorge.ColorableComponent
 }

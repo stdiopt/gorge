@@ -24,9 +24,22 @@ func NewChannel[T any](intp InterpolatorFunc[T]) *Channel[T] {
 	return &Channel[T]{intp: intp}
 }
 
+func NewChannelWithKeys[T any](intp InterpolatorFunc[T], k map[float32]T) *Channel[T] {
+	c := &Channel[T]{intp: intp}
+	c.SetKeys(k)
+	return c
+}
+
 // AddChannel creates and adds the channel to Animation.
 func AddChannel[T any](a *Animation, intp InterpolatorFunc[T]) *Channel[T] {
-	c := &Channel[T]{intp: intp}
+	c := NewChannel(intp)
+	a.AddChannel(c)
+	return c
+}
+
+// AddCannelWithKeys adds a channel with keys to Animation.
+func AddChannelWithKeys[T any](a *Animation, intp InterpolatorFunc[T], k map[float32]T) *Channel[T] {
+	c := NewChannelWithKeys(intp, k)
 	a.AddChannel(c)
 	return c
 }
@@ -43,18 +56,11 @@ func (c *Channel[T]) EndTime() float32 {
 	return c.keys[len(c.keys)-1].time
 }
 
-func (c *Channel[T]) update(v T) T {
-	c.value = v
-	if c.on != nil {
-		c.on(v)
-	}
-	return v
-}
-
-func (c *Channel[T]) UpdateValue(curTime float32) T {
+// Get value for time
+func (c *Channel[T]) Get(curTime float32) T {
 	if len(c.keys) == 0 {
 		var z T
-		return c.update(z)
+		return z
 	}
 	curKey := c.keys[0]
 	nextKey := c.keys[0]
@@ -66,10 +72,10 @@ func (c *Channel[T]) UpdateValue(curTime float32) T {
 		}
 	}
 	if curTime < curKey.time { // clamp
-		return c.update(c.intp(curKey.val, curKey.val, 0))
+		return c.intp(curKey.val, curKey.val, 0)
 	}
 	if curTime > nextKey.time { // clamp
-		return c.update(c.intp(nextKey.val, nextKey.val, 1))
+		return c.intp(nextKey.val, nextKey.val, 1)
 	}
 	normTime := float32(0)
 	keyDur := nextKey.time - curKey.time
@@ -79,12 +85,20 @@ func (c *Channel[T]) UpdateValue(curTime float32) T {
 	if nextKey.easeFn != nil {
 		normTime = nextKey.easeFn(normTime)
 	}
-	return c.update(c.intp(curKey.val, nextKey.val, normTime))
+	return c.intp(curKey.val, nextKey.val, normTime)
 }
 
 // Update triggers the update and calls the key interpolators for the channel.
 func (c *Channel[T]) Update(curTime float32) {
-	c.UpdateValue(curTime)
+	v := c.Get(curTime)
+	c.value = v
+	if c.on != nil {
+		c.on(v)
+	}
+}
+
+func (c *Channel[T]) Reset() {
+	c.keys = c.keys[:0]
 }
 
 // SetKey sets the channel key with the specific value v.

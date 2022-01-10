@@ -1,32 +1,37 @@
 package particle
 
 import (
+	"math/rand"
+
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
 )
 
-func Range(min, max float32) [2]float32 {
-	return [2]float32{min, max}
+type particle interface {
+	Transform() *gorge.TransformComponent
+	Colorable() *gorge.ColorableComponent
+	Particle() *Component
+}
+
+// Used in container.
+type generator interface {
+	init(g *gorge.Context, em emitter)
+	update(em emitter, dt float32)
+	destroy(g *gorge.Context)
 }
 
 // Emitter will emit particles based on the given parameters.
 type EmitterComponent struct { // Component
 	Camera     gorge.Transformer
 	Renderable *gorge.RenderableComponent
+	Rand       rand.Rand
 
 	Enabled bool
 	Local   bool
 	Count   int
 	Rate    float32 // Number of particles per second
 
-	LifeFunc      func() float32
-	TranslateFunc func(float32) m32.Vec3
-	ColorFunc     func(float32) m32.Vec4
-	ScaleFunc     func(float32) m32.Vec3
-
 	// tracked particles
-	Particles typedParticle
-	// particles  []Entity
+	Particles  generator
 	count      int
 	lastEmited int
 }
@@ -34,19 +39,58 @@ type EmitterComponent struct { // Component
 // bad?!
 func (c *EmitterComponent) Emitter() *EmitterComponent { return c }
 
+// Emitter entity will emit particles based on the given parameters when added
+// to gorge, particle.System must be in gorge initialization list.
+type Emitter struct {
+	gorge.TransformComponent
+	EmitterComponent
+}
+
 /*
-func update(g *gorge.Context, em emitter, dt float32) {
-	c := em.Emitter()
-	if c.count < c.Count {
-		c.particles = make([]Entity, c.Count)
-		for i := range c.particles {
-			initParticle(em, &c.particles[i])
-			c.particles[i].enabled = false
-			g.Add(&c.particles[i])
-		}
-		c.count = c.Count
+func (c *EmitterComponent) destroy(g *gorge.Context) {
+	for i := range c.particles {
+		g.Remove(&c.particles[i])
+	}
+	c.particles = c.particles[:0]
+}
+
+func (c *EmitterComponent) init(g *gorge.Context) {
+	count := c.Count
+	if len(c.particles) == count {
+		return
 	}
 
+	// Reset all
+	c.particles = make([]T, count)
+	for i := range c.particles {
+		c.InitFunc(&c.particles[i])
+		pc := any(&c.particles[i]).(particle).Particle()
+		pc.RenderableComponent = c.Renderable
+		g.Add(&c.particles[i])
+	}
+}
+
+func (c *EmitterComponent[T]) initParticle(em emitter, p particle) {
+	// ec := em.Emitter()
+
+	pc := p.Particle()
+	pc.Age = 0
+	pc.Life = 1
+
+	t := p.Transform()
+	if c.Local {
+		// p.TransformComponent = *gorge.NewTransformComponent()
+		t.SetParent(em)
+	} else {
+		t.SetParent(nil)
+		t.Position = em.Transform().WorldPosition()
+		t.Rotation = em.Transform().WorldRotation()
+		t.Scale = em.Transform().Scale
+	}
+}
+
+func (c *EmitterComponent[T]) update(em emitter, dt float32) {
+	// New initializations
 	newPerFrame := c.Rate * dt
 	numNewParticles := int(newPerFrame)
 	if rand.Float32() < newPerFrame-float32(numNewParticles) {
@@ -54,79 +98,41 @@ func update(g *gorge.Context, em emitter, dt float32) {
 	}
 
 	created := 0
-	// do go routines
+
 	for i := range c.particles {
-		p := &c.particles[i]
-		if !p.enabled && created < numNewParticles {
-			initParticle(em, p)
-			p.enabled = true
+		// var p particle = (&c.particles[i])
+		p := any(&c.particles[i]).(particle)
+		pc := p.Particle()
+		if !pc.enabled && created < numNewParticles && c.Enabled {
+			c.initParticle(em, p)
+			if c.InitFunc != nil {
+				c.InitFunc(&c.particles[i])
+			}
+
+			pc.enabled = true
 			created++
 		}
 
-		p.age += dt
+		pc.Age += dt
 		// log.Println("p.Life:", p.life)
-		if p.age >= p.life {
-			p.enabled = false
+		if pc.Age >= pc.Life {
+			pc.enabled = false
 			continue
 		}
-		lifeStage := p.age / p.life
-		if c.TranslateFunc != nil {
-			p.Translatev(c.TranslateFunc(lifeStage))
+		if c.UpdateFunc != nil {
+			c.UpdateFunc(&c.particles[i])
 		}
-		if c.ScaleFunc != nil {
-			p.SetScalev(c.ScaleFunc(lifeStage))
-		}
-
-		if c.ColorFunc != nil {
-			p.SetColorv(c.ColorFunc(lifeStage))
-		}
-
-		// p.rot += p.age * p.rotFactor * p.life * 10
 
 		// This might be something to handle
+		// Rotate to camera
 		if c.Camera != nil {
+			t := p.Transform()
 			camT := c.Camera.Transform()
 			// forward := camT.Forward().Normalize()
 			// axisAngle := m32.QAxisAngle(forward, p.rot)
 			// p.SetRotation(axisAngle.Mul(camT.Mat4().Quat()))
-			p.SetRotation(camT.Mat4().Quat())
+			t.SetRotation(camT.Mat4().Quat())
 		}
-
 	}
-	// emit particles
-}
-func initParticle(em emitter, p *Entity) {
-	const origin = 0.2
-	c := em.Emitter()
-	p.age = 0
-	p.life = 1
-	if c.LifeFunc != nil {
-		p.life = c.LifeFunc()
-	}
-
-	// p.lifeScale = c.LifeScale[0] + rand.Float32()*(c.LifeScale[1]-c.LifeScale[0])
-	// p.rotFactor = (-1 + rand.Float32()*2)
-
-	p.RenderableComponent = c.Renderable
-	p.ColorableComponent = *gorge.NewColorableComponent(
-		.5+rand.Float32()*0.5,
-		.5+rand.Float32()*0.5,
-		.5+rand.Float32()*0.5,
-		.2,
-	)
-	if c.Local {
-		p.TransformComponent = *gorge.NewTransformComponent()
-		p.SetParent(em)
-	} else {
-		p.Position = em.Transform().WorldPosition()
-		p.Rotation = em.Transform().WorldRotation()
-		p.Scale = em.Transform().Scale
-	}
-	p.Translate(
-		2*(rand.Float32()-.5)*origin,
-		2*(rand.Float32()-.5)*origin,
-		2*(rand.Float32()-.5)*origin,
-	)
-	p.SetScale(rand.Float32())
 }
 */
