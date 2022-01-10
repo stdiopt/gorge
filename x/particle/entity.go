@@ -6,6 +6,7 @@ import (
 )
 
 type ParticleComponent struct {
+	*gorge.RenderableComponent
 	enabled bool
 	age     float32
 	life    float32
@@ -22,7 +23,6 @@ type Entity struct {
 	ParticleComponent
 	gorge.TransformComponent
 	gorge.ColorableComponent
-	*gorge.RenderableComponent
 }
 
 var _ render.Renderable = &Entity{}

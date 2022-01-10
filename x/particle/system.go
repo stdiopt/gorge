@@ -21,6 +21,7 @@ func System(g *gorge.Context) error {
 		if !ok {
 			return
 		}
+		em.Emitter().Particles.init(g, em)
 		log.Println("Adding emitter:", em)
 		emitters = append(emitters, em)
 	})

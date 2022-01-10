@@ -16,7 +16,7 @@ type particle interface {
 }
 
 type typedParticle interface {
-	init(g *gorge.Context, count int)
+	init(g *gorge.Context, em emitter)
 	update(em emitter, dt float32)
 	destroy(g *gorge.Context)
 }
@@ -26,12 +26,14 @@ type Container[T any] struct {
 }
 
 func (c *Container[T]) destroy(g *gorge.Context) {
-	for _, p := range c.particles {
-		g.Remove(&p)
+	for i := range c.particles {
+		g.Remove(&c.particles[i])
 	}
+	c.particles = c.particles[:0]
 }
 
-func (c *Container[T]) init(g *gorge.Context, count int) {
+func (c *Container[T]) init(g *gorge.Context, em emitter) {
+	count := em.Emitter().Count
 	if len(c.particles) == count {
 		return
 	}
@@ -39,17 +41,21 @@ func (c *Container[T]) init(g *gorge.Context, count int) {
 	// Reset all
 	c.particles = make([]T, count)
 	for i := range c.particles {
-		pc := c.particles[i].Particle()
-		pc.age = 0
-		pc.life = 1
+		p := any(&c.particles[i]).(particle)
+		// For now because we want to use the same particle type
+		pc := p.Particle()
+		// pc.age = 0
+		// pc.life = 1
+		pc.RenderableComponent = em.Emitter().Renderable
+		g.Add(p)
 	}
 }
 
-func (c *Container[T]) initParticle(em emitter, i int) {
+func (c *Container[T]) initParticle(em emitter, p particle) {
 	const origin = 0.2
 	ec := em.Emitter()
 
-	pc := c.particles[i].Particle()
+	pc := p.Particle()
 	pc.age = 0
 	pc.life = 1
 
@@ -62,13 +68,13 @@ func (c *Container[T]) initParticle(em emitter, i int) {
 
 	// On init only
 	// p.RenderableComponent = em.Renderable
-	c.particles[i].Colorable().SetColor(
+	p.Colorable().SetColor(
 		.5+rand.Float32()*0.5,
 		.5+rand.Float32()*0.5,
 		.5+rand.Float32()*0.5,
 		.2,
 	)
-	t := c.particles[i].Transform()
+	t := p.Transform()
 	if ec.Local {
 		// p.TransformComponent = *gorge.NewTransformComponent()
 		t.SetParent(em)
@@ -98,11 +104,11 @@ func (c *Container[T]) update(em emitter, dt float32) {
 
 	created := 0
 
-	pp := c.particles
-	for i := range pp {
-		pc := pp[i].Particle()
-		if !pc.enabled && created < numNewParticles {
-			c.initParticle(em, i)
+	for i := range c.particles {
+		p := any(&c.particles[i]).(particle)
+		pc := p.Particle()
+		if !pc.enabled && created < numNewParticles && ec.Enabled {
+			c.initParticle(em, p)
 			pc.enabled = true
 			created++
 		}
@@ -114,7 +120,7 @@ func (c *Container[T]) update(em emitter, dt float32) {
 			continue
 		}
 		lifeStage := pc.age / pc.life
-		t := pp[i].Transform()
+		t := p.Transform()
 		if ec.TranslateFunc != nil {
 			t.Translatev(ec.TranslateFunc(lifeStage))
 		}
@@ -123,7 +129,7 @@ func (c *Container[T]) update(em emitter, dt float32) {
 		}
 
 		if ec.ColorFunc != nil {
-			pp[i].Colorable().SetColorv(ec.ColorFunc(lifeStage))
+			p.Colorable().SetColorv(ec.ColorFunc(lifeStage))
 		}
 
 		// p.rot += p.age * p.rotFactor * p.life * 10

@@ -13,9 +13,11 @@ func Range(min, max float32) [2]float32 {
 type EmitterComponent struct { // Component
 	Camera     gorge.Transformer
 	Renderable *gorge.RenderableComponent
-	Local      bool
-	Count      int
-	Rate       float32 // Number of particles per second
+
+	Enabled bool
+	Local   bool
+	Count   int
+	Rate    float32 // Number of particles per second
 
 	LifeFunc      func() float32
 	TranslateFunc func(float32) m32.Vec3
