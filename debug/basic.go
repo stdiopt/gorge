@@ -52,11 +52,7 @@ func (b *Basic) HandleEvent(v event.Event) {
 	}
 	// tot += dt
 	if b.input.KeyPress(input.KeyV) {
-		if b.PointLight.CastShadows == gorge.CastShadowEnabled {
-			b.PointLight.CastShadows = gorge.CastShadowDisabled
-		} else {
-			b.PointLight.CastShadows = gorge.CastShadowEnabled
-		}
+		b.PointLight.DisableShadow = !b.PointLight.DisableShadow
 		// b.PointLight.CastShadows = !b.PointLight.CastShadows
 		// b.DirLight.CastShadows = !b.DirLight.CastShadows
 	}
@@ -149,7 +145,6 @@ func NewBasic(g *gorge.Context) *Basic {
 	camGimbal.SetParent(camRig)
 
 	dirLight := gorgeutil.NewDirectionalLight()
-	dirLight.SetCastShadows(gorge.CastShadowEnabled)
 	dirLight.SetPosition(10, 10, -5)
 	dirLight.LookAtPosition(m32.Vec3{0, 0, 0})
 

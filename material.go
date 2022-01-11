@@ -16,6 +16,8 @@ type Material struct {
 	DoubleSided bool
 	Blend       BlendType
 
+	DisableShadow bool
+
 	/* New: stencil experiment */
 	// Create stencil groups?!
 	Stencil     bool
@@ -71,6 +73,10 @@ func (m *Material) SetDoubleSided(v bool) {
 // SetBlend sets the blend type for material.
 func (m *Material) SetBlend(v BlendType) {
 	m.Blend = v
+}
+
+func (m *Material) SetDisableShadow(v bool) {
+	m.DisableShadow = v
 }
 
 // SetStencil sets the stencil property for material.

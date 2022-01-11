@@ -11,7 +11,14 @@ type emitter interface {
 	Emitter() *EmitterComponent
 }
 
+type Context struct{}
+
 func System(g *gorge.Context) error {
+	if _, ok := gorge.GetContext[*Context](g); ok {
+		return nil
+	}
+	gorge.AddContext(g, &Context{})
+
 	emitters := []emitter{}
 
 	gorge.HandleFunc(g, func(e gorge.EventAddEntity) {
@@ -19,11 +26,7 @@ func System(g *gorge.Context) error {
 		if !ok {
 			return
 		}
-		ec := em.Emitter()
-		if ec.Particles == nil {
-			ec.Particles = &Particles[Entity]{}
-		}
-		em.Emitter().Particles.init(g, em)
+		em.Emitter().init(g, em)
 		emitters = append(emitters, em)
 	})
 	gorge.HandleFunc(g, func(e gorge.EventRemoveEntity) {
@@ -31,7 +34,7 @@ func System(g *gorge.Context) error {
 		if !ok {
 			return
 		}
-		em.Emitter().Particles.destroy(g)
+		em.Emitter().destroy(g)
 		for i, eem := range emitters {
 			if eem == em {
 				t := emitters
@@ -43,7 +46,7 @@ func System(g *gorge.Context) error {
 	})
 	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
 		for _, em := range emitters {
-			em.Emitter().Particles.update(em, e.DeltaTime())
+			em.Emitter().update(g, em, e.DeltaTime())
 		}
 	})
 

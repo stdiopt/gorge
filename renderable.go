@@ -20,15 +20,6 @@ const (
 	CullMaskUIDebug = CullMaskFlags(1 << 9)
 )
 
-// CastShadow flags
-type CastShadow int
-
-// CastShadow defaults
-const (
-	CastShadowEnabled = CastShadow(iota)
-	CastShadowDisabled
-)
-
 // RenderableComponent contains info for renderer
 // material and mesh
 type RenderableComponent struct {
@@ -36,9 +27,8 @@ type RenderableComponent struct {
 	*Material
 	*Mesh
 
-	Order      int
-	CullMask   CullMaskFlags
-	CastShadow CastShadow
+	Order    int
+	CullMask CullMaskFlags
 }
 
 // NewRenderableComponent returns a new renderable component
@@ -70,9 +60,9 @@ func (r *RenderableComponent) SetCullMask(m CullMaskFlags) {
 
 // SetCastShadow sets the castshadow if CastShadowDisabled it will be disabled
 // for all lights won't cast a shadow, CastShadowEnabled will enable it.
-func (r *RenderableComponent) SetCastShadow(s CastShadow) {
-	r.CastShadow = s
-}
+//func (r *RenderableComponent) SetDisableShadow(b bool) {
+//	r.DisableShadow = b
+//}
 
 // SetOrder sets the render order lower will render first.
 func (r *RenderableComponent) SetOrder(o int) {

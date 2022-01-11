@@ -214,7 +214,7 @@ func (r *Render) PassShadow(ri *Step, s *Shader) {
 
 		// Get depthCube shader
 		for _, group := range renderables {
-			if group.Renderable().CastShadow != gorge.CastShadowEnabled {
+			if group.Renderable().DisableShadow {
 				continue
 			}
 			mlen := group.Instances.Len()

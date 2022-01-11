@@ -25,11 +25,10 @@ func NewLight() *Light {
 		Name:               "",
 		TransformComponent: gorge.TransformIdent(),
 		LightComponent: gorge.LightComponent{
-			Type:        gorge.LightPoint,
-			Intensity:   100,
-			Color:       [3]float32{1, 1, 1},
-			Range:       1000,
-			CastShadows: gorge.CastShadowEnabled,
+			Type:      gorge.LightPoint,
+			Intensity: 100,
+			Color:     [3]float32{1, 1, 1},
+			Range:     1000,
 		},
 	}
 }
@@ -45,11 +44,10 @@ func NewDirectionalLight() *Light {
 	return &Light{
 		TransformComponent: gorge.TransformIdent(),
 		LightComponent: gorge.LightComponent{
-			Type:        gorge.LightDirectional,
-			Intensity:   1,
-			Color:       [3]float32{1, 1, 1},
-			Range:       1000,
-			CastShadows: gorge.CastShadowEnabled,
+			Type:      gorge.LightDirectional,
+			Intensity: 1,
+			Color:     [3]float32{1, 1, 1},
+			Range:     1000,
 		},
 	}
 }
@@ -65,7 +63,6 @@ func NewSpotLight() *Light {
 			Range:        100,
 			InnerConeCos: m32.Cos(30 * (math.Pi / 180)),
 			OuterConeCos: m32.Cos(40 * (math.Pi / 180)),
-			CastShadows:  gorge.CastShadowEnabled,
 		},
 	}
 }

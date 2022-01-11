@@ -104,7 +104,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 		return err
 	}
 
-	triggerPerFrame := float64(1) / 60 // target fps, usually 60
+	triggerPerFrame := float64(1) / 140 // target fps, usually 60
 	frameTimeLeft := float64(0)
 	lastFrame := float64(0)
 	// Ticker here

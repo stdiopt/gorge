@@ -70,7 +70,7 @@ func NewGimbal() *Gimbal {
 			gorge.NewColorableComponent(color[0], color[1], color[2], 1),
 		}
 		l.SetParent(root)
-		l.CastShadow = gorge.CastShadowDisabled
+		l.DisableShadow = true
 		l.Rotatev(o.rot)
 
 		gm.Entities = append(gm.Entities, l)
@@ -87,7 +87,7 @@ func NewGimbal() *Gimbal {
 			gorge.NewColorableComponent(color[0], color[1], color[2], 1),
 		}
 		b.SetParent(root)
-		b.SetCastShadow(gorge.CastShadowDisabled)
+		b.SetDisableShadow(true)
 		b.SetPositionv(o.axis)
 		b.SetScale(0.08)
 

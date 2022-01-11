@@ -59,9 +59,10 @@ type Wrapper struct {
 	js.Value
 }
 
-func (gw Wrapper) String() string {
+func (Wrapper) String() string {
 	return "renderer/gl/gl_wasm.go"
 }
+func (Wrapper) Impl() string { return "wasm" }
 
 var _ Context3 = &Wrapper{}
 
@@ -786,7 +787,7 @@ func (g Wrapper) TexParameterf(target, pname Enum, param float32) {
 }
 
 func (g Wrapper) TexParameterfv(target, pname Enum, params []float32) {
-	panic("not implemented")
+	g.Call("texParameterfv", target, pname, params)
 }
 
 // TexParameteri sets an integer texture parameter.

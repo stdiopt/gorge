@@ -51,8 +51,9 @@ func IsValid(v Uint) bool { return v != 0 }
 type Wrapper struct{}
 
 func (g Wrapper) String() string {
-	return "github.com/go-gl/gl/v4.6-core/gl"
+	return "render/gl/gl_glfw.go"
 }
+func (g Wrapper) Impl() string { return "glfw" }
 
 var _ Context3 = &Wrapper{}
 

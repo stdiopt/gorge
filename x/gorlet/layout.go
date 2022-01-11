@@ -38,6 +38,8 @@ func MultiLayout(ls ...Layouter) LayoutFunc {
 // AutoHeight be resize to content.
 func AutoHeight(spacing float32) LayoutFunc {
 	return func(ent *Entity) {
+		// Anchor Y should be Dimentional.
+		ent.Anchor[3] = ent.Anchor[1]
 		children := ent.Children()
 
 		dim := m32.Vec2{}

@@ -80,6 +80,6 @@ func MakeGrid(gridSize float32) *gorgeutil.Entity {
 	mesh := gorge.NewMesh(meshData)
 	mesh.DrawMode = gorge.DrawLines
 	p := gorgeutil.NewRenderable(mesh, mat)
-	p.Renderable().SetCastShadow(gorge.CastShadowDisabled)
+	p.Renderable().SetDisableShadow(true)
 	return p
 }

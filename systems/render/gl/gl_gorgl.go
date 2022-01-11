@@ -88,8 +88,9 @@ func IsValid(v Uint) bool { return v != 0 }
 type Wrapper struct{}
 
 func (Wrapper) String() string {
-	return "go_gorgl.go wrapper"
+	return "render/gl/gl_gorgl.go"
 }
+func (Wrapper) Impl() string { return "gorgl" }
 
 var _ Context3 = &Wrapper{}
 

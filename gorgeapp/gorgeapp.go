@@ -13,6 +13,7 @@ import (
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/renderpl"
 	"github.com/stdiopt/gorge/systems/resource"
+	"github.com/stdiopt/gorge/x/particle"
 )
 
 type (
@@ -60,6 +61,7 @@ func New(inits ...gorge.InitFunc) *App {
 			return nil
 			// gorgeutil.FromContext(g)
 		},
+		particle.System,
 		// resource.System,
 		// input.System,
 		// Disable audio system for android for now, since oto conflicts symbols because of

@@ -7,12 +7,21 @@ import (
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
+	"github.com/stdiopt/gorge/text"
 )
 
-// EventF32Changed triggers on certain widdgets a value change.
+// TODO: {lpf} find a way to turn drag updates on and off.
 
 // Slider guilet.
 func Slider(min, max float32, fn func(float32)) Func {
+	// min-max to 0-1
+	norm := func(v float32) float32 {
+		return (v - min) / (max - min)
+	}
+	// 0-1 to min-max
+	real := func(v float32) float32 {
+		return min + v*(max-min)
+	}
 	return func(b *Builder) {
 		var (
 			fontScale        = b.Prop("fontScale")
@@ -48,6 +57,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 				b.Use("textColor", handlerTextColor)
 				b.Use("color", handlerColor)
 				b.Use("fontScale", fontScale)
+				b.Use("textOverflow", text.OverflowOverlap)
 
 				b.UsePivot(.5)
 				b.UseRect(0, 0, handlerSize, 0)
@@ -72,14 +82,17 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handler.SetAnchor(val, 0, val, 1)
 		}))
 		b.Observe("value", ObsFunc(func(v float32) {
+			v = norm(v)
+			v = m32.Clamp(v, 0, 1)
 			if val == v {
 				return
 			}
 			val = v
+			rval := real(val)
 			handler.SetAnchor(val, 0, val, 1)
-			handler.Set("text", fmt.Sprintf(valFmt, min+(val*(max-min))))
+			handler.Set("text", fmt.Sprintf(valFmt, rval))
 			if fn != nil {
-				fn(val)
+				fn(rval)
 			}
 			gorge.Trigger(root, EventValueChanged{val})
 		}))
@@ -90,7 +103,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}))
 		b.Observe("textFormat", ObsFunc(func(s string) {
 			valFmt = s
-			handler.Set("text", fmt.Sprintf(valFmt, min+(val*(max-min))))
+			handler.Set("text", fmt.Sprintf(valFmt, real(val)))
 		}))
 
 		var dragging bool
@@ -106,7 +119,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			v := (res.Position[0] - (wp[0] + r[0])) / fullw // Ray in thing position
 			v -= handlerSize / fullw / 2
 			v = m32.Clamp(v, 0, 1)
-			root.Set("value", v)
+			root.Set("value", real(v))
 		})
 		gorge.HandleFunc(root, func(e gorgeui.EventDrag) {
 			dragging = true
@@ -126,10 +139,9 @@ func Slider(min, max float32, fn func(float32)) Func {
 			v := (res.Position[0] - (wp[0] + rect[0])) / fullw // Ray in thing position
 			v -= handlerSize / fullw / 2
 			v = m32.Clamp(v, 0, 1)
-
-			root.Set("value", v)
+			root.Set("value", real(v))
 		})
-		gorge.HandleFunc(root, func(e gorgeui.EventDragEnd) {
+		gorge.HandleFunc(root, func(gorgeui.EventDragEnd) {
 			dragging = false
 		})
 		/*

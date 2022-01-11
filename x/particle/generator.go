@@ -1,78 +1,86 @@
 package particle
 
 import (
+	"log"
 	"math/rand"
 	"runtime"
 	"sync"
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/primitive"
+	"github.com/stdiopt/gorge/static"
 )
 
 // Particle container
 
 // Type is any but it should be a type where pointer implements particle
-type Particles[T any] struct {
-	particles  []T
+type Generator[T any] struct {
 	CreateFunc func(*T)
 	InitFunc   func(*T)
 	UpdateFunc func(*T)
+
+	particles  []T
+	renderable gorge.RenderableComponent
+	totTime    float32
 }
 
-func (c *Particles[T]) destroy(g *gorge.Context) {
-	for i := range c.particles {
-		g.Remove(&c.particles[i])
+func (g *Generator[T]) destroy(gg *gorge.Context) {
+	for i := range g.particles {
+		gg.Remove(&g.particles[i])
 	}
-	c.particles = nil
+	g.particles = nil
 }
 
-func (c *Particles[T]) init(g *gorge.Context, em emitter) {
+func (g *Generator[T]) init(gg *gorge.Context, em emitter) {
 	count := em.Emitter().Count
-	if len(c.particles) == count {
-		return
+
+	mat := em.Emitter().Material
+	if mat == nil {
+		mat = gorge.NewShaderMaterial(static.Shaders.UnlitAdditive)
+		mat.Queue = 1000
+		mat.DoubleSided = true
+		mat.Depth = gorge.DepthNone
+		mat.Blend = gorge.BlendOneOne
+		mat.DisableShadow = true
 	}
+	mesh := em.Emitter().Mesh
+	if mesh == nil {
+		mesh = primitive.NewPoly(3)
+	}
+	g.renderable.SetMaterial(mat)
+	g.renderable.SetMesh(mesh)
 
 	// Reset all
-	c.particles = make([]T, count)
-	for i := range c.particles {
-		p := &c.particles[i]
-		pp := any(p).(particle)
-		if c.CreateFunc != nil {
-			c.CreateFunc(p)
+	g.particles = make([]T, count)
+	for i := range g.particles {
+		p := &g.particles[i]
+		pc := any(p).(particle).Particle()
+		pc.RenderableComponent = &g.renderable
+		if g.CreateFunc != nil {
+			g.CreateFunc(p)
 		}
-		if c.InitFunc != nil {
-			c.InitFunc(p)
+		if g.InitFunc != nil {
+			g.InitFunc(p)
 		}
-		// p := any(&c.particles[i]).(particle)
-		// For now because we want to use the same particle type
-		pc := pp.Particle()
-		pc.Life = 1
-		pc.RenderableComponent = em.Emitter().Renderable
-		g.Add(p)
+		gg.Add(p)
 	}
 }
 
-func (c *Particles[T]) initParticle(em emitter, pu particle) {
-	const origin = 0.2
+func (g *Generator[T]) update(gg *gorge.Context, em emitter, dt float32) {
+	g.totTime += dt
 	ec := em.Emitter()
-
-	pc := pu.Particle()
-	pc.Age = 0
-	pc.Life = 1
-	t := pu.Transform()
-	if ec.Local {
-		// p.TransformComponent = *gorge.NewTransformComponent()
-		t.SetParent(em)
-	} else {
-		t.SetParent(nil)
-		t.Position = em.Transform().WorldPosition()
-		t.Rotation = em.Transform().WorldRotation()
-		t.Scale = em.Transform().Scale
+	if ec.Count != len(g.particles) {
+		g.destroy(gg)
+		g.init(gg, em)
 	}
-}
 
-func (c *Particles[T]) update(em emitter, dt float32) {
-	ec := em.Emitter()
+	if ec.Material != nil {
+		g.renderable.SetMaterial(ec.Material)
+	}
+	if ec.Mesh != nil {
+		g.renderable.SetMesh(ec.Mesh)
+	}
 
 	// New initializations
 	newPerFrame := ec.Rate * dt
@@ -82,19 +90,26 @@ func (c *Particles[T]) update(em emitter, dt float32) {
 	}
 
 	created := uint32(0)
+	lifeParticles := uint32(0)
 	// Generate particles
-	for i := range c.particles {
-		p := &c.particles[i]
+	for i := range g.particles {
+		p := &g.particles[i]
 		pp := any(p).(particle)
 		pc := pp.Particle()
+		if pc.enabled {
+			lifeParticles++
+		}
 		if !pc.enabled && created < numNewParticles && ec.Enabled {
-			c.initParticle(em, pp)
-			if c.InitFunc != nil {
-				c.InitFunc(p)
+			g.initParticle(em, pp)
+			if g.InitFunc != nil {
+				g.InitFunc(p)
 			}
 			pc.enabled = true
 			created++
 		}
+	}
+	if m32.Mod(g.totTime, 1) < 0.01 {
+		log.Println("Live particles:", lifeParticles+created)
 	}
 
 	camT := ec.Camera.Transform()
@@ -102,14 +117,14 @@ func (c *Particles[T]) update(em emitter, dt float32) {
 	camQuat := camT.Mat4().Quat()
 
 	NSplit := runtime.NumCPU()
-	sz := len(c.particles) / NSplit
+	sz := len(g.particles) / NSplit
 	wg := sync.WaitGroup{}
 	wg.Add(NSplit)
 	for i := 0; i < NSplit; i++ {
 		go func(i int) {
 			off := i * sz
 			defer wg.Done()
-			particles := c.particles[off : off+sz]
+			particles := g.particles[off : off+sz]
 			for i := range particles {
 				p := &particles[i]
 				pp := any(p).(particle)
@@ -123,8 +138,8 @@ func (c *Particles[T]) update(em emitter, dt float32) {
 					pc.enabled = false
 					continue
 				}
-				if c.UpdateFunc != nil {
-					c.UpdateFunc(p)
+				if g.UpdateFunc != nil {
+					g.UpdateFunc(p)
 				}
 				t := pp.Transform()
 				// This might be something to handle
@@ -169,4 +184,24 @@ func (c *Particles[T]) update(em emitter, dt float32) {
 			}
 		}
 	*/
+}
+
+// initParticle initializes the particle
+func (c *Generator[T]) initParticle(em emitter, p particle) {
+	const origin = 0.2
+	ec := em.Emitter()
+
+	pc := p.Particle()
+	pc.Age = 0
+	pc.Life = 1
+	t := p.Transform()
+	if ec.Local {
+		// p.TransformComponent = *gorge.NewTransformComponent()
+		t.SetParent(em)
+	} else {
+		t.SetParent(nil)
+		t.Position = em.Transform().WorldPosition()
+		t.Rotation = em.Transform().WorldRotation()
+		t.Scale = em.Transform().Scale
+	}
 }

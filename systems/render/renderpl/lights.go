@@ -122,8 +122,16 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		// borderColor := []float32{ 1.0f, 1.0f, 1.0f, 1.0f };
-		// gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, borderColor);
+
+		// Experiment in some gl versions
+
+		if gl.Global().Impl() != "wasm" { // TODO: experiment
+			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER)
+			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER)
+			borderColor := []float32{1.0, 1.0, 1.0, 1.0}
+			gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, borderColor)
+		}
+
 		depth2DTex = append(depth2DTex, depthTex)
 	}
 
@@ -158,7 +166,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 
 			switch l.Type {
 			case gorge.LightDirectional:
-				if l.CastShadows == gorge.CastShadowEnabled {
+				if !l.DisableShadow {
 					lightDepthIndex = depth2DIndex
 					mat4 = s.processDepth2D(ri, light, depth2DIndex)
 					ri.Samplers[depthNames[depth2DIndex].Depth2D] = s.depth2DTex[depth2DIndex]
@@ -166,7 +174,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 				}
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(0))
 			case gorge.LightPoint:
-				if l.CastShadows == gorge.CastShadowEnabled {
+				if !l.DisableShadow {
 					lightDepthIndex = depthCubeIndex
 					s.processDepthCube(ri, light, depthCubeIndex)
 					ri.Samplers[depthNames[depthCubeIndex].DepthCube] = s.depthCubeTex[depthCubeIndex]

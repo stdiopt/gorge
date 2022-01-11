@@ -35,6 +35,9 @@ type RenderableGroup struct {
 }
 
 func (rg *RenderableGroup) init() bool {
+	if rg.renderable == nil {
+		return false
+	}
 	vbo, _ := rg.renderer.vbos.Get(rg.renderable.Mesh)
 	if vbo == nil {
 		return false
