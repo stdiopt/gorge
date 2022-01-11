@@ -122,14 +122,17 @@ func (s *wasmSystem) System(g *gorge.Context) error {
 		var prevFrameTime float64 = js.Global().Get("performance").Call("now").Float() / 1000
 		var ticker js.Func
 		ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
+			js.Global().Call("requestAnimationFrame", ticker)
+
 			s.checkCanvasSize()
 			totalTime := args[0].Float() / 1000
 			dtSec := totalTime - prevFrameTime
+			prevFrameTime = totalTime
+			if prevFrameTime == 0 {
+				return nil
+			}
 
 			s.gorge.Update(float32(dtSec))
-
-			prevFrameTime = totalTime
-			js.Global().Call("requestAnimationFrame", ticker)
 			return nil
 		})
 		js.Global().Call("requestAnimationFrame", ticker)
