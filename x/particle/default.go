@@ -5,6 +5,34 @@ import (
 	"github.com/stdiopt/gorge/systems/render"
 )
 
+// Controller is a configurable particle controller
+type Controller[T any] struct {
+	CreateFunc func(*T)
+	InitFunc   func(*T)
+	UpdateFunc func(*T, float32)
+}
+
+// Create calls the CreateFunc if set.
+func (c Controller[T]) Create(p *T) {
+	if c.CreateFunc != nil {
+		c.CreateFunc(p)
+	}
+}
+
+// Init calls the init func if set.
+func (c Controller[T]) Init(p *T) {
+	if c.InitFunc != nil {
+		c.InitFunc(p)
+	}
+}
+
+// Update calls the update func if set.
+func (c Controller[T]) Update(p *T, dt float32) {
+	if c.UpdateFunc != nil {
+		c.UpdateFunc(p, dt)
+	}
+}
+
 // Emitter entity will emit particles based on the given parameters when added
 // to gorge, particle.System must be in gorge initialization list.
 type Emitter[T any] struct {
@@ -12,6 +40,7 @@ type Emitter[T any] struct {
 	EmitterComponent
 }
 
+// NewEmitter creates a new default emitter.
 func NewEmitter[T any]() *Emitter[T] {
 	return &Emitter[T]{
 		TransformComponent: *gorge.NewTransformComponent(),
@@ -19,15 +48,12 @@ func NewEmitter[T any]() *Emitter[T] {
 	}
 }
 
-func (e *Emitter[T]) SetInitFunc(fn func(*T)) {
-	e.Generator.(*Generator[T]).InitFunc = fn
+// SetController sets the controller for the particles.
+func (e *Emitter[T]) SetController(c controller[T]) {
+	e.Generator.(*Generator[T]).Controller = c
 }
 
-func (e *Emitter[T]) SetUpdateFunc(fn func(*T)) {
-	e.Generator.(*Generator[T]).UpdateFunc = fn
-}
-
-// Single particle entity
+// Entity default particle entity
 type Entity struct {
 	gorge.TransformComponent
 	gorge.ColorableComponent
@@ -35,46 +61,3 @@ type Entity struct {
 }
 
 var _ render.Renderable = &Entity{}
-
-/*
-type DefaultEntity struct {
-	gorge.TransformComponent
-	gorge.ColorableComponent
-	*gorge.RenderableComponent
-	Component
-
-	Dir   m32.Vec3
-	Scale m32.Vec3
-}
-
-type DefaultGenerator struct {
-	*Generator[DefaultEntity]
-}
-
-func (c *DefaultGenerator) lazyInit() {
-	if c.Generator != nil {
-		return
-	}
-	c.Generator = Generator[DefaultEntity]{
-		InitFunc: func(e *DefaultEntity) {
-		},
-		UpdateFunc: func(e *DefaultEntity, dt float32) {
-		},
-	}
-}
-
-func (c *DefaultGenerator) destroy(g *gorge.Context) {
-	c.lazyInit()
-	c.Generator.destroy(g)
-}
-
-func (c *DefaultGenerator) init(g *gorge.Context, em emitter) {
-	c.lazyInit()
-	c.Generator.init(g, em)
-}
-
-func (c *DefaultGenerator) update(em emitter, dt float32) {
-	c.lazyInit()
-	c.Generator.update(em, dt)
-}
-*/

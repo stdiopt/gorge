@@ -1,7 +1,6 @@
 package particle
 
 import (
-	"log"
 	"math/rand"
 	"runtime"
 	"sync"
@@ -12,13 +11,19 @@ import (
 	"github.com/stdiopt/gorge/static"
 )
 
+type controller[T any] interface {
+	Init(*T)
+	Update(*T, float32)
+}
+
 // Particle container
 
 // Type is any but it should be a type where pointer implements particle
 type Generator[T any] struct {
-	CreateFunc func(*T)
-	InitFunc   func(*T)
-	UpdateFunc func(*T)
+	Controller controller[T]
+	// CreateFunc func(*T)
+	// InitFunc   func(*T)
+	// UpdateFunc func(*T, float32)
 
 	particles  []T
 	renderable gorge.RenderableComponent
@@ -57,11 +62,12 @@ func (g *Generator[T]) init(gg *gorge.Context, em emitter) {
 		p := &g.particles[i]
 		pc := any(p).(particle).Particle()
 		pc.RenderableComponent = &g.renderable
-		if g.CreateFunc != nil {
-			g.CreateFunc(p)
+
+		if creator, ok := g.Controller.(interface{ Create(*T) }); ok {
+			creator.Create(p)
 		}
-		if g.InitFunc != nil {
-			g.InitFunc(p)
+		if g.Controller != nil {
+			g.Controller.Init(p)
 		}
 		gg.Add(p)
 	}
@@ -101,15 +107,12 @@ func (g *Generator[T]) update(gg *gorge.Context, em emitter, dt float32) {
 		}
 		if !pc.enabled && created < numNewParticles && ec.Enabled {
 			g.initParticle(em, pp)
-			if g.InitFunc != nil {
-				g.InitFunc(p)
+			if g.Controller != nil {
+				g.Controller.Init(p)
 			}
 			pc.enabled = true
 			created++
 		}
-	}
-	if m32.Mod(g.totTime, 1) < 0.01 {
-		log.Println("Live particles:", lifeParticles+created)
 	}
 
 	camT := ec.Camera.Transform()
@@ -138,8 +141,8 @@ func (g *Generator[T]) update(gg *gorge.Context, em emitter, dt float32) {
 					pc.enabled = false
 					continue
 				}
-				if g.UpdateFunc != nil {
-					g.UpdateFunc(p)
+				if g.Controller != nil {
+					g.Controller.Update(p, dt)
 				}
 				t := pp.Transform()
 				// This might be something to handle
