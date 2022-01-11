@@ -88,28 +88,6 @@ type wasmSystem struct {
 	// Width, Height    float64
 }
 
-/*func (s *wasmSystem) HandleEvent(v event.Event) {
-	switch v.(type) {
-	case gorge.EventStart:
-		s.setupEvents()
-	case gorge.EventAfterStart:
-		var prevFrameTime float64 = js.Global().Get("performance").Call("now").Float() / 1000
-		var ticker js.Func
-		ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
-			s.checkCanvasSize()
-			totalTime := args[0].Float() / 1000
-			dtSec := totalTime - prevFrameTime
-
-			s.gorge.Update(float32(dtSec))
-
-			prevFrameTime = totalTime
-			js.Global().Call("requestAnimationFrame", ticker)
-			return nil
-		})
-		js.Global().Call("requestAnimationFrame", ticker)
-	}
-}*/
-
 func (s *wasmSystem) System(g *gorge.Context) error {
 	s.gorge = g
 	s.input = input.FromContext(g)
@@ -121,6 +99,7 @@ func (s *wasmSystem) System(g *gorge.Context) error {
 	gorge.HandleFunc(g, func(gorge.EventAfterStart) {
 		var prevFrameTime float64 = 0
 		var ticker js.Func
+		skip := 5
 		ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
 			js.Global().Call("requestAnimationFrame", ticker)
 			s.checkCanvasSize()
@@ -128,6 +107,11 @@ func (s *wasmSystem) System(g *gorge.Context) error {
 			totalTime := args[0].Float() / 1000
 			dtSec := totalTime - prevFrameTime
 			prevFrameTime = totalTime
+			// Let frame time settle by skipping N frames
+			if skip > 0 {
+				skip--
+				return nil
+			}
 
 			s.gorge.Update(float32(dtSec))
 			return nil
