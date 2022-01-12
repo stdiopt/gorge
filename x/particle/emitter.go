@@ -45,7 +45,7 @@ func NewEmitterComponent[T any]() *EmitterComponent {
 func (c *EmitterComponent) init(g *gorge.Context, em emitter) {
 	if c.Generator == nil {
 		// This breaks stuff
-		// c.Generator = &Generator[Entity]{}
+		c.Generator = &Generator[Entity]{}
 	}
 	c.Generator.init(g, em)
 }

@@ -1,6 +1,7 @@
 package gorlet
 
 import (
+	"log"
 	"math"
 
 	"github.com/stdiopt/gorge"
@@ -75,9 +76,8 @@ func polyEntity(n int) *gEntity {
 
 type graphicer interface {
 	Transform() *gorge.TransformComponent
-	SetColorv(m32.Vec4)
-	SetMaterial(gorge.Materialer)
-	SetOrder(int)
+	Colorable() *gorge.ColorableComponent
+	Renderable() *gorge.RenderableComponent
 }
 
 func rectElement(ent graphicer) Func {
@@ -91,13 +91,17 @@ func rectElement(ent graphicer) Func {
 			t.Scale[1] = r[3] - r[1]
 		})
 		b.Observe("color", ObsFunc(func(c m32.Vec4) {
-			ent.SetColorv(c)
+			ent.Colorable().SetColorv(c)
 		}))
 		b.Observe("material", ObsFunc(func(mat gorge.Materialer) {
-			ent.SetMaterial(mat)
+			ent.Renderable().SetMaterial(mat)
+		}))
+		b.Observe("texture", ObsFunc(func(tex gorge.Texturer) {
+			log.Println("Setting texture")
+			ent.Renderable().Material.SetTexture("albedoMap", tex)
 		}))
 		b.Observe("order", ObsFunc(func(o int) {
-			ent.SetOrder(o)
+			ent.Renderable().SetOrder(o)
 		}))
 		// Defaults
 		p.Set("color", m32.Color(0, 0, 0, .2))
