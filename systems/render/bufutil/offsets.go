@@ -25,7 +25,7 @@ func NewNamedOffset(b buffer, sz int, spec OffsetSpec) *NamedOffset {
 }
 
 // WriteOffset write something at a named offset
-func (b *NamedOffset) WriteOffset(name string, v interface{}) {
+func (b *NamedOffset) WriteOffset(name string, v any) {
 	// Figure out data from v
 	offs, ok := b.offsets[name]
 	if !ok {

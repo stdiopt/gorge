@@ -1,7 +1,7 @@
 package gorlet
 
 // Props represents a k.v with some methods
-type Props map[string]interface{}
+type Props map[string]any
 
 // Clone properties returns a new map with all keys from previous.
 func (p Props) Clone() Props {
@@ -22,7 +22,7 @@ func (p Props) Merge(p2 Props) Props {
 }
 
 // Set a property to props.
-func (p Props) Set(k string, v interface{}) {
+func (p Props) Set(k string, v any) {
 	if v == nil {
 		delete(p, k)
 		return
@@ -55,37 +55,3 @@ func (p *propStack) Restore() {
 	}
 	p.stack = p.stack[:len(p.stack)-1]
 }
-
-/*
-type propSetter interface {
-	Set(string, interface{})
-}
-
-type PropsGroup map[string]interface{}
-
-// Apply props to thing.
-func (p PropsGroup) Apply(prefix string, s propSetter) {
-	if p == nil {
-		return
-	}
-	solve := map[string]string{}
-	prefix += "."
-	for k := range p {
-		pre := ""
-		key := k
-		if n := strings.LastIndex(k, "."); n > 0 {
-			pre = k[:n]
-			key = k[n+1:]
-		}
-		if !strings.HasPrefix(prefix, pre) { // discard non prefix ones
-			continue
-		}
-		if full, ok := solve[key]; !ok || len(full) < len(k) {
-			solve[key] = k
-		}
-	}
-
-	for k, fullK := range solve {
-		s.Set(k, p[fullK])
-	}
-}*/

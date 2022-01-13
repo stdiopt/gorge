@@ -196,7 +196,7 @@ func (glw Wrapper) BufferInit(target Enum, size int, usage Enum) {
 // BufferData creates a new data store for the bound buffer object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferData.xhtml
-func (glw Wrapper) BufferData(target Enum, data interface{}, usage Enum) {
+func (glw Wrapper) BufferData(target Enum, data any, usage Enum) {
 	d, sz := conv(data)
 	C.glBufferData(target, C.GLsizeiptr(sz), d, usage)
 }
@@ -204,7 +204,7 @@ func (glw Wrapper) BufferData(target Enum, data interface{}, usage Enum) {
 // BufferSubData sets some of data in the bound buffer object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferSubData.xhtml
-func (glw Wrapper) BufferSubData(target Enum, offset int, data interface{}) {
+func (glw Wrapper) BufferSubData(target Enum, offset int, data any) {
 	d, sz := conv(data)
 	C.glBufferSubData(target, C.GLsizeiptr(offset), C.GLsizeiptr(sz), d)
 }
@@ -1414,7 +1414,7 @@ func (glw Wrapper) VertexAttribDivisor(index Attrib, divisor uint32) {
 //
 //  []float32 -> Float32Array
 //  []float64 -> Float32Array (for glw Wrapper purposes)
-func conv(data interface{}) (unsafe.Pointer, int) {
+func conv(data any) (unsafe.Pointer, int) {
 	switch v := data.(type) {
 	case []byte:
 		return unsafe.Pointer(&v[0]), len(v)

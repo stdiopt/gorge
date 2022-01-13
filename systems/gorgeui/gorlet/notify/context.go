@@ -39,17 +39,17 @@ func (c *Context) Error(s string) {
 }
 
 // Infof sames as info but accepts a fmt format string
-func (c *Context) Infof(f string, args ...interface{}) {
+func (c *Context) Infof(f string, args ...any) {
 	c.Info(fmt.Sprintf(f, args...))
 }
 
 // Warnf sames as warn but accepts a fmt format string
-func (c *Context) Warnf(f string, args ...interface{}) {
+func (c *Context) Warnf(f string, args ...any) {
 	c.Warn(fmt.Sprintf(f, args...))
 }
 
 // Errorf sames as error but accepts a fmt format string
-func (c *Context) Errorf(f string, args ...interface{}) {
+func (c *Context) Errorf(f string, args ...any) {
 	c.Error(fmt.Sprintf(f, args...))
 }
 

@@ -39,7 +39,7 @@ func FromContext(g *gorge.Context) *Context {
 }
 
 // Texture helper that returns a texture with a resourcer ref
-func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
+func (r *Context) Texture(name string, opts ...any) *gorge.Texture {
 	ref := &gorge.TextureRef{GPU: &gorge.GPU{}}
 	tex := gorge.NewTexture(ref)
 
@@ -83,7 +83,7 @@ func (r *Context) Texture(name string, opts ...interface{}) *gorge.Texture {
 }
 
 // Mesh helper that returns a mesh with a resourcer ref
-func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
+func (r *Context) Mesh(name string, opts ...any) *gorge.Mesh {
 	ref := &gorge.MeshRef{GPU: &gorge.GPU{}}
 	mesh := gorge.NewMesh(ref)
 
@@ -127,7 +127,7 @@ func (r *Context) Mesh(name string, opts ...interface{}) *gorge.Mesh {
 }
 
 // Material loads everytime right away
-func (r *Context) Material(name string, opts ...interface{}) *gorge.Material {
+func (r *Context) Material(name string, opts ...any) *gorge.Material {
 	var data gorge.ShaderData
 	if err := r.Load(&data, name, opts...); err != nil {
 		r.Error(err)

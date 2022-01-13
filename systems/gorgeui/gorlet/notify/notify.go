@@ -6,7 +6,7 @@ import (
 	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
-	"github.com/stdiopt/gorge/x/gorlet"
+	"github.com/stdiopt/gorge/systems/gorgeui/gorlet"
 )
 
 // Severity will affect the color of the notification.

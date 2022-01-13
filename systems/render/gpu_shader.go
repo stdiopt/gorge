@@ -163,7 +163,7 @@ type uniform struct {
 	loc     gl.Uniform
 	ty      gl.Enum
 	sampler bool
-	value   interface{}
+	value   any
 }
 
 // Shader handle gl program, it holds a local State
@@ -382,7 +382,7 @@ func (s *Shader) Attrib(k string) (gl.Attrib, bool) {
 }
 
 // Set sets a uniform value
-func (s *Shader) Set(k string, v interface{}) {
+func (s *Shader) Set(k string, v any) {
 	u, ok := s.uniforms[k]
 	if !ok {
 		return
@@ -393,7 +393,7 @@ func (s *Shader) Set(k string, v interface{}) {
 	s.set(u, v)
 }
 
-func (s *Shader) set(u *uniform, v interface{}) {
+func (s *Shader) set(u *uniform, v any) {
 	if v == nil {
 		zeroMat := m32.Mat4{}
 		// TODO: more types

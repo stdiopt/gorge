@@ -12,8 +12,8 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
+	"github.com/stdiopt/gorge/systems/gorgeui/gorlet"
 	"github.com/stdiopt/gorge/text"
-	"github.com/stdiopt/gorge/x/gorlet"
 )
 
 type buildFunc = gorlet.Func

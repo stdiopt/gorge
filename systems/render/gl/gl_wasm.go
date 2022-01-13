@@ -170,15 +170,15 @@ func (g Wrapper) BufferInit(target Enum, size int, usage Enum) {
 }
 
 // BufferData will type switch the interface and select the proper type
-func (g Wrapper) BufferData(target Enum, data interface{}, usage Enum) {
+func (g Wrapper) BufferData(target Enum, data any, usage Enum) {
 	jsData, sz := conv(data)
 	// WebGL2:
 	// void gl.bufferData(target, ArrayBufferView srcData, usage, srcOffset, length);
 	g.Call("bufferData", target, jsData, usage, 0, sz)
 }
 
-// BufferSubData same as before but with extra step to check data type on interface{}
-func (g Wrapper) BufferSubData(target Enum, offset int, data interface{}) {
+// BufferSubData same as before but with extra step to check data type on any
+func (g Wrapper) BufferSubData(target Enum, offset int, data any) {
 	jsData, sz := conv(data)
 	// WebGL2:
 	// void gl.bufferSubData(target, dstByteOffset, ArrayBufferView srcData, srcOffset, length);
@@ -1037,7 +1037,7 @@ func (g Wrapper) GetActiveUniformBlockiv(p Program, index uint32, pname Enum, pa
 
 // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGetActiveUniformsiv.xhtml
 func (g Wrapper) GetActiveUniformi(p Program, index uint32, pname Enum) int32 {
-	ret := g.Call("getActiveUniforms", p, []interface{}{index}, pname)
+	ret := g.Call("getActiveUniforms", p, []any{index}, pname)
 	return int32(ret.Index(0).Int())
 }
 
@@ -1106,7 +1106,7 @@ func (g *Wrapper) FramebufferTextureLayer(
 //
 //  []float32 -> Float32Array
 //  []float64 -> Float32Array (for Wrapper purposes)
-func conv(data interface{}) (js.Value, int) {
+func conv(data any) (js.Value, int) {
 	var bdata []byte
 	switch data := data.(type) {
 	case js.Value:

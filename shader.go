@@ -40,7 +40,7 @@ func (d *ShaderData) String() string {
 // mostly to be used in material and mesh
 type shaderProps struct {
 	samplers    map[string]*Texture
-	props       map[string]interface{}
+	props       map[string]any
 	defines     map[string]string
 	definesHash uint
 	updates     int
@@ -51,7 +51,7 @@ func (s shaderProps) copy() shaderProps {
 		updates: s.updates,
 	}
 	if s.props != nil {
-		r.props = map[string]interface{}{}
+		r.props = map[string]any{}
 		for k, v := range s.props {
 			r.props[k] = v
 		}
@@ -86,13 +86,13 @@ func (s *shaderProps) SetTexture(name string, t Texturer) {
 }
 
 // Set properties by name
-func (s *shaderProps) Set(name string, v interface{}) {
+func (s *shaderProps) Set(name string, v any) {
 	if t, ok := v.(Texturer); ok {
 		s.SetTexture(name, t.Texture())
 		return
 	}
 	if s.props == nil {
-		s.props = map[string]interface{}{}
+		s.props = map[string]any{}
 	}
 
 	// Extra case
@@ -152,7 +152,7 @@ func (s *shaderProps) Defines() map[string]string {
 }
 
 // Get return named property
-func (s *shaderProps) Get(name string) interface{} {
+func (s *shaderProps) Get(name string) any {
 	if s.props == nil {
 		return nil
 	}
@@ -167,7 +167,7 @@ func (s *shaderProps) GetTexture(name string) *Texture {
 }
 
 // Props returns the properties of this material
-func (s *shaderProps) Props() map[string]interface{} {
+func (s *shaderProps) Props() map[string]any {
 	return s.props
 }
 

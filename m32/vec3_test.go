@@ -9,8 +9,8 @@ import (
 func TestVec3(t *testing.T) {
 	tests := []struct {
 		name string
-		in   interface{}
-		want interface{}
+		in   any
+		want any
 	}{
 		{
 			name: "Add",

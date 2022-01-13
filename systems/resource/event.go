@@ -3,13 +3,13 @@ package resource
 // EventLoadStart is trigger in gorge when a resource starts loading.
 type EventLoadStart struct {
 	Name     string
-	Resource interface{}
+	Resource any
 }
 
 // EventLoadComplete is triggered when a resource finished loading.
 type EventLoadComplete struct {
 	Name     string
-	Resource interface{}
+	Resource any
 	Err      error
 }
 

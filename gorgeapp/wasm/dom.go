@@ -21,7 +21,7 @@ type (
 )
 
 // El create a Dom element
-func El(name string, args ...interface{}) js.Value {
+func El(name string, args ...any) js.Value {
 	e := Document.Call("createElement", name)
 	for _, a := range args {
 		switch va := a.(type) {

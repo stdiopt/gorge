@@ -11,7 +11,7 @@ type Style struct {
 }
 
 // Get styled message
-func (s *Style) Get(msg interface{}) string {
+func (s *Style) Get(msg any) string {
 	m := fmt.Sprint(msg)
 
 	if s.IncrementPad {
@@ -26,7 +26,7 @@ func (s *Style) Get(msg interface{}) string {
 
 // GetCustom uses the custom prefix and suffix for the message, it will pad if
 // necessary.
-func (s *Style) GetCustom(pre, suf string, msg interface{}) string {
+func (s *Style) GetCustom(pre, suf string, msg any) string {
 	m := fmt.Sprint(msg)
 
 	if s.IncrementPad {

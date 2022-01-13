@@ -41,7 +41,7 @@ func init() {
 	}
 }
 
-func textureLoader(res *Context, v interface{}, name string, _ ...interface{}) error {
+func textureLoader(res *Context, v any, name string, _ ...any) error {
 	tex, ok := v.(*gorge.Texture)
 	if !ok {
 		return fmt.Errorf("unable to load data into: %T", v)
@@ -56,7 +56,7 @@ func textureLoader(res *Context, v interface{}, name string, _ ...interface{}) e
 	return nil
 }
 
-func textureDataLoader(res *Context, v interface{}, name string, _ ...interface{}) error {
+func textureDataLoader(res *Context, v any, name string, _ ...any) error {
 	texData := v.(*gorge.TextureData)
 
 	rd, err := res.Open(name)

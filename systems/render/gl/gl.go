@@ -81,12 +81,12 @@ type Context interface {
 	// BufferData creates a new data store for the bound buffer object.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferData.xhtml
-	BufferData(target Enum, src interface{}, usage Enum)
+	BufferData(target Enum, src any, usage Enum)
 
 	// BufferSubData sets some of data in the bound buffer object.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferSubData.xhtml
-	BufferSubData(target Enum, offset int, src interface{})
+	BufferSubData(target Enum, offset int, src any)
 
 	// CheckFramebufferStatus reports the completeness status of the
 	// active framebuffer.

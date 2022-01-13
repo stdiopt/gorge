@@ -213,7 +213,7 @@ func getVec2(parts []string) (m32.Vec2, error) {
 	return ret, nil
 }
 
-func parse(s string, v interface{}) error {
+func parse(s string, v any) error {
 	var err error
 	switch v := v.(type) {
 	case *int:

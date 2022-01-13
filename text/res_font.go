@@ -27,7 +27,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
 {}()[]|$@?!%/\:;,._-+=<>*"'~#
 ` + "`"
 
-func fontLoader(res *resource.Context, v interface{}, name string, opts ...interface{}) error {
+func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 	fontOut := v.(*Font)
 
 	opt := FontOptions{}

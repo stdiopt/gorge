@@ -424,7 +424,7 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 		}
 
 		// var track *anim.Channel[m32.Vec3]
-		// var val []interface{}
+		// var val []any
 		// We have to manually add node as we don't have it in gorge stuff
 		// Track translation for now
 		targetNode := c.Nodes[ch.Target.Node]
@@ -582,7 +582,7 @@ func (c *gltfCreator) getGPrimitive(prim *MeshPrimitive) *gorge.Mesh {
 	nVerts := len(elems[0].data) / elems[0].sz
 
 	var verts []float32
-	var indices interface{}
+	var indices any
 
 	add := func(verts []float32, idx ...int) []float32 {
 		for _, i := range idx {
@@ -715,7 +715,7 @@ type GMesh struct {
 }
 
 // Special case
-func acBufIndices(buf []byte, _ int, ty ComponentType) interface{} {
+func acBufIndices(buf []byte, _ int, ty ComponentType) any {
 	switch ty {
 	case ComponentUByte:
 		return append([]byte{}, buf...) // copy

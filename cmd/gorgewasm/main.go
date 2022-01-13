@@ -209,7 +209,7 @@ func buildHTML(w io.Writer, pkg, wasmFile string) error {
 	if w, ok := w.(http.ResponseWriter); ok {
 		w.Header().Set("Content-type", "text/html")
 	}
-	topts := map[string]interface{}{
+	topts := map[string]any{
 		"pkg":      pkg,
 		"wasmexec": string(wasmExec),
 		"wasmfile": wasmFile,
@@ -293,7 +293,7 @@ func chain(next http.Handler, mws ...MiddlewareFunc) http.Handler {
 	return mws[0](chain(next, mws[1:]...))
 }
 
-func writeStatus(w http.ResponseWriter, code int, extras ...interface{}) {
+func writeStatus(w http.ResponseWriter, code int, extras ...any) {
 	w.WriteHeader(code)
 	extra := fmt.Sprint(extras...)
 	fmt.Fprint(w, http.StatusText(code), "\n", extra)

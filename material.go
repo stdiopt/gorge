@@ -132,7 +132,7 @@ func (m *Material) DefinesHash() uint {
 
 // Get returns the material property for name or if the material has a Parent
 // material returns the property from parent else returns nil.
-func (m *Material) Get(name string) interface{} {
+func (m *Material) Get(name string) any {
 	pm, ok := m.Resourcer.(*Material)
 	if !ok {
 		return m.shaderProps.Get(name)

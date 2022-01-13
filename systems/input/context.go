@@ -32,7 +32,7 @@ func FromContext(g *gorge.Context) *Context {
 }
 
 // IsDown checks if wether a key or mouse button is pressed.
-func (c Context) IsDown(v interface{}) bool {
+func (c Context) IsDown(v any) bool {
 	var a ActionState
 	switch v := v.(type) {
 	case Key:
@@ -44,7 +44,7 @@ func (c Context) IsDown(v interface{}) bool {
 }
 
 // IsUp checks if wether a key or mouse button is released.
-func (c Context) IsUp(v interface{}) bool {
+func (c Context) IsUp(v any) bool {
 	switch v := v.(type) {
 	case Key:
 		return c.getKey(v) == ActionUp
@@ -55,6 +55,6 @@ func (c Context) IsUp(v interface{}) bool {
 }
 
 // IsPressed alias to IsUp.
-func (c Context) IsPressed(v interface{}) bool {
+func (c Context) IsPressed(v any) bool {
 	return c.IsUp(v)
 }

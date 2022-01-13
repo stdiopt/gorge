@@ -186,7 +186,7 @@ type MeshData struct {
 	// so we would have a field Indices "type"
 	Vertices []float32
 	// Indices can be one of []byte, []uint16, []uint32
-	Indices interface{}
+	Indices any
 	Updates int
 }
 

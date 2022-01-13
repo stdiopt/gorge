@@ -21,7 +21,7 @@ const gorgeStatic = "_gorge/"
 
 type refCounter struct {
 	count int
-	ref   interface{} // gorge.ResourceRef
+	ref   any // gorge.ResourceRef
 }
 
 // Resource the resource manager.
@@ -82,7 +82,7 @@ func (r *Resource) Open(name string) (io.ReadCloser, error) {
 }
 
 // Load stuff
-func (r *Resource) Load(v interface{}, name string, opts ...interface{}) error {
+func (r *Resource) Load(v any, name string, opts ...any) error {
 	gorge.Trigger(r.gorge, EventLoadStart{
 		Name:     name,
 		Resource: v,
@@ -99,7 +99,7 @@ func (r *Resource) Load(v interface{}, name string, opts ...interface{}) error {
 }
 
 // MustLoad loads the resource if an error occurs it will be sent to gorge as an event.
-func (r *Resource) MustLoad(v interface{}, path string, opts ...interface{}) {
+func (r *Resource) MustLoad(v any, path string, opts ...any) {
 	if err := r.Load(v, path, opts...); err != nil {
 		r.gorge.Error(err)
 	}
@@ -109,7 +109,7 @@ func (r *Resource) Error(err error) {
 	r.gorge.Error(err)
 }
 
-func (r *Resource) load(v interface{}, name string, opts ...interface{}) error {
+func (r *Resource) load(v any, name string, opts ...any) error {
 	ext := filepath.Ext(name)
 	loader := getLoader(v, ext)
 	if loader == nil {
@@ -120,7 +120,7 @@ func (r *Resource) load(v interface{}, name string, opts ...interface{}) error {
 
 // Tracks resource reference and overrides ref Resource referrer if already
 // exists
-func (r *Resource) track(name string, ref, v interface{}) (*refCounter, bool) {
+func (r *Resource) track(name string, ref, v any) (*refCounter, bool) {
 	if r.refs == nil {
 		r.refs = map[string]*refCounter{}
 	}
@@ -134,7 +134,7 @@ func (r *Resource) track(name string, ref, v interface{}) (*refCounter, bool) {
 	}
 	tracker.count++
 	// ref.res = tracker.res
-	runtime.SetFinalizer(ref, func(interface{}) {
+	runtime.SetFinalizer(ref, func(any) {
 		tracker.count--
 		if tracker.count == 0 {
 			log.Println("Releasing finalizer")

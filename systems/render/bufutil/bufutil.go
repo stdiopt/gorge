@@ -15,7 +15,7 @@ type number interface {
 
 const maxaddr = 0x7FFFFFFF
 
-func AsBytes(data interface{}) []byte {
+func AsBytes(data any) []byte {
 	switch v := data.(type) {
 	case []float32:
 		if len(v) == 0 {

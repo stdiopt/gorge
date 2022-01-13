@@ -50,9 +50,9 @@ func BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha Enum) 
 
 func BufferInit(target Enum, size int, usage Enum) { wrapper.BufferInit(target, size, usage) }
 
-func BufferData(target Enum, src interface{}, usage Enum) { wrapper.BufferData(target, src, usage) }
+func BufferData(target Enum, src any, usage Enum) { wrapper.BufferData(target, src, usage) }
 
-func BufferSubData(target Enum, offset int, src interface{}) {
+func BufferSubData(target Enum, offset int, src any) {
 	wrapper.BufferSubData(target, offset, src)
 }
 

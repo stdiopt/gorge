@@ -12,7 +12,7 @@ func init() {
 	Register((*gorge.Mesh)(nil), ".obj", meshLoader)
 }
 
-func meshDataLoader(res *Context, v interface{}, name string, _ ...interface{}) error {
+func meshDataLoader(res *Context, v any, name string, _ ...any) error {
 	meshData := v.(*gorge.MeshData)
 
 	rd, err := res.Open(name)
@@ -29,7 +29,7 @@ func meshDataLoader(res *Context, v interface{}, name string, _ ...interface{}) 
 	return nil
 }
 
-func meshLoader(res *Context, v interface{}, name string, opts ...interface{}) error {
+func meshLoader(res *Context, v any, name string, opts ...any) error {
 	mesh := v.(*gorge.Mesh)
 
 	var meshData gorge.MeshData

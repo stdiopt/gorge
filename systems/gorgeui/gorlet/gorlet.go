@@ -23,7 +23,7 @@ type (
 	EntityFunc func(w *Entity) // OnAdd in the Entity
 	// ObserverFunc is the type of the function function that will be
 	// called when the named property is set.
-	ObserverFunc = func(interface{})
+	ObserverFunc = func(any)
 )
 
 // Debug prints reference debug
@@ -68,7 +68,7 @@ func Create(fn Func) *Entity {
 	g := &gcref{1}
 
 	// debug object release tracker
-	runtime.SetFinalizer(g, func(v interface{}) {
+	runtime.SetFinalizer(g, func(v any) {
 		if Debug {
 			log.Println("Finalizing Gorlet OBJ:", ename, v)
 		}
@@ -262,7 +262,7 @@ func (e *Entity) Attached(ent gorgeui.Entity) {
 }
 
 // Set invoke any observer attached to the named propery.
-func (e *Entity) Set(name string, value interface{}) {
+func (e *Entity) Set(name string, value any) {
 	if e.observers == nil {
 		return
 	}
@@ -274,8 +274,8 @@ func (e *Entity) Set(name string, value interface{}) {
 }
 
 // PropSetter returns a func that will set the named property when called.
-func (e *Entity) PropSetter(name string) func(v interface{}) {
-	return func(v interface{}) { e.Set(name, v) }
+func (e *Entity) PropSetter(name string) func(v any) {
+	return func(v any) { e.Set(name, v) }
 }
 
 // Observe adds a named observer setting nil will delete all observers.

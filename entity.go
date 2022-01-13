@@ -6,7 +6,7 @@ import (
 )
 
 // Entity can be anything but shouldn't be a func
-type Entity interface{}
+type Entity any
 
 // EntityContainer is an interface used while adding entity to solve EventAddEntity
 // one container with 2 entities will trigger 2 EventAddEntity.

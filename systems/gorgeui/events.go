@@ -8,7 +8,7 @@ import (
 /*
 type Event struct {
 	Entity          Entity
-	Value           interface{}
+	Value           any
 	stopPropagation bool
 }
 */

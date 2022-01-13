@@ -69,7 +69,7 @@ type EventWarn string
 // EventResourceUpdate sends a resource through systems for aditional treatment
 // i.e: uploading to gpu
 type EventResourceUpdate struct {
-	Resource interface{}
+	Resource any
 }
 
 /*func UpdateHandler(fn func(e EventUpdate)) event.HandlerFunc {

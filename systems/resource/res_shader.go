@@ -21,7 +21,7 @@ func init() {
 	Register((*gorge.Material)(nil), ".glsl", materialLoader)
 }
 
-func shaderDataLoader(res *Context, v interface{}, name string, _ ...interface{}) error {
+func shaderDataLoader(res *Context, v any, name string, _ ...any) error {
 	shaderData := v.(*gorge.ShaderData)
 
 	source, err := shaderSource(res, name)
@@ -37,7 +37,7 @@ func shaderDataLoader(res *Context, v interface{}, name string, _ ...interface{}
 	return nil
 }
 
-func materialLoader(res *Context, v interface{}, name string, _ ...interface{}) error {
+func materialLoader(res *Context, v any, name string, _ ...any) error {
 	mat := v.(*gorge.Material)
 
 	var shaderData gorge.ShaderData

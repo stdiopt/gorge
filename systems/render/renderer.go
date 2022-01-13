@@ -77,7 +77,7 @@ func newRenderer(g *gorge.Context) *Render {
 			Viewport:  m32.Vec4{},
 			Queues:    map[int]*Queue{},
 			Ubos:      map[string]gl.Buffer{},
-			Props:     map[string]interface{}{},
+			Props:     map[string]any{},
 			Samplers:  map[string]*Texture{},
 		},
 	}

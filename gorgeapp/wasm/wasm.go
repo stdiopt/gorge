@@ -28,7 +28,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	</style>
 	`)
 	fullScreenBtn := El("button", Attr{"id": "fs-btn"}, Text("fullscreen"))
-	fullScreenBtn.Call("addEventListener", "click", js.FuncOf(func(t js.Value, args []js.Value) interface{} {
+	fullScreenBtn.Call("addEventListener", "click", js.FuncOf(func(t js.Value, args []js.Value) any {
 		Body.Call("requestFullscreen")
 		return nil
 	}))
@@ -39,7 +39,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	Body.Call("appendChild", canvas)
 
 	// Get gl Context from WebGL thingy
-	ctxOpt := map[string]interface{}{
+	ctxOpt := map[string]any{
 		"preserveDrawingBuffer": true,
 		"antialias":             true,
 	}
@@ -100,7 +100,7 @@ func (s *wasmSystem) System(g *gorge.Context) error {
 		var prevFrameTime float64 = 0
 		var ticker js.Func
 		skip := 5
-		ticker = js.FuncOf(func(t js.Value, args []js.Value) interface{} {
+		ticker = js.FuncOf(func(t js.Value, args []js.Value) any {
 			js.Global().Call("requestAnimationFrame", ticker)
 			s.checkCanvasSize()
 
@@ -155,7 +155,7 @@ func (s *wasmSystem) setupEvents() {
 	s.canvas.Call("addEventListener", "touchend", touchEvent)
 }
 
-func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) interface{} {
+func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) any {
 	evt := args[0]
 	evt.Call("preventDefault")
 
@@ -182,7 +182,7 @@ func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) interface{} {
 	return nil
 }
 
-func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) interface{} {
+func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) any {
 	evt := args[0]
 	evt.Call("preventDefault")
 	etype := evt.Get("type").String()
@@ -221,7 +221,7 @@ func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) interface{} 
 	return nil
 }
 
-func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) interface{} {
+func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) any {
 	evt := args[0]
 	evt.Call("preventDefault")
 	etype := evt.Get("type").String()

@@ -14,7 +14,7 @@ func init() {
 	Register((*gorge.AudioClip)(nil), ".mp3", audioClipLoader)
 }
 
-func audioClipLoader(res *Context, v interface{}, name string, opts ...interface{}) error {
+func audioClipLoader(res *Context, v any, name string, opts ...any) error {
 	clip := v.(*gorge.AudioClip)
 
 	var clipData gorge.AudioClipData
@@ -27,7 +27,7 @@ func audioClipLoader(res *Context, v interface{}, name string, opts ...interface
 	return nil
 }
 
-func audioClipDataLoader(res *Context, v interface{}, name string, _ ...interface{}) error {
+func audioClipDataLoader(res *Context, v any, name string, _ ...any) error {
 	clipData := v.(*gorge.AudioClipData)
 
 	rd, err := res.Open(name)

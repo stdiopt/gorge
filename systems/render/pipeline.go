@@ -35,7 +35,7 @@ type Step struct {
 	// Global props that will be set in every material
 	// As in, defaults
 	Ubos     map[string]gl.Buffer
-	Props    map[string]interface{}
+	Props    map[string]any
 	Samplers map[string]*Texture
 }
 

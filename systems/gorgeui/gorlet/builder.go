@@ -8,7 +8,7 @@ import (
 // ForwardProp to be used to forward properties.
 type ForwardProp struct {
 	prop string
-	def  interface{}
+	def  any
 }
 
 type curEntity struct {
@@ -119,7 +119,7 @@ func (b *Builder) UseDragEvents(v bool) {
 }
 
 // Use a property for the next widget.
-func (b *Builder) Use(k string, v interface{}) {
+func (b *Builder) Use(k string, v any) {
 	if b.next.props == nil {
 		b.next.props = Props{}
 	}
@@ -137,8 +137,8 @@ func (b *Builder) UseProps(p Props) {
 }
 
 // Prop returns a property forwarded by k with optional default value.
-func (b *Builder) Prop(k string, v ...interface{}) ForwardProp {
-	var def interface{}
+func (b *Builder) Prop(k string, v ...any) ForwardProp {
+	var def any
 	if len(v) > 0 {
 		def = v[0]
 	}
@@ -160,12 +160,12 @@ func (b *Builder) ForwardProps(pre string, e *Entity) {
 }
 
 // Observe adds a function to observe a property in the root Entity.
-func (b Builder) Observe(k string, fn func(interface{})) {
+func (b Builder) Observe(k string, fn ObserverFunc) {
 	b.root.entity.Observe(k, fn)
 }
 
 // Push will set the prop to any added entity.
-func (b *Builder) Push(k string, v interface{}) {
+func (b *Builder) Push(k string, v any) {
 	b.propStack.cur().Set(k, v)
 }
 
@@ -317,8 +317,8 @@ func (b *Builder) cur() *curEntity {
 }
 
 // ObsFunc generics way
-/*func ObsFunc[T any](fn func(T)) func(interface{}) {
-	return func(vv interface{}) {
+/*func ObsFunc[T any](fn func(T)) func(any) {
+	return func(vv any) {
 		v, ok := vv.(T)
 		if !ok {
 			var z T
@@ -328,8 +328,8 @@ func (b *Builder) cur() *curEntity {
 	}
 }
 
-func Ptr[T any](p *T) func(interface{}) {
-	return func(vv interface{}) {
+func Ptr[T any](p *T) func(any) {
+	return func(vv any) {
 		v, ok := vv.(T)
 		if !ok {
 			var z T
@@ -340,14 +340,14 @@ func Ptr[T any](p *T) func(interface{}) {
 }*/
 
 // ObsFunc creates a typed observer func from reflection.
-func ObsFunc(fn interface{}) func(interface{}) {
-	if fn, ok := fn.(func(interface{})); ok {
+func ObsFunc(fn any) ObserverFunc {
+	if fn, ok := fn.(ObserverFunc); ok {
 		return fn
 	}
 	fnVal := reflect.ValueOf(fn)
 	inTyp := fnVal.Type().In(0)
 
-	return func(v interface{}) {
+	return func(v any) {
 		arg := reflect.ValueOf(v)
 		if aTyp := arg.Type(); aTyp != inTyp {
 			if !arg.CanConvert(inTyp) {
@@ -360,9 +360,9 @@ func ObsFunc(fn interface{}) func(interface{}) {
 	}
 }
 
-func Ptr(p interface{}) func(interface{}) {
+func Ptr(p any) ObserverFunc {
 	typ := reflect.TypeOf(p).Elem()
-	return func(v interface{}) {
+	return func(v any) {
 		arg := reflect.ValueOf(v)
 		if aTyp := arg.Type(); aTyp != typ {
 			if !arg.CanConvert(typ) {
@@ -377,28 +377,28 @@ func Ptr(p interface{}) func(interface{}) {
 /*
 // ObsFunc creates a typed observer func from type switch it works on tinygo since
 // tiny go doesn't support reflection NumIn.
-func ObsFunc(fn interface{}) func(interface{}) {
+func ObsFunc(fn any) ObserverFunc {
 	switch fn := fn.(type) {
-	case func(interface{}):
+	case func(any):
 		return fn
 	case func(string):
-		return func(v interface{}) {
+		return func(v any) {
 			fn(v.(string))
 		}
 	case func(float32):
-		return func(v interface{}) { fn(v.(float32)) }
+		return func(v any) { fn(v.(float32)) }
 	case func(float64):
-		return func(v interface{}) { fn(v.(float64)) }
+		return func(v any) { fn(v.(float64)) }
 	case func(int):
-		return func(v interface{}) { fn(v.(int)) }
+		return func(v any) { fn(v.(int)) }
 	case func(m32.Vec4):
-		return func(v interface{}) { fn(v.(m32.Vec4)) }
+		return func(v any) { fn(v.(m32.Vec4)) }
 	case func(bool):
-		return func(v interface{}) { fn(v.(bool)) }
+		return func(v any) { fn(v.(bool)) }
 	case func([]text.Align):
-		return func(v interface{}) { fn(v.([]text.Align)) }
+		return func(v any) { fn(v.([]text.Align)) }
 	case func(text.Overflow):
-		return func(v interface{}) { fn(v.(text.Overflow)) }
+		return func(v any) { fn(v.(text.Overflow)) }
 	default:
 		panic(fmt.Sprintf("unsupported observer: %T", fn))
 	}

@@ -162,7 +162,7 @@ func (g *Gorge) Remove(ents ...Entity) {
 // this is useful for GL related operations that depends on the specific thread it's running
 // since we don't control much threads
 
-//func (g *Gorge) TriggerInMain(v interface{}) {
+//func (g *Gorge) TriggerInMain(v any) {
 //	g.RunInMain(func() { g.Trigger(v) })
 //}
 

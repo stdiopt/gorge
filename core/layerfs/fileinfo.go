@@ -11,7 +11,7 @@ type fileInfo struct {
 	mode    fs.FileMode
 	modTime time.Time
 	isDir   bool
-	// sys interface{}
+	// sys any
 }
 
 func (f fileInfo) Name() string {
@@ -34,6 +34,6 @@ func (f fileInfo) IsDir() bool {
 	return f.isDir
 }
 
-func (f fileInfo) Sys() interface{} {
+func (f fileInfo) Sys() any {
 	return nil
 }

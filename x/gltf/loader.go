@@ -20,7 +20,7 @@ func init() {
 	resource.Register(&GLTF{}, ".glb", glbLoader)
 }
 
-func gltfLoader(res *resource.Context, v interface{}, name string, _ ...interface{}) error {
+func gltfLoader(res *resource.Context, v any, name string, _ ...any) error {
 	gOut := v.(*GLTF)
 
 	rd, err := res.Open(name)
@@ -68,7 +68,7 @@ func gltfLoader(res *resource.Context, v interface{}, name string, _ ...interfac
 	return nil
 }
 
-func glbLoader(res *resource.Context, v interface{}, name string, _ ...interface{}) error {
+func glbLoader(res *resource.Context, v any, name string, _ ...any) error {
 	gOut := v.(*GLTF)
 
 	rd, err := res.Open(name)

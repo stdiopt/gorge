@@ -159,7 +159,7 @@ func (g *Wrapper) BufferInit(target Enum, size int, usage Enum) {
 // BufferData creates a new data store for the bound buffer object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferData.xhtml
-func (g *Wrapper) BufferData(target Enum, data interface{}, usage Enum) {
+func (g *Wrapper) BufferData(target Enum, data any, usage Enum) {
 	d, sz := conv(data)
 	gl.BufferData(target, sz, d, usage)
 }
@@ -167,7 +167,7 @@ func (g *Wrapper) BufferData(target Enum, data interface{}, usage Enum) {
 // BufferSubData sets some of data in the bound buffer object.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glBufferSubData.xhtml
-func (g *Wrapper) BufferSubData(target Enum, offset int, data interface{}) {
+func (g *Wrapper) BufferSubData(target Enum, offset int, data any) {
 	d, sz := conv(data)
 	gl.BufferSubData(target, offset, sz, d)
 }
@@ -1378,7 +1378,7 @@ func (g *Wrapper) FramebufferTextureLayer(
 //
 //  []float32 -> Float32Array
 //  []float64 -> Float32Array (for Wrapper purposes)
-func conv(data interface{}) (unsafe.Pointer, int) {
+func conv(data any) (unsafe.Pointer, int) {
 	switch v := data.(type) {
 	case []byte:
 		return unsafe.Pointer(&v[0]), len(v)

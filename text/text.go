@@ -133,7 +133,7 @@ func (m *Mesh) SetMode(mm Mode) {
 }
 
 // SetText sets the text and updates underlying mesh.
-func (m *Mesh) SetText(a ...interface{}) {
+func (m *Mesh) SetText(a ...any) {
 	m.Text = fmt.Sprint(a...)
 	m.Update()
 }
@@ -430,7 +430,7 @@ func New(font *Font, opts ...MeshFunc) *Entity {
 }
 
 // SetTextf sets formated text
-func (t *Entity) SetTextf(f string, args ...interface{}) {
+func (t *Entity) SetTextf(f string, args ...any) {
 	t.SetText(fmt.Sprintf(f, args...))
 }
 
