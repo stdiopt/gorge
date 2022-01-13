@@ -14,9 +14,11 @@ import (
 // Default light stuff.
 const (
 	MaxLights      = 8
-	shadowSz       = 1024
-	dirNearPlane   = 50
-	dirFarPlane    = -50
+	pointShadowSz  = 1024
+	dirShadowSz    = 2048 // too much?
+	dirNearPlane   = 100
+	dirFarPlane    = -100
+	dirSz          = 40
 	pointNearPlane = 1
 )
 
@@ -94,7 +96,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 		for i := 0; i < 6; i++ {
 			gl.TexImage2D(
 				gl.Enum(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i), 0,
-				gl.DEPTH_COMPONENT16, shadowSz, shadowSz,
+				gl.DEPTH_COMPONENT16, pointShadowSz, pointShadowSz,
 				gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, nil) // Webgl
 		}
 		gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -113,19 +115,19 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 			Type: gl.TEXTURE_2D,
 		}
 		gl.BindTexture(gl.TEXTURE_2D, depthTex.ID)
-		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, shadowSz, shadowSz, gl.DEPTH_COMPONENT, gl.FLOAT, nil) // Webgl
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, dirShadowSz, dirShadowSz, gl.DEPTH_COMPONENT, gl.FLOAT, nil) // Webgl
 		// gl.TexImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, shadowSz, shadowSz, gl.DEPTH_COMPONENT, gl.FLOAT, nil) // Glfw
 		// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
 		// Experiment in some gl versions
 
-		if gl.Global().Impl() != "wasm" { // TODO: experiment
+		if gl.Global().Impl() != "wasm" { // TODO: experiment and improve this string comparison to const
 			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER)
 			gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER)
 			borderColor := []float32{1.0, 1.0, 1.0, 1.0}
@@ -226,11 +228,12 @@ func (s *lights) processDepthCube(ri *render.Step, light render.Light, di int) {
 	gl.Disable(gl.CULL_FACE)
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthMask(true)
-	gl.Viewport(0, 0, shadowSz, shadowSz)
+	gl.Viewport(0, 0, pointShadowSz, pointShadowSz)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, s.depthFBO)
 	shdr := s.depthCubeShader
 	shdr.Bind()
 
+	shdr.Set("u_AlphaCutoff", 0.01)
 	shdr.Set("farPlane", farPlane)
 	shdr.Set("lightPos", pos)
 	// 6 Pass that could be reduced to one with geometry shader
@@ -269,7 +272,7 @@ func (s *lights) processDepth2D(ri *render.Step, light render.Light, di int) m32
 	trans.SetPositionv(camPos.Add(camForward).Mul(3))
 
 	// Depends on light
-	proj := m32.Ortho(-20, 20, -20, 20, dirNearPlane, dirFarPlane)
+	proj := m32.Ortho(-dirSz, dirSz, -dirSz, dirSz, dirNearPlane, dirFarPlane)
 
 	lightMatrix := proj.Mul(trans.Inv())
 
@@ -279,10 +282,11 @@ func (s *lights) processDepth2D(ri *render.Step, light render.Light, di int) m32
 	gl.DepthMask(true)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, s.depthFBO)
 
-	gl.Viewport(0, 0, shadowSz, shadowSz)
+	gl.Viewport(0, 0, dirShadowSz, dirShadowSz)
 	shdr := s.depthDirShader
 	shdr.Bind()
 	shdr.Set("view", lightMatrix)
+	shdr.Set("u_AlphaCutoff", 0.01)
 	{
 		gl.FramebufferTexture2D(
 			gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, s.depth2DTex[di].ID, 0,

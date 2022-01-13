@@ -43,8 +43,9 @@ func Slider(min, max float32, fn func(float32)) Func {
 		// b.UseAnchor(0)
 		// b.UseRect(0, 0, 30, 4)
 		root := b.SetRoot(Panel())
-		root.SetDragEvents(true)
-
+		// root.SetDragEvents(true)
+		b.UseDragEvents(true)
+		drag := b.BeginContainer()
 		{
 			b.UseAnchor(0, 0, 1, 1)
 			b.UseRect(handlerSize/2, 0, handlerSize/2, 0)
@@ -66,6 +67,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			}
 			b.End()
 		}
+		b.EndContainer()
 
 		b.Observe("handlerColor", ObsFunc(func(c m32.Vec4) {
 			handler.Set("color", c)
@@ -107,7 +109,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}))
 
 		var dragging bool
-		gorge.HandleFunc(root, func(e gorgeui.EventPointerUp) {
+		gorge.HandleFunc(drag, func(e gorgeui.EventPointerUp) {
 			if dragging {
 				return
 			}
@@ -121,7 +123,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			v = m32.Clamp(v, 0, 1)
 			root.Set("value", real(v))
 		})
-		gorge.HandleFunc(root, func(e gorgeui.EventDrag) {
+		gorge.HandleFunc(drag, func(e gorgeui.EventDrag) {
 			dragging = true
 			rect := track.Rect()
 			fullw := rect[2] - rect[0]
@@ -141,7 +143,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			v = m32.Clamp(v, 0, 1)
 			root.Set("value", real(v))
 		})
-		gorge.HandleFunc(root, func(gorgeui.EventDragEnd) {
+		gorge.HandleFunc(drag, func(gorgeui.EventDragEnd) {
 			dragging = false
 		})
 		/*

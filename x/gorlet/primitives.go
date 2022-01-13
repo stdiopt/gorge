@@ -1,7 +1,6 @@
 package gorlet
 
 import (
-	"log"
 	"math"
 
 	"github.com/stdiopt/gorge"
@@ -90,19 +89,12 @@ func rectElement(ent graphicer) Func {
 			t.Scale[0] = r[2] - r[0]
 			t.Scale[1] = r[3] - r[1]
 		})
-		b.Observe("color", ObsFunc(func(c m32.Vec4) {
-			ent.Colorable().SetColorv(c)
-		}))
-		b.Observe("material", ObsFunc(func(mat gorge.Materialer) {
-			ent.Renderable().SetMaterial(mat)
-		}))
+		b.Observe("color", ObsFunc(ent.Colorable().SetColorv))
+		b.Observe("material", ObsFunc(ent.Renderable().SetMaterial))
 		b.Observe("texture", ObsFunc(func(tex gorge.Texturer) {
-			log.Println("Setting texture")
 			ent.Renderable().Material.SetTexture("albedoMap", tex)
 		}))
-		b.Observe("order", ObsFunc(func(o int) {
-			ent.Renderable().SetOrder(o)
-		}))
+		b.Observe("order", ObsFunc(ent.Renderable().SetOrder))
 		// Defaults
 		p.Set("color", m32.Color(0, 0, 0, .2))
 	}
@@ -111,6 +103,10 @@ func rectElement(ent graphicer) Func {
 // Quad returns a quad entity starting at 0,0 to 1,1
 func Quad() Func {
 	return rectElement(quadEntity())
+}
+
+func (b *Builder) Quad() *Entity {
+	return b.Add(Quad())
 }
 
 // Poly returns a polygon starting at 0,0 to 1,1

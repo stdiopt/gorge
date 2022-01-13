@@ -435,6 +435,8 @@ func (s *Shader) set(u *uniform, v interface{}) {
 		gl.Uniform1i(u.loc, v)
 	case float32:
 		gl.Uniform1f(u.loc, v)
+	case float64:
+		gl.Uniform1f(u.loc, float32(v))
 	case m32.Vec2:
 		gl.Uniform2fv(u.loc, v[:])
 	case m32.Vec3:
@@ -453,6 +455,8 @@ func (s *Shader) set(u *uniform, v interface{}) {
 		gl.Uniform1i(u.loc, *v)
 	case *float32:
 		gl.Uniform1f(u.loc, *v)
+	case *float64:
+		gl.Uniform1f(u.loc, float32(*v))
 	case *m32.Vec2:
 		gl.Uniform2fv(u.loc, (*v)[:])
 	case *m32.Vec3:

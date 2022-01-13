@@ -19,8 +19,8 @@ type (
 )
 
 type (
-	// PlacementFunc will be used in a container and will define clients rect.
-	PlacementFunc func(w *Entity) // OnAdd in the Entity
+	// EntityFunc will be used in a container and will define clients rect.
+	EntityFunc func(w *Entity) // OnAdd in the Entity
 	// ObserverFunc is the type of the function function that will be
 	// called when the named property is set.
 	ObserverFunc = func(interface{})
@@ -51,7 +51,7 @@ type Entity struct {
 	name string // debug purposes
 
 	// TODO: {lpf} give it a proper name.
-	onAdd      PlacementFunc
+	onAdd      EntityFunc
 	clientArea *Entity
 	layouter   Layouter
 

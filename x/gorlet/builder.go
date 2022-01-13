@@ -12,20 +12,26 @@ type ForwardProp struct {
 }
 
 type curEntity struct {
-	entity *Entity
+	// will be called on each child
+	placement EntityFunc
+	entity    *Entity
 }
 
 // Func to build a guilet
 type Func func(b *Builder)
 
 type nextData struct {
-	placement PlacementFunc
-	layout    Layouter
+	// Placement will be set on
+	// placement EntityFunc
 
-	Rect   []float32
-	Anchor []float32
-	Pivot  []float32
-	Props  Props
+	layout     Layouter
+	margin     []float32
+	rect       []float32
+	anchor     []float32
+	pivot      []float32
+	dragEvents *bool
+
+	props Props
 }
 
 // Builder used to build a guilet.
@@ -62,8 +68,8 @@ func (b Builder) ClientArea() {
 ///////////////////////////////////////////////////////////////////////////////
 
 // UsePlacement sets the placement func.
-func (b *Builder) UsePlacement(fn PlacementFunc) {
-	b.next.placement = fn
+func (b *Builder) SetPlacement(fn EntityFunc) {
+	b.cur().placement = fn
 }
 
 // UseLayout set next widget layout.
@@ -88,36 +94,45 @@ func (b *Builder) UseRelRect(v ...float32) {
 	b.UseRect(v...)
 }
 
+// UseMargin sets the next entity padding.
+func (b *Builder) UseMargin(v ...float32) {
+	b.next.margin = v
+}
+
 // UseRect sets next Entity Rect.
 func (b *Builder) UseRect(v ...float32) {
-	b.next.Rect = v
+	b.next.rect = v
 }
 
 // UseAnchor sets next Entity Anchor.
 func (b *Builder) UseAnchor(v ...float32) {
-	b.next.Anchor = v
+	b.next.anchor = v
 }
 
 // UsePivot sets next Entity Pivot.
 func (b *Builder) UsePivot(v ...float32) {
-	b.next.Pivot = v
+	b.next.pivot = v
+}
+
+func (b *Builder) UseDragEvents(v bool) {
+	b.next.dragEvents = &v
 }
 
 // Use a property for the next widget.
 func (b *Builder) Use(k string, v interface{}) {
-	if b.next.Props == nil {
-		b.next.Props = Props{}
+	if b.next.props == nil {
+		b.next.props = Props{}
 	}
-	b.next.Props.Set(k, v)
+	b.next.props.Set(k, v)
 }
 
 // UseProps a property for the next widget.
 func (b *Builder) UseProps(p Props) {
-	if b.next.Props == nil {
-		b.next.Props = Props{}
+	if b.next.props == nil {
+		b.next.props = Props{}
 	}
 	for k, v := range p {
-		b.next.Props.Set(k, v)
+		b.next.props.Set(k, v)
 	}
 }
 
@@ -149,34 +164,13 @@ func (b Builder) Observe(k string, fn func(interface{})) {
 	b.root.entity.Observe(k, fn)
 }
 
-// BindProp binds a property to a pointer.
-func (b Builder) BindProp(k string, v interface{}) {
-	val := reflect.ValueOf(v)
-	if val.Kind() != reflect.Ptr {
-		panic("Bind value must be a pointer")
-	}
-	val = val.Elem()
-
-	b.Observe(k, func(v interface{}) {
-		arg := reflect.ValueOf(v)
-		if arg.Type() != val.Type() {
-			if !arg.Type().ConvertibleTo(val.Type()) {
-				panic(fmt.Sprintf("Cannot bind %s to %s", arg.Type(), val.Type()))
-			}
-			arg = arg.Convert(val.Type())
-		}
-
-		val.Set(arg)
-	})
-}
-
-// Global will set the prop to any added entity.
-func (b *Builder) Global(k string, v interface{}) {
+// Push will set the prop to any added entity.
+func (b *Builder) Push(k string, v interface{}) {
 	b.propStack.cur().Set(k, v)
 }
 
-// GlobalProps will set the props to any added entity.
-func (b *Builder) GlobalProps(p Props) {
+// PushProps will set the props to any added entity.
+func (b *Builder) PushProps(p Props) {
 	cur := b.propStack.cur()
 	for k, v := range p {
 		cur.Set(k, v)
@@ -198,24 +192,33 @@ func (b *Builder) Restore() {
 func (b *Builder) Create(fn Func) *Entity {
 	e := Create(fn)
 
-	e.OnAdd(b.next.placement)
+	if pfn := b.cur().placement; pfn != nil {
+		pfn(e)
+	}
+	// Different thing
+	// e.OnAdd(b.next.placement)
 
+	if b.next.dragEvents != nil {
+		e.SetDragEvents(*b.next.dragEvents)
+	}
+	if b.next.margin != nil {
+		e.SetMargin(b.next.margin...)
+	}
 	if b.next.layout != nil {
 		e.SetLayout(b.next.layout)
 	}
-
-	if len(b.next.Rect) > 0 {
-		e.SetRect(b.next.Rect...)
+	if b.next.rect != nil {
+		e.SetRect(b.next.rect...)
 	}
-	if len(b.next.Anchor) > 0 {
-		e.SetAnchor(b.next.Anchor...)
+	if b.next.anchor != nil {
+		e.SetAnchor(b.next.anchor...)
 	}
-	if len(b.next.Pivot) > 0 {
-		e.SetPivot(b.next.Pivot...)
+	if b.next.pivot != nil {
+		e.SetPivot(b.next.pivot...)
 	}
 
 	// Merge props
-	props := b.propStack.cur().Merge(b.next.Props)
+	props := b.propStack.cur().Merge(b.next.props)
 	b.setupProps(e, props)
 
 	b.next = nextData{}
@@ -256,10 +259,14 @@ func (b *Builder) SetRoot(fn Func) *Entity {
 // Begin creates and pushes an Entity onto stack it will save
 // property state and restore on end.
 func (b *Builder) Begin(fn Func) *Entity {
-	w := b.Add(fn)
-	b.push(w)
+	return b.BeginEntity(b.Create(fn))
+}
+
+func (b *Builder) BeginEntity(e *Entity) *Entity {
+	b.AddEntity(e)
+	b.push(e)
 	b.propStack.Save()
-	return w
+	return e
 }
 
 // End pops the current guilet from the stack.
@@ -309,15 +316,26 @@ func (b *Builder) cur() *curEntity {
 	return b.stack[len(b.stack)-1]
 }
 
-/*
 // ObsFunc generics way
-func ObsFunc[T any](fn func(T)) func(interface{}) {
+/*func ObsFunc[T any](fn func(T)) func(interface{}) {
 	return func(vv interface{}) {
-		v, ok := vv.(T);
+		v, ok := vv.(T)
 		if !ok {
-			panic(fmt.Sprintf("Can't convert prop [%q] %T(%v) to %v", k, vv, v, *new(T)))
+			var z T
+			panic(fmt.Sprintf("Can't convert prop %T(%v) to func(%T)", vv, v, z))
 		}
-		fn((v)
+		fn(v)
+	}
+}
+
+func Ptr[T any](p *T) func(interface{}) {
+	return func(vv interface{}) {
+		v, ok := vv.(T)
+		if !ok {
+			var z T
+			panic(fmt.Sprintf("Can't convert prop %T(%v) to %T", vv, v, z))
+		}
+		*p = v
 	}
 }*/
 
@@ -339,6 +357,20 @@ func ObsFunc(fn interface{}) func(interface{}) {
 		}
 		// Type check somewhere
 		fnVal.Call([]reflect.Value{arg})
+	}
+}
+
+func Ptr(p interface{}) func(interface{}) {
+	typ := reflect.TypeOf(p).Elem()
+	return func(v interface{}) {
+		arg := reflect.ValueOf(v)
+		if aTyp := arg.Type(); aTyp != typ {
+			if !arg.CanConvert(typ) {
+				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, typ))
+			}
+			arg = arg.Convert(typ)
+		}
+		reflect.ValueOf(p).Elem().Set(arg)
 	}
 }
 

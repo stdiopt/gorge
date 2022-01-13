@@ -13,12 +13,15 @@ import (
 // RectComponent data component based on transform with fields specific for UI
 // elements.
 type RectComponent struct {
-	parent   gorge.Matrixer
+	parent gorge.Matrixer
+
 	Rotation m32.Quat
 	Position m32.Vec3
 	Scale    m32.Vec3
 
 	Dim m32.Vec2
+	// New
+	Margin m32.Vec4
 
 	Anchor m32.Vec4 // left, bottom, right, top
 	Pivot  m32.Vec2
@@ -71,16 +74,14 @@ func (c *RectComponent) Mat4() m32.Mat4 {
 	pivot := m32.Vec2{}
 	if m32.FloatEqual(c.Anchor[0], c.Anchor[2]) {
 		pivot[0] = -c.Dim[0] * c.Pivot[0]
-		// } else {
-		//	pivot[0] = -c.Dim[0] * 0.5
 	}
 	if m32.FloatEqual(c.Anchor[1], c.Anchor[3]) {
 		pivot[1] = -c.Dim[1] * c.Pivot[1]
-		// } else {
-		//      pivot[1] = -c.Dim[1] * 0.5
 	}
 
-	pos := c.Position.Add(anchor.Vec3(0))
+	pos := c.Position.
+		Add(anchor.Vec3(0)).
+		Add(m32.Vec3{c.Margin[0], c.Margin[1], 0})
 	m := m32.Translate3D(pos[0], pos[1], pos[2])
 
 	m = m.Mul(c.Rotation.Mat4())
@@ -107,6 +108,14 @@ func (c *RectComponent) SetRect(vs ...float32) {
 
 	c.Dim[0] = v[2]
 	c.Dim[1] = v[3]
+}
+
+func (c *RectComponent) SetMargin(vs ...float32) {
+	v := v4f(vs...)
+	c.Margin[0] = v[0]
+	c.Margin[1] = v[1]
+	c.Margin[2] = v[2]
+	c.Margin[3] = v[3]
 }
 
 // SetWidth sets the width.
@@ -176,6 +185,44 @@ func (c *RectComponent) Translate(x, y, z float32) {
 	c.Position = c.Position.Add(m32.Vec3{x, y, z})
 }
 
+// This should be called Dim which are the dimentions, lefttop will always be 0,0
+
+func (c *RectComponent) CalcDim() m32.Vec2 {
+	return c.RelativeDim(c.parentDim())
+}
+
+func (c *RectComponent) RelativeDim(parentDim m32.Vec2) m32.Vec2 {
+	var right, bottom float32
+	// We might discard rect
+	right = c.Dim[0]
+	bottom = c.Dim[1]
+	// If anchor min and max are the same we use pivot
+	if c.Anchor[0] != c.Anchor[2] {
+		w := parentDim[0] // parentRect[0] is always 0 now
+		w -= w*(1-c.Anchor[2]) + w*(c.Anchor[0])
+		right = w - c.Dim[0] - c.Position[0]
+	}
+
+	if c.Anchor[1] != c.Anchor[3] {
+		h := parentDim[1]
+		h -= h*(1-c.Anchor[3]) + h*(c.Anchor[1])
+		bottom = h - c.Dim[1] - c.Position[1]
+	}
+	return m32.Vec2{
+		right - c.Margin[2] - c.Margin[0],
+		bottom - c.Margin[1] - c.Margin[3],
+	}
+}
+
+func (c *RectComponent) parentDim() m32.Vec2 {
+	if p, ok := c.parent.(interface{ CalcDim() m32.Vec2 }); ok {
+		return p.CalcDim()
+	}
+	return m32.Vec2{}
+}
+
+// TODO: this will be deprecated
+
 // Rect calculate and returns the rect.
 func (c *RectComponent) Rect() m32.Vec4 {
 	return c.RelativeRect(c.parentRect())
@@ -204,7 +251,13 @@ func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
 		// reduce rect by the relative anchor from both sides
 		bottom = h - c.Dim[1] - c.Position[1]
 	}
-	return m32.Vec4{left, top, right, bottom}
+	return m32.Vec4{
+		left,
+		top,
+		right - c.Margin[2] - c.Margin[0],
+		// bottom - c.Margin[3] - c.Margin[1],
+		bottom - c.Margin[1] - c.Margin[3],
+	}
 }
 
 func (c *RectComponent) parentRect() m32.Vec4 {

@@ -51,6 +51,11 @@ func (r Rand) Float32() float32 {
 	return r.rand().Float32()
 }
 
+// NFloat32 returns a float32 with random values between [-1,1]
+func (r Rand) NFloat32() float32 {
+	return 2*r.rand().Float32() - 1
+}
+
 // UnitSphere generate random points in a sphere
 // From: https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
 // Still needs improvements as it doesn't seem right yet

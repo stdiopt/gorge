@@ -85,6 +85,24 @@ func (w *UI) Rect() m32.Vec4 {
 	}
 }
 
+func (w *UI) CalcDim() m32.Vec2 {
+	cam := w.Camera.Camera()
+	if cam.ProjectionType != gorge.ProjectionOrtho {
+		return w.Dim
+	}
+	// ScreenSize
+	vp := cam.CalcViewport(w.ScreenSize())
+	aspectRatio := cam.AspectRatio
+	if aspectRatio == 0 {
+		// ss := gorge.ScreenSize()
+		aspectRatio = vp[2] / vp[3]
+	}
+	return m32.Vec2{
+		cam.OrthoSize * aspectRatio / 2,
+		cam.OrthoSize,
+	}
+}
+
 // ScreenSize returns the screensize.
 func (w *UI) ScreenSize() m32.Vec2 { return w.gorge.ScreenSize() }
 

@@ -45,14 +45,15 @@ func AutoHeight(spacing float32) LayoutFunc {
 		dim := m32.Vec2{}
 		for _, c := range children {
 			rect := c.Rect()
-			h := rect[3] - rect[1]
+			h := rect[3] - rect[1] + (c.Margin[1] + c.Margin[3])
 
 			top := c.Position[1]
 			bottom := top + h
 			dim[1] = m32.Max(bottom+spacing, dim[1])
 
 		}
-		ent.RectTransform().Dim[1] = dim[1]
+		rt := ent.RectTransform()
+		rt.Dim[1] = dim[1] + rt.Margin[1] + rt.Margin[3]
 	}
 }
 

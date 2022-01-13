@@ -1,15 +1,10 @@
 package gorlet
 
-import (
-	"github.com/stdiopt/gorge/m32"
-)
-
 // ListLayout layouter that will rearrange children vertically.
 type ListLayout struct {
 	// Spacing between elements
-	Spacing      float32
-	SpacingSides m32.Vec2
-	Direction    Direction
+	Spacing   float32
+	Direction Direction
 }
 
 // Layout implements layouter
@@ -17,15 +12,13 @@ func (l *ListLayout) Layout(ent *Entity) {
 	cury := float32(0)
 	children := ent.Children()
 	for _, e := range children {
-		r := e.RectTransform()
+		rt := e.RectTransform()
+		rt.SetAnchor(0, 0, 1, 0)
 
-		h := r.Dim[1]
-		// Set a minimal height if 0
-		if h == 0 {
-			h = 3
-		}
-		r.SetAnchor(0, 0, 1, 0)
-		r.SetRect(l.SpacingSides[0], cury, l.SpacingSides[1], h)
+		r := rt.Rect()
+
+		h := r[3] - r[1] + rt.Margin[1] + rt.Margin[3]
+		rt.Position[1] = cury
 		cury += h + l.Spacing
 	}
 }

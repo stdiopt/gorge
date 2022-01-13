@@ -13,7 +13,7 @@ func Labeled(lbl string) Func {
 			text      = b.Prop("text", lbl)
 		)
 
-		b.GlobalProps(Props{
+		b.PushProps(Props{
 			"fontScale": fontScale,
 		})
 		b.UseAnchor(0, 0, 1, 1)

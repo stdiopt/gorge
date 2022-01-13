@@ -293,7 +293,7 @@ layout(std140) uniform Camera {
 		float currentDepth = projCoords.z;
 		float bias = 0.005;
 		//vec2 texelSize = vec2(1.0f) / vec2(textureSize(depth2D[di].depthMap, 0));
-		vec2 texelSize = vec2(1.0f) / vec2(1024,1024);
+		vec2 texelSize = vec2(1.0f) / vec2(2048,2048);
 		for(int x = -1; x <= 1; ++x) {
 			for(int y = -1; y <= 1; ++y) {
 				float pcfDepth = getDepth2D(di, projCoords.xy + vec2(x, y) * texelSize);

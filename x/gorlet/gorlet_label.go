@@ -97,6 +97,7 @@ func Label(t string) Func {
 			ent.SetAlignment(Alignment[0])
 		}))
 		b.Observe("overflow", ObsFunc(func(o text.Overflow) { ent.SetOverflow(o) }))
+		b.Observe("textOverflow", ObsFunc(func(o text.Overflow) { ent.SetOverflow(o) }))
 		b.Observe("material", ObsFunc(func(m gorge.Materialer) { ent.SetMaterial(m) }))
 		b.Observe("order", ObsFunc(func(o int) { ent.SetOrder(o) }))
 

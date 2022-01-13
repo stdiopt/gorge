@@ -15,10 +15,10 @@ func Button(clickfn func()) Func {
 			down       = m32.Color(.4)
 			fadeFactor = float32(10)
 		)
-		b.BindProp("color", &normal)
-		b.BindProp("highlight", &highlight)
-		b.BindProp("down", &down)
-		b.BindProp("fadeFactor", &fadeFactor)
+		b.Observe("color", Ptr(&normal))
+		b.Observe("highlight", Ptr(&highlight))
+		b.Observe("down", Ptr(&down))
+		b.Observe("fadeFactor", Ptr(&fadeFactor))
 
 		root := b.Root()
 
