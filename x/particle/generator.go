@@ -42,7 +42,7 @@ func (g *Generator[T]) init(gg *gorge.Context, em emitter) {
 		mat = gorge.NewShaderMaterial(static.Shaders.UnlitAdditive)
 		mat.Queue = 1000
 		mat.DoubleSided = true
-		mat.Depth = gorge.DepthNone
+		mat.Depth = gorge.DepthRead
 		mat.Blend = gorge.BlendOneOne
 		mat.DisableShadow = true
 	}

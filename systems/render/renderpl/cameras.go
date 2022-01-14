@@ -154,6 +154,7 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			gl.ClearColor(cam.ClearColor[0], cam.ClearColor[1], cam.ClearColor[2], 1)
 			gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		case gorge.ClearDepthOnly:
+			gl.DepthMask(true)
 			gl.Clear(gl.DEPTH_BUFFER_BIT)
 		case gorge.ClearNothing:
 			// Nothing duh
@@ -187,6 +188,7 @@ func CameraSkybox(r *render.Context, srcMap string) render.StepFunc {
 
 		// Odd to be here but ... we could run SetupMaterial here.
 		gl.Disable(gl.STENCIL_TEST)
+		gl.DepthMask(true)
 		gl.Clear(gl.DEPTH_BUFFER_BIT)
 		gl.DepthMask(false)
 		gl.Disable(gl.BLEND)
@@ -203,6 +205,7 @@ func CameraSkybox(r *render.Context, srcMap string) render.StepFunc {
 			gl.BindVertexArray(gl.Null)
 			gl.FrontFace(gl.CW)
 		}
+		gl.Enable(gl.DEPTH_TEST)
 		gl.DepthMask(true)
 	}
 }

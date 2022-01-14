@@ -20,6 +20,7 @@ type gEntity struct {
 func quadEntity() *gEntity {
 	mat := gorge.NewShaderMaterial(static.Shaders.UI)
 	mat.Queue = 100
+	// mat.Depth = gorge.DepthRead // Fix this
 	mat.Depth = gorge.DepthNone // Fix this
 
 	mesh := gorge.NewMesh(&gorge.MeshData{
@@ -61,6 +62,7 @@ func polyEntity(n int) *gEntity {
 
 	mat := gorge.NewShaderMaterial(static.Shaders.UI)
 	mat.Queue = 100
+	// mat.Depth = gorge.DepthRead
 	mat.Depth = gorge.DepthNone
 
 	mesh := gorge.NewMesh(meshData)

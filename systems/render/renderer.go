@@ -288,6 +288,7 @@ func (r *Render) SetupShader(
 		gl.DepthMask(false)
 	case gorge.DepthNone:
 		gl.Disable(gl.DEPTH_TEST)
+		gl.DepthMask(false)
 	}
 
 	// This can be done in shader?
