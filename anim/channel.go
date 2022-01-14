@@ -44,6 +44,19 @@ func AddChannelWithKeys[T any](a *Animation, intp InterpolatorFunc[T], k map[flo
 	return c
 }
 
+func (c *Channel[T]) Clone() *Channel[T] {
+	if c == nil {
+		return nil
+	}
+	c2 := NewChannel(c.intp)
+	c2.keys = make([]*Key[T], len(c.keys))
+	for i, k := range c.keys {
+		kc := *k // copy key
+		c2.keys[i] = &kc
+	}
+	return c2
+}
+
 func (c *Channel[T]) On(fn func(T)) {
 	c.on = fn
 }
