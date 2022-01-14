@@ -47,6 +47,8 @@ func System(g *gorge.Context) error {
 	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
 		for _, em := range emitters {
 			em.Emitter().update(g, em, e.DeltaTime())
+			// Fixed rate
+			// em.Emitter().update(g, em, 0.016)
 		}
 	})
 

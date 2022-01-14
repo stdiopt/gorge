@@ -53,7 +53,7 @@ func Window(def string) Func {
 
 		// Body
 		b.Use("color", winColor)
-		b.UseAnchor(0, 0, 1, 1)
+		b.UseAnchor(0, 0, 1, 0)
 		b.UseRect(0, 2, 0, 0)
 		b.BeginPanel()
 		b.ClientArea()

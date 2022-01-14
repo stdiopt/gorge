@@ -10,6 +10,7 @@ import (
 type Result struct {
 	Hit      bool
 	Position m32.Vec3
+	UV       m32.Vec2
 	// Normal
 }
 

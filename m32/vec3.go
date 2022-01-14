@@ -53,6 +53,11 @@ func (v Vec3) Reflect(n Vec3) Vec3 {
 	return v.Sub(n.Mul(2 * v.Dot(n)))
 }
 
+// Vec2 returns a Vec2 with the first 2 elements of v.
+func (v Vec3) Vec2() Vec2 {
+	return Vec2{v[0], v[1]}
+}
+
 // Vec4 returns a vec4 with the new element w.
 func (v Vec3) Vec4(w float32) Vec4 {
 	return Vec4{v[0], v[1], v[2], w}

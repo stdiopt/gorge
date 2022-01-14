@@ -45,6 +45,19 @@ func (r Rand) rand() *rand.Rand {
 	return r.Rand
 }
 
+// Cone returns a random direction on a cone
+func (r Rand) Cone(dir Vec3, spread float32) Vec3 {
+	aa := r.Float32() * spread
+	radius, z := Sincos(aa)
+
+	a := r.NFloat32() * math.Pi // [-Pi, Pi]
+	c, s := Sincos(a)
+
+	ret := Vec3{c * radius, s * radius, -z}.Normalize()
+	mdir := QBetweenV3(Forward(), dir).Mat4()
+	return mdir.MulV4(ret.Vec4(1)).Vec3()
+}
+
 // Float32 returns a float32 with random values [0, 1] using inner rand
 // generator. if the inner source is nil it will use the global one.
 func (r Rand) Float32() float32 {

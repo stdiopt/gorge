@@ -21,9 +21,6 @@ type controller[T any] interface {
 // Type is any but it should be a type where pointer implements particle
 type Generator[T any] struct {
 	Controller controller[T]
-	// CreateFunc func(*T)
-	// InitFunc   func(*T)
-	// UpdateFunc func(*T, float32)
 
 	particles  []T
 	renderable gorge.RenderableComponent

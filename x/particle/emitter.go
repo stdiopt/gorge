@@ -26,6 +26,7 @@ type EmitterComponent struct { // Component
 	Enabled bool
 	Local   bool
 	Count   int
+	Step    float32
 	Rate    float32 // Number of particles per frame
 
 	// tracked particles
@@ -38,6 +39,7 @@ func NewEmitterComponent[T any]() *EmitterComponent {
 		Enabled:   true,
 		Count:     1000,
 		Rate:      100,
+		Step:      0.016,
 		Generator: &Generator[T]{},
 	}
 }
@@ -51,7 +53,11 @@ func (c *EmitterComponent) init(g *gorge.Context, em emitter) {
 }
 
 func (c *EmitterComponent) update(g *gorge.Context, em emitter, dt float32) {
-	c.Generator.update(g, em, dt)
+	if c.Step <= 0 {
+		c.Generator.update(g, em, dt)
+		return
+	}
+	c.Generator.update(g, em, c.Step)
 }
 
 func (c *EmitterComponent) destroy(g *gorge.Context) {

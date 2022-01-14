@@ -27,7 +27,7 @@ const (
 
 // Quat short for quaternion:
 // 	https://answers.unity.com/questions/467614/what-is-the-source-code-of-quaternionlookrotation.html
-// W is [2]
+// W is [3]
 type Quat [4]float32
 
 // Len computes quaternion length.
@@ -56,6 +56,11 @@ func (q Quat) Normalize() Quat {
 		q[2] * invLen,
 		q[3] * invLen,
 	}
+}
+
+// W returns the W part of the quaternion.
+func (q Quat) W() float32 {
+	return q[3]
 }
 
 // V returns the Vector (0,1,2) part of the quaternion.
@@ -351,4 +356,16 @@ func QAxisAngle(v3 Vec3, rad float32) Quat {
 		v3[2] * s,
 		c,
 	}.Normalize()
+}
+
+// QBetweenV3 returns a quaternion between two vectors.
+func QBetweenV3(v1, v2 Vec3) Quat {
+	var q Quat
+	a := v1.Normalize().Cross(v2.Normalize())
+	q[0] = a[0]
+	q[1] = a[1]
+	q[2] = a[2]
+	q[3] = Sqrt(1 + v1.Dot(v2))
+	return q.Normalize()
+	// return QAxisAngle(v1.Cross(v2), v1.Dot(v2))
 }

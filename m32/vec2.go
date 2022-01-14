@@ -5,6 +5,17 @@ import "math"
 // Vec2 vector2
 type Vec2 [2]float32
 
+func V2(v ...float32) Vec2 {
+	switch len(v) {
+	case 0:
+		return Vec2{}
+	case 1:
+		return Vec2{v[0], v[0]}
+	default:
+		return Vec2{v[0], v[1]}
+	}
+}
+
 // Len returns the len of v.
 func (v Vec2) Len() float32 {
 	return float32(math.Hypot(float64(v[0]), float64(v[1])))
