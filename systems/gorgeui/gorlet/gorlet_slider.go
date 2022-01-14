@@ -10,7 +10,7 @@ import (
 	"github.com/stdiopt/gorge/text"
 )
 
-// TODO: {lpf} find a way to turn drag updates on and off.
+// TODO: {lpf} find a way to turn updated on drag on and off.
 
 // Slider guilet.
 func Slider(min, max float32, fn func(float32)) Func {
@@ -37,10 +37,10 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handler     *Entity
 		)
 
-		b.Use("color", backgroundColor)
-		root := b.SetRoot(Panel())
+		root := b.Root()
 		root.SetDragEvents(true)
-		b.BeginContainer()
+		b.Use("color", backgroundColor)
+		b.BeginPanel()
 		{
 			b.UseAnchor(0, 0, 1, 1)
 			b.UseRect(handlerSize/2, 0, handlerSize/2, 0)
