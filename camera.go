@@ -71,6 +71,10 @@ type CameraComponent struct {
 	Viewport      m32.Vec4
 	ClearColor    m32.Vec3
 
+	// Consider this to custom clear other buffers?!
+	// ClearDepth   float32
+	// ClearStencil byte
+
 	// Or Forward, deferred, etc type of pass
 	// RenderShadow bool
 	// Or sky box

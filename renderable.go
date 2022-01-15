@@ -27,6 +27,8 @@ type RenderableComponent struct {
 	*Material
 	*Mesh
 
+	// Maybe move to material?!
+	// Layering and Culling are usually per GameObject in unity.
 	Order    int
 	CullMask CullMaskFlags
 }

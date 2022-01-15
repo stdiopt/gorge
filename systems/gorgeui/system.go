@@ -17,7 +17,8 @@ type system struct {
 	gorge *gorge.Context
 	font  *text.Font
 
-	uis   map[*UI]struct{}
+	uis map[*UI]struct{}
+	// We might not need this and just run through the UI children elements
 	elems []Entity
 
 	// Should have these per pointer

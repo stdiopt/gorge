@@ -3,13 +3,19 @@
 Usage:
 
 ```go
-posChannel := anim.NewChannel(anim.Vec3(&elem.Position))
+a := anim.New()
+// Basic channel func we pass an interpolator anim.Vec3
+posChannel := anim.AddChannel(a, anim.Vec3)
+// Triggers when UpdateDelta is called with an update.
+posChannel.On(func(v m32.Vec3) {
+	elem.Position = v
+})
 posChannel.SetKey(0, m32.Vec3{0, 0, 0})
 posChannel.SetKey(5, m32.Vec3{1, 0, 0}) // 5 segonds after
 
-a := anim.New()
-a.AddChannel(posChannel)
+a.Start()
 
-
-a.UpdateDelta(...)
+gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+	a.UpdateDelta(e.DeltaTime())
+})
 ```

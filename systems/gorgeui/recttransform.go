@@ -25,10 +25,6 @@ type RectComponent struct {
 
 	Anchor m32.Vec4 // left, bottom, right, top
 	Pivot  m32.Vec2
-
-	// Anchor relative rect
-	// t1 gorge.TransformComponent // parent offset transform
-	// t2 gorge.TransformComponent // local transform
 }
 
 // RectIdent returns a identity rect transform.
@@ -128,6 +124,11 @@ func (c *RectComponent) SetHeight(w float32) {
 	c.Dim[1] = w
 }
 
+// SetSize sets the rect dimentions.
+func (c *RectComponent) SetSize(v ...float32) {
+	c.Dim = m32.V2(v...)
+}
+
 // SetAnchor sets anchor.
 func (c *RectComponent) SetAnchor(v ...float32) {
 	switch len(v) {
@@ -187,11 +188,11 @@ func (c *RectComponent) Translate(x, y, z float32) {
 
 // This should be called Dim which are the dimentions, lefttop will always be 0,0
 
-func (c *RectComponent) CalcDim() m32.Vec2 {
-	return c.RelativeDim(c.parentDim())
+func (c *RectComponent) CalcSize() m32.Vec2 {
+	return c.RelativeSize(c.parentSize())
 }
 
-func (c *RectComponent) RelativeDim(parentDim m32.Vec2) m32.Vec2 {
+func (c *RectComponent) RelativeSize(parentDim m32.Vec2) m32.Vec2 {
 	var right, bottom float32
 	// We might discard rect
 	right = c.Dim[0]
@@ -214,9 +215,9 @@ func (c *RectComponent) RelativeDim(parentDim m32.Vec2) m32.Vec2 {
 	}
 }
 
-func (c *RectComponent) parentDim() m32.Vec2 {
-	if p, ok := c.parent.(interface{ CalcDim() m32.Vec2 }); ok {
-		return p.CalcDim()
+func (c *RectComponent) parentSize() m32.Vec2 {
+	if p, ok := c.parent.(interface{ CalcSize() m32.Vec2 }); ok {
+		return p.CalcSize()
 	}
 	return m32.Vec2{}
 }
