@@ -33,8 +33,7 @@ func Label(t string) Func {
 		mat := gorge.NewShaderMaterial(static.Shaders.Unlit)
 		mat.SetQueue(100)
 		// Use this instead or some common way to GET UI
-		// mat.SetDepth(gorge.DepthRead)
-		mat.SetDepth(gorge.DepthNone)
+		mat.SetDepth(gorge.DepthRead)
 		mat.SetTexture("albedoMap", gorgeui.DefaultFont.Texture)
 
 		Alignment := [2]text.Align{text.AlignCenter, text.AlignCenter}

@@ -17,7 +17,8 @@ type gEntity struct {
 func newEntity(mesh gorge.Mesher) *gEntity {
 	mat := gorge.NewShaderMaterial(static.Shaders.UI)
 	mat.Queue = 100
-	mat.Depth = gorge.DepthRead
+	// mat.Depth = gorge.DepthRead
+	mat.Depth = gorge.DepthNone
 	return &gEntity{
 		TransformComponent:  *gorge.NewTransformComponent(),
 		ColorableComponent:  *gorge.NewColorableComponent(1, 1, 1, 1),
@@ -58,10 +59,10 @@ func rectElement(ent graphicer) Func {
 			ent.Renderable().Material.SetTexture("albedoMap", tex)
 		}))
 		b.Observe("stencil", ObsFunc(func(s *gorge.Stencil) {
-			ent.Renderable().Material.Stencil = s
+			ent.Renderable().Stencil = s
 		}))
 		b.Observe("colorMask", ObsFunc(func(b *[4]bool) {
-			ent.Renderable().Material.ColorMask = b
+			ent.Renderable().ColorMask = b
 		}))
 		b.Observe("order", ObsFunc(ent.Renderable().SetOrder))
 		// Defaults

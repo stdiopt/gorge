@@ -16,6 +16,7 @@ func Window(def string) Func {
 		var (
 			// fontScale      = b.Prop("fontScale", 2)
 			winColor       = b.Prop("background", m32.Color(0, .3))
+			bodyColor      = b.Prop("body.color", m32.Color())
 			titleFontScale = b.Prop("title.fontScale", 1.5)
 			titleColor     = b.Prop("title.color", m32.Color(0, 0, .3, .3))
 			titleTextColor = b.Prop("title.textcolor", m32.Color(1))
@@ -25,14 +26,13 @@ func Window(def string) Func {
 		root := b.Root()
 
 		b.Use("color", winColor)
-		// b.Layout(gorgeui.AutoHeight(1))
 		b.BeginPanel()
-		// full.SetAnchor(0, 0, 1, 1)
 		b.UseProps(Props{
 			"fontScale": titleFontScale,
 			"color":     titleColor,
 			"textColor": titleTextColor,
 		})
+		// TitleBar
 		b.UseAnchor(0, 0, 1, 0)
 		b.UseRect(0, 0, 0, 2)
 		title := b.BeginPanel()
@@ -52,9 +52,8 @@ func Window(def string) Func {
 		b.EndPanel()
 
 		// Body
-		b.Use("color", winColor)
-		b.UseAnchor(0, 0, 1, 0)
 		b.UseRect(0, 2, 0, 0)
+		b.Use("color", bodyColor)
 		b.BeginPanel()
 		b.ClientArea()
 		b.EndPanel()
@@ -71,8 +70,9 @@ func Window(def string) Func {
 		b.UsePivot(.8)
 		b.Use("color", titleColor)
 
-		resizer := b.Add(Quad())
+		resizer := b.Quad()
 		resizer.SetDragEvents(true)
+		b.EndPanel()
 		gorge.HandleFunc(resizer, func(e gorgeui.EventDrag) {
 			ui := gorgeui.RootUI(root)
 			wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
