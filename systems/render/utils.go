@@ -8,7 +8,6 @@ import (
 
 // Light interface for light composition
 type Light interface {
-	// Transform() *gorge.TransformComponent
 	Mat4() m32.Mat4
 	Light() *gorge.LightComponent
 }
@@ -16,14 +15,12 @@ type Light interface {
 // Camera interface for accepting camera structs
 type Camera interface {
 	Mat4() m32.Mat4
-	// Transform() *gorge.TransformComponent
 	Camera() *gorge.CameraComponent
 }
 
 // Renderable the renderer renderable component interface.
 type Renderable interface {
 	Mat4() m32.Mat4
-	// Transform() *gorge.TransformComponent
 	Renderable() *gorge.RenderableComponent
 }
 
@@ -107,6 +104,53 @@ func CullMask(n gorge.CullMaskFlags) gorge.CullMaskFlags {
 		return gorge.CullMaskFlags(0xFF)
 	}
 	return n
+}
+
+// StencilFunc converts gorge stencil to opengl enum.
+func StencilFunc(n gorge.StencilFunc) gl.Enum {
+	switch n {
+	case gorge.StencilFuncNever:
+		return gl.NEVER
+	case gorge.StencilFuncLess:
+		return gl.LESS
+	case gorge.StencilFuncLequal:
+		return gl.LEQUAL
+	case gorge.StencilFuncGreater:
+		return gl.GREATER
+	case gorge.StencilFuncGequal:
+		return gl.GEQUAL
+	case gorge.StencilFuncEqual:
+		return gl.EQUAL
+	case gorge.StencilFuncNotequal:
+		return gl.NOTEQUAL
+	case gorge.StencilFuncAlways:
+		return gl.ALWAYS
+	}
+	// default
+	return gl.ALWAYS
+}
+
+// StencilOp converts gorge stencil to opengl.
+func StencilOp(n gorge.StencilOp) gl.Enum {
+	switch n {
+	case gorge.StencilOpKeep:
+		return gl.KEEP
+	case gorge.StencilOpZero:
+		return gl.ZERO
+	case gorge.StencilOpReplace:
+		return gl.REPLACE
+	case gorge.StencilOpIncr:
+		return gl.INCR
+	case gorge.StencilOpDecr:
+		return gl.DECR
+	case gorge.StencilOpIncrWrap:
+		return gl.INCR_WRAP
+	case gorge.StencilOpDecrWrap:
+		return gl.DECR_WRAP
+	case gorge.StencilOpInvert:
+		return gl.INVERT
+	}
+	return gl.KEEP
 }
 
 // From glTf-Sample-Viewer

@@ -1,8 +1,6 @@
 package gorlet
 
 import (
-	"math"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/static"
@@ -16,26 +14,10 @@ type gEntity struct {
 	*gorge.RenderableComponent
 }
 
-// quadEntity returns a quad meshEntity based on primitive.MeshEntity.
-func quadEntity() *gEntity {
+func newEntity(mesh gorge.Mesher) *gEntity {
 	mat := gorge.NewShaderMaterial(static.Shaders.UI)
 	mat.Queue = 100
-	// mat.Depth = gorge.DepthRead // Fix this
-	mat.Depth = gorge.DepthNone // Fix this
-
-	mesh := gorge.NewMesh(&gorge.MeshData{
-		Format: gorge.VertexFormatPTN(),
-		Vertices: []float32{
-			/*P:*/ 0, 1, 0 /*T*/, 0, 0 /*N*/, 0, 0, 1,
-			/*P:*/ 1, 1, 0 /*T*/, 1, 0 /*N*/, 0, 0, 1,
-			/*P:*/ 1, 0, 0 /*T*/, 1, 1 /*N*/, 0, 0, 1,
-			/*P:*/ 0, 0, 0 /*T*/, 0, 1 /*N*/, 0, 0, 1,
-		},
-		Indices: []uint32{
-			0, 2, 1,
-			2, 0, 3,
-		},
-	})
+	mat.Depth = gorge.DepthRead
 	return &gEntity{
 		TransformComponent:  *gorge.NewTransformComponent(),
 		ColorableComponent:  *gorge.NewColorableComponent(1, 1, 1, 1),
@@ -43,36 +25,14 @@ func quadEntity() *gEntity {
 	}
 }
 
+// quadEntity returns a quad meshEntity based on primitive.MeshEntity.
+func quadEntity() *gEntity {
+	return newEntity(gorge.NewMesh(quadMeshData()))
+}
+
 // PolyMeshData returns a poly as meshData.
 func polyEntity(n int) *gEntity {
-	points := []float32{}
-	p := m32.Vec3{0, .5, 0}
-	theta := float32(math.Pi) / (float32(n) / 2)
-	r := m32.M3Rotate(theta)
-	for i := 0; i < n+1; i++ {
-		o := p.Add(m32.Vec3{.5, .5, 0})
-		points = append(points, o[:]...)
-		p = r.MulV3(p)
-	}
-	meshData := &gorge.MeshData{
-		Format:   gorge.VertexFormatP(),
-		Vertices: points,
-		Indices:  nil,
-	}
-
-	mat := gorge.NewShaderMaterial(static.Shaders.UI)
-	mat.Queue = 100
-	// mat.Depth = gorge.DepthRead
-	mat.Depth = gorge.DepthNone
-
-	mesh := gorge.NewMesh(meshData)
-	mesh.DrawMode = gorge.DrawTriangleFan
-
-	return &gEntity{
-		TransformComponent:  *gorge.NewTransformComponent(),
-		ColorableComponent:  *gorge.NewColorableComponent(1, 1, 1, 1),
-		RenderableComponent: gorge.NewRenderableComponent(mesh, mat),
-	}
+	return newEntity(gorge.NewMesh(polyMeshData(n)))
 }
 
 type graphicer interface {
@@ -91,10 +51,17 @@ func rectElement(ent graphicer) Func {
 			t.Scale[0] = r[2] - r[0]
 			t.Scale[1] = r[3] - r[1]
 		})
+		// Defaults renderable, use it on label too
 		b.Observe("color", ObsFunc(ent.Colorable().SetColorv))
 		b.Observe("material", ObsFunc(ent.Renderable().SetMaterial))
 		b.Observe("texture", ObsFunc(func(tex gorge.Texturer) {
 			ent.Renderable().Material.SetTexture("albedoMap", tex)
+		}))
+		b.Observe("stencil", ObsFunc(func(s *gorge.Stencil) {
+			ent.Renderable().Material.Stencil = s
+		}))
+		b.Observe("colorMask", ObsFunc(func(b *[4]bool) {
+			ent.Renderable().Material.ColorMask = b
 		}))
 		b.Observe("order", ObsFunc(ent.Renderable().SetOrder))
 		// Defaults

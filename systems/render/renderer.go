@@ -20,6 +20,9 @@ type Render struct {
 	Renderables    []*RenderableGroup
 	renderablesMap map[*gorge.RenderableComponent]*RenderableGroup
 
+	// TODO create global gl state here to avoid calling gl stuff every material
+	// cgo, js, etc.. calls might be expensive
+
 	buffers  *bufferManager
 	vbos     *vboManager
 	textures *textureManager
@@ -144,6 +147,7 @@ func (r *Render) AddRenderable(re Renderable) {
 	renderable := re.Renderable()
 	key := renderable
 
+	// Find best group for renderable
 	if group, ok := r.renderablesMap[key]; ok {
 		// We are adding stuff so we reset the transfer buf
 		// (Grow method would be better)
@@ -290,6 +294,11 @@ func (r *Render) SetupShader(
 		gl.Disable(gl.DEPTH_TEST)
 		gl.DepthMask(false)
 	}
+	if mat.ColorMask == nil {
+		gl.ColorMask(true, true, true, true)
+	} else {
+		gl.ColorMask(mat.ColorMask[0], mat.ColorMask[1], mat.ColorMask[2], mat.ColorMask[3])
+	}
 
 	// This can be done in shader?
 	if mat.DoubleSided {
@@ -304,11 +313,15 @@ func (r *Render) SetupShader(
 		gl.FrontFace(gl.CW)
 	}
 	// New stencil test
-	if mat.Stencil {
+	if mat.Stencil != nil {
 		gl.Enable(gl.STENCIL_TEST)
-		gl.StencilMask(mat.StencilMask)
-		gl.StencilFunc(mat.StencilFunc.Func, mat.StencilFunc.Ref, mat.StencilFunc.Mask)
-		gl.StencilOp(mat.StencilOp.Fail, mat.StencilOp.ZFail, mat.StencilOp.ZPass)
+		gl.StencilMask(mat.Stencil.WriteMask)
+		gl.StencilFunc(StencilFunc(mat.Stencil.Func), mat.Stencil.Ref, mat.Stencil.ReadMask)
+		gl.StencilOp(
+			StencilOp(mat.Stencil.Fail),
+			StencilOp(mat.Stencil.ZFail),
+			StencilOp(mat.Stencil.ZPass),
+		)
 		ri.StencilDirty = true
 	} else {
 		// gl.StencilMask(0xFF)
@@ -321,7 +334,7 @@ func (r *Render) SetupShader(
 	shader.Bind()
 	// This is new since I don't have any a_Attribute left
 	// Pick only the first
-	re := group.Front()
+	re := group.Front() // Get an instance
 	modelMat4 := re.Mat4()
 
 	for k, u := range shader.uniforms {
@@ -362,20 +375,20 @@ func (r *Render) SetupShader(
 	// shader will ignore it if uniform doesn't exists
 	for i, k := range shader.samplers {
 		gl.ActiveTexture(gl.TEXTURE0 + gl.Enum(i))
-		hasK := "has_" + k
+		hasK := "has_" + k // disable this
 		shader.Set(k, i)
 
 		if t := mat.GetTexture(k); t != nil {
 			// TODO: {lpf} do not use uniforms for this
 			// we can use Defines previously
-			shader.Set(hasK, true)
+			shader.Set(hasK, true) // disable this
 			r.textures.Bind(t)
 			continue
 		}
 
 		// Global samplers
 		if tex, ok := ri.Samplers[k]; ok {
-			shader.Set(hasK, true)
+			shader.Set(hasK, true) // disable this
 			gl.BindTexture(tex.Type, tex.ID)
 			continue
 		}

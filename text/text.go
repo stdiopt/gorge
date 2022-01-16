@@ -75,9 +75,13 @@ func (m Mode) String() string {
 	return "Mode#unknown"
 }
 
+type mesh = gorge.Mesh
+
 // Mesh to be used on renderable update must be called to update the mesh after
 // changing.
 type Mesh struct {
+	mesh
+
 	Text string
 	// Boundary counting from starting Point
 	Boundary m32.Vec2
@@ -97,7 +101,6 @@ type Mesh struct {
 	// Allow this to be swapped?
 
 	// cached mesh and meshData
-	mesh     gorge.Mesh
 	meshData gorge.MeshData
 }
 
@@ -402,7 +405,7 @@ func (m *Mesh) updateFlow() {
 	}
 }
 
-type mesh = Mesh
+type textMesh = Mesh
 
 // Entity renderable entity
 type Entity struct {
@@ -410,7 +413,7 @@ type Entity struct {
 	gorge.RenderableComponent
 	gorge.ColorableComponent
 
-	*mesh
+	*textMesh
 }
 
 // New setups the renderable with a font
@@ -419,12 +422,13 @@ func New(font *Font, opts ...MeshFunc) *Entity {
 	mat.SetTexture("albedoMap", font.Texture)
 
 	textMesh := NewMesh(font, opts...)
+	var _ gorge.Mesher = textMesh
 
 	t := &Entity{
 		TransformComponent:  *gorge.NewTransformComponent(),
 		ColorableComponent:  *gorge.NewColorableComponent(1, 1, 1, 1),
-		RenderableComponent: *gorge.NewRenderableComponent(&textMesh.mesh, mat),
-		mesh:                textMesh,
+		RenderableComponent: *gorge.NewRenderableComponent(textMesh, mat),
+		textMesh:            textMesh,
 	}
 	return t
 }

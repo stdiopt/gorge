@@ -2,8 +2,6 @@ package gorge
 
 import (
 	"fmt"
-
-	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
 // Material the material
@@ -20,10 +18,10 @@ type Material struct {
 
 	/* New: stencil experiment */
 	// Create stencil groups?!
-	Stencil     bool
-	StencilMask uint32
-	StencilFunc StencilFunc
-	StencilOp   StencilOp
+	Stencil *Stencil
+
+	// Extra stuff for enable and disable fragment rendering mask.
+	ColorMask *[4]bool
 
 	shaderProps
 }
@@ -80,25 +78,12 @@ func (m *Material) SetDisableShadow(v bool) {
 }
 
 // SetStencil sets the stencil property for material.
-func (m *Material) SetStencil(v bool) {
-	m.Stencil = v
+func (m *Material) SetStencil(s *Stencil) {
+	m.Stencil = s
 }
 
-// SetStencilMask sets the stencil mask for material.
-func (m *Material) SetStencilMask(v uint32) {
-	m.StencilMask = v
-}
-
-// SetStencilFunc sets the stencil func which
-// stencilFunc describes whether OpenGL should pass or discard fragments based
-// on the stencil buffer's content
-func (m *Material) SetStencilFunc(f gl.Enum, ref int, mask uint32) {
-	m.StencilFunc = StencilFunc{f, ref, mask}
-}
-
-// SetStencilOp describes the action when updating the stencil buffer.
-func (m *Material) SetStencilOp(fail, zfail, zpass gl.Enum) {
-	m.StencilOp = StencilOp{fail, zfail, zpass}
+func (m *Material) SetColorMask(r, g, b, a bool) {
+	m.ColorMask = &[4]bool{r, g, b, a}
 }
 
 // Defines override shaderProp defines with hierarchy
@@ -156,19 +141,6 @@ func (m *Material) GetTexture(name string) *Texture {
 	return nil
 }
 
-// BlendType for material
-// TODO: Fix this blending stuff with src and dst for Func
-type BlendType uint32
-
-const (
-	// BlendOneOneMinusSrcAlpha - gl.ONE, gl.ONE_MINUS_SRC_ALPHA
-	BlendOneOneMinusSrcAlpha = BlendType(iota)
-	// BlendOneOne - gl.ONE, gl.ONE
-	BlendOneOne
-	// BlendDisable - disable blending
-	BlendDisable
-)
-
 // DepthMode handle depth R&W types on render
 type DepthMode uint32
 
@@ -178,23 +150,3 @@ const (
 	DepthRead
 	DepthNone
 )
-
-// StencilFunc stencil function params.
-// "only describes whether OpenGL should pass or discard fragments based on the
-// stencil buffer's content, not how we can actually update the buffer."
-type StencilFunc struct {
-	Func gl.Enum
-	Ref  int
-	Mask uint32
-}
-
-// StencilOp sets the stencil operation for the material
-// contains three options of which we can specify for each option what action to take:
-// Fail: action to take if the stencil test fails.
-// ZFail: action to take if the stencil test passes, but the depth test fails.
-// ZPass: action to take if both the stencil and the depth test pass.
-type StencilOp struct {
-	Fail  gl.Enum
-	ZFail gl.Enum
-	ZPass gl.Enum
-}

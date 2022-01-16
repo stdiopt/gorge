@@ -25,7 +25,7 @@ func FromContext(g *gorge.Context) *Context {
 
 	log.Println("Initializing system")
 	dbg := newDebugLines()
-	dbg.Material.SetQueue(200)
+	dbg.SetQueue(200)
 	dbg.SetCullMask(gorge.CullMaskUIDebug)
 	g.Add(dbg)
 

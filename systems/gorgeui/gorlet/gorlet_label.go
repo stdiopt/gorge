@@ -103,6 +103,11 @@ func Label(t string) Func {
 		b.Observe("material", ObsFunc(func(m gorge.Materialer) { ent.SetMaterial(m) }))
 		b.Observe("order", ObsFunc(func(o int) { ent.SetOrder(o) }))
 
+		b.Observe("stencil", ObsFunc(func(s *gorge.Stencil) {
+			// log.Println("Receiving stencil on label", s)
+			ent.Stencil = s
+		}))
+
 		root.Set("text", t)
 	}
 }

@@ -139,6 +139,9 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			int32(ri.Viewport[2]),
 			int32(ri.Viewport[3]),
 		)
+		// Reset maskings
+		gl.ColorMask(true, true, true, true)
+		gl.DepthMask(true)
 
 		// XXX: New stencil test clearing, defaults to 0
 		// This might be optional on camera, not sure
@@ -151,12 +154,9 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			// Based on camera material
 			skyBox(ri)
 		case gorge.ClearColor:
-			gl.ColorMask(true, true, true, true)
-			gl.DepthMask(true)
 			gl.ClearColor(cam.ClearColor[0], cam.ClearColor[1], cam.ClearColor[2], 1)
 			gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		case gorge.ClearDepthOnly:
-			gl.DepthMask(true)
 			gl.Clear(gl.DEPTH_BUFFER_BIT)
 		case gorge.ClearNothing:
 			// Nothing duh
