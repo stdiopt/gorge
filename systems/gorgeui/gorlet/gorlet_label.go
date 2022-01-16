@@ -3,7 +3,6 @@ package gorlet
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/text"
 )
@@ -30,23 +29,19 @@ func Label(t string) Func {
 	return func(b *Builder) {
 		var autoSize bool
 
-		mat := gorge.NewShaderMaterial(static.Shaders.Unlit)
-		mat.SetQueue(100)
+		mesh := text.NewMesh(gorgeui.DefaultFont)
+		ent := newEntity(mesh)
 		// Use this instead or some common way to GET UI
-		mat.SetDepth(gorge.DepthRead)
-		mat.SetTexture("albedoMap", gorgeui.DefaultFont.Texture)
+		ent.Material.SetTexture("albedoMap", gorgeui.DefaultFont.Texture)
+		ent.SetScale(1, -1, 1) // UI is inverted
+		ent.Color = m32.Color(1)
 
 		Alignment := [2]text.Align{text.AlignCenter, text.AlignCenter}
 
-		ent := text.New(gorgeui.DefaultFont)
-		ent.SetMaterial(mat)
-		ent.SetScale(1, -1, 1) // UI is inverted
-
 		// Defaults
-		ent.Overflow = text.OverflowWordWrap
-		ent.Size = 2
-		ent.Alignment = Alignment[0]
-		ent.Color = m32.Color(1)
+		mesh.Overflow = text.OverflowWordWrap
+		mesh.Size = 2
+		mesh.Alignment = Alignment[0]
 
 		root := b.Root()
 		root.AddElement(ent)
@@ -65,40 +60,40 @@ func Label(t string) Func {
 				}
 				if root.Anchor[0] == root.Anchor[2] {
 					r[0], r[2] = pr[0], pr[2]
-					root.Dim[0] = ent.Max[0]
+					root.Dim[0] = mesh.Max[0]
 				}
 				if root.Anchor[1] == root.Anchor[3] {
-					root.Dim[1] = ent.Max[1] - ent.Min[1]
+					root.Dim[1] = mesh.Max[1] - mesh.Min[1]
 				}
 			}
 
 			bounds := m32.Vec2{r[2] - r[0], r[3] - r[1]}
-			if ent.Boundary != bounds {
-				ent.SetBoundary(bounds[0], bounds[1])
+			if mesh.Boundary != bounds {
+				mesh.SetBoundary(bounds[0], bounds[1])
 			}
 
 			// This is executed regardless the text change
-			textHeight := float32(ent.Lines) * ent.Size
+			textHeight := float32(mesh.Lines) * mesh.Size
 			switch Alignment[1] {
 			case text.AlignStart:
-				ent.Position[1] = r[1] + ent.Size*0.25
+				ent.Position[1] = r[1] + mesh.Size*0.25
 			case text.AlignCenter:
-				ent.Position[1] = r[3] - (bounds[1]*.5 + textHeight*.5) + ent.Size*0.25 // top, center
+				ent.Position[1] = r[3] - (bounds[1]*.5 + textHeight*.5) + mesh.Size*0.25 // top, center
 			case text.AlignEnd:
-				ent.Position[1] = r[3] - textHeight + ent.Size*0.25
+				ent.Position[1] = r[3] - textHeight + mesh.Size*0.25
 			}
 		})
 
 		b.Observe("autoSize", ObsFunc(func(v bool) { autoSize = v }))
-		b.Observe("text", ObsFunc(func(s string) { ent.SetText(s) }))
+		b.Observe("text", ObsFunc(func(s string) { mesh.SetText(s) }))
 		b.Observe("textColor", ObsFunc(func(c m32.Vec4) { ent.SetColorv(c) }))
-		b.Observe("fontScale", ObsFunc(func(v float32) { ent.SetSize(v) }))
+		b.Observe("fontScale", ObsFunc(func(v float32) { mesh.SetSize(v) }))
 		b.Observe("textAlign", ObsFunc(func(a [2]text.Align) {
 			Alignment = a
-			ent.SetAlignment(Alignment[0])
+			mesh.SetAlignment(Alignment[0])
 		}))
-		b.Observe("overflow", ObsFunc(func(o text.Overflow) { ent.SetOverflow(o) }))
-		b.Observe("textOverflow", ObsFunc(func(o text.Overflow) { ent.SetOverflow(o) }))
+		b.Observe("overflow", ObsFunc(func(o text.Overflow) { mesh.SetOverflow(o) }))
+		b.Observe("textOverflow", ObsFunc(func(o text.Overflow) { mesh.SetOverflow(o) }))
 		b.Observe("material", ObsFunc(func(m gorge.Materialer) { ent.SetMaterial(m) }))
 		b.Observe("order", ObsFunc(func(o int) { ent.SetOrder(o) }))
 

@@ -16,9 +16,8 @@ type gEntity struct {
 
 func newEntity(mesh gorge.Mesher) *gEntity {
 	mat := gorge.NewShaderMaterial(static.Shaders.UI)
-	mat.Queue = 100
-	// mat.Depth = gorge.DepthRead
-	mat.Depth = gorge.DepthNone
+	mat.Queue = 3000
+	mat.Depth = gorge.DepthRead
 	return &gEntity{
 		TransformComponent:  *gorge.NewTransformComponent(),
 		ColorableComponent:  *gorge.NewColorableComponent(1, 1, 1, 1),
