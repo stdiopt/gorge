@@ -62,6 +62,8 @@ func (pl *PL) CapturePrefilter(src, target string) PipelineFunc {
 						prefilterMap.ID, mip,
 					)
 					gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+					gl.Disable(gl.BLEND)
+					gl.Disable(gl.DEPTH_TEST)
 					pl.renderCube()
 				}
 			}

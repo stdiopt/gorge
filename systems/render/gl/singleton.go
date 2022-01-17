@@ -13,9 +13,9 @@ type wrapperi interface {
 var glw wrapperi //*Wrapper
 
 func Init(w *Wrapper) {
-	// s := &stateful{wrapper: w}
-	// s.init()
-	glw = w
+	s := &stateful{wrapper: w}
+	s.init()
+	glw = s
 	log.Println("GL The wrapper:", w)
 	log.Println("GL version:", w.GetString(VERSION))
 	log.Println("GL Renderer:", w.GetString(RENDERER))

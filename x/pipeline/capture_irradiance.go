@@ -48,8 +48,10 @@ func (pl *PL) CaptureIrradiance(src, target string) PipelineFunc {
 						gl.Enum(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i), irradianceTex.ID, 0)
 
 					gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
+					gl.Disable(gl.BLEND)
+					gl.Disable(gl.DEPTH_TEST)
 					pl.renderCube()
+
 				}
 			}
 			gl.BindVertexArray(gl.Null)
