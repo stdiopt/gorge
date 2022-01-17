@@ -32,7 +32,7 @@ func (pl *PL) CaptureIrradiance(src, target string) PipelineFunc {
 
 			gl.ActiveTexture(gl.TEXTURE0)
 			gl.BindTexture(gl.TEXTURE_CUBE_MAP, tex.ID)
-			gl.Viewport(0, 0, size, size)
+			gl.Viewport(0, 0, int32(size), int32(size))
 			gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, pl.captureFBO)
 
 			{ // For some reason this makes it work on webgl

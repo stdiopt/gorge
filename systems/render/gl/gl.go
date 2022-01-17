@@ -817,5 +817,5 @@ type Context interface {
 	// normalizes device coordinates to window coordinates.
 	//
 	// http://www.khronos.org/opengles/sdk/docs/man3/html/glViewport.xhtml
-	Viewport(x, y, width, height int)
+	Viewport(x, y, width, height int32)
 }

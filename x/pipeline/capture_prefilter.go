@@ -45,10 +45,10 @@ func (pl *PL) CapturePrefilter(src, target string) PipelineFunc {
 			}
 			maxMipLevels := 5
 			for mip := 0; mip < maxMipLevels; mip++ {
-				mipWidth := int(128 * math.Pow(0.5, float64(mip)))
-				mipHeight := int(128 * math.Pow(0.5, float64(mip)))
+				mipWidth := int32(128 * math.Pow(0.5, float64(mip)))
+				mipHeight := int32(128 * math.Pow(0.5, float64(mip)))
 				gl.BindRenderbuffer(gl.RENDERBUFFER, pl.captureRBO)
-				gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, mipWidth, mipHeight)
+				gl.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, int(mipWidth), int(mipHeight))
 				gl.Viewport(0, 0, mipWidth, mipHeight)
 
 				roughness := float32(mip) / float32(maxMipLevels-1)

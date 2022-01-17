@@ -1253,8 +1253,8 @@ func (g *Wrapper) VertexAttribPointer(dst Attrib, size int, ty Enum, normalized 
 // normalizes device coordinates to window coordinates.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glViewport.xhtml
-func (g *Wrapper) Viewport(x int, y int, width int, height int) {
-	gl.Viewport(int32(x), int32(y), int32(width), int32(height))
+func (g *Wrapper) Viewport(x, y, width, height int32) {
+	gl.Viewport(x, y, width, height)
 }
 
 // GetUniformBlockIndex retrieves the index of a uniform block within program.

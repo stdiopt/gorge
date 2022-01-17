@@ -100,7 +100,7 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 		gl.FrontFace(gl.CW)
 		gl.BindVertexArray(gl.Null)
 		gl.BindFramebuffer(gl.FRAMEBUFFER, gl.Null)
-		gl.Viewport(int(oldVP[0]), int(oldVP[1]), int(oldVP[2]), int(oldVP[3]))
+		gl.Viewport(int32(oldVP[0]), int32(oldVP[1]), int32(oldVP[2]), int32(oldVP[3]))
 
 		s.Props["hasEnvMap"] = true
 		s.Samplers["envMap"] = cubeTex

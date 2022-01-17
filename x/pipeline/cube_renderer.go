@@ -21,10 +21,10 @@ func (pl *PL) RenderCube(srcMap string, vp m32.Vec4) PipelineFunc {
 
 			VP := p.Projection.Mul(p.View.Mat3().Mat4())
 
-			x := int(p.Viewport[2] * vp[0])
-			y := int(p.Viewport[3] * vp[1])
-			w := int(p.Viewport[2] * vp[2])
-			h := int(p.Viewport[3] * vp[3])
+			x := int32(p.Viewport[2] * vp[0])
+			y := int32(p.Viewport[3] * vp[1])
+			w := int32(p.Viewport[2] * vp[2])
+			h := int32(p.Viewport[3] * vp[3])
 			gl.Viewport(x, y, w, h)
 			gl.Clear(gl.DEPTH_BUFFER_BIT)
 			gl.DepthMask(false)
@@ -54,10 +54,10 @@ func (p *PL) RenderQuad(srcMap string, vp m32.Vec4) PipelineFunc {
 				next(p)
 				return
 			}
-			x := int(p.Viewport[2] * vp[0])
-			y := int(p.Viewport[3] * vp[1])
-			w := int(p.Viewport[2] * vp[2])
-			h := int(p.Viewport[3] * vp[3])
+			x := int32(p.Viewport[2] * vp[0])
+			y := int32(p.Viewport[3] * vp[1])
+			w := int32(p.Viewport[2] * vp[2])
+			h := int32(p.Viewport[3] * vp[3])
 			gl.Viewport(x, y, w, h)
 			gl.Clear(gl.DEPTH_BUFFER_BIT)
 			gl.DepthMask(false)
@@ -90,12 +90,12 @@ func (pl *PL) RenderQuadDepth(srcMap string, vp m32.Vec4) PipelineFunc {
 				return
 			}
 
-			x := int(p.Viewport[0] * vp[0])
-			y := int(p.Viewport[1] * vp[1])
-			w := int(p.Viewport[2] * vp[2])
-			h := int(p.Viewport[3] * vp[3])
+			x := int32(p.Viewport[0] * vp[0])
+			y := int32(p.Viewport[1] * vp[1])
+			w := int32(p.Viewport[2] * vp[2])
+			h := int32(p.Viewport[3] * vp[3])
 			gl.Viewport(x, y, w, h)
-			gl.Scissor(int32(x), int32(y), int32(w), int32(h))
+			gl.Scissor(x, y, w, h)
 			gl.Enable(gl.SCISSOR_TEST)
 
 			gl.Clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)

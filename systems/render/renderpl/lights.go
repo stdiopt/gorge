@@ -170,7 +170,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 			case gorge.LightDirectional:
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(0))
 				if l.DisableShadow {
-					continue
+					break
 				}
 				lightDepthIndex = depth2DIndex
 				mat4 = ls.processDepth2D(s, light, depth2DIndex)
@@ -179,7 +179,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 			case gorge.LightPoint:
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(1))
 				if l.DisableShadow {
-					continue
+					break
 				}
 				lightDepthIndex = depthCubeIndex
 				ls.processDepthCube(s, light, depthCubeIndex)

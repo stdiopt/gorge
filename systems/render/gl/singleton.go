@@ -4,404 +4,412 @@ package gl
 
 import "log"
 
-var wrapper *Wrapper
-
-func Init(glw *Wrapper) {
-	wrapper = glw
-	log.Println("GL The wrapper:", glw)
-	log.Println("GL version:", glw.GetString(VERSION))
-	log.Println("GL Renderer:", glw.GetString(RENDERER))
+type wrapperi interface {
+	Context3
+	Impl() string
 }
 
-func Global() *Wrapper { return wrapper }
+// var glw *Wrapper
+var glw wrapperi //*Wrapper
+
+func Init(w *Wrapper) {
+	// s := &stateful{wrapper: w}
+	// s.init()
+	glw = w
+	log.Println("GL The wrapper:", w)
+	log.Println("GL version:", w.GetString(VERSION))
+	log.Println("GL Renderer:", w.GetString(RENDERER))
+}
+
+func Global() wrapperi { return glw }
 
 // This function redirects to wrapper which implements the platform specific GL
 // There could be an overhead but hopefully they will be inlined
 
-func ActiveTexture(texture Enum) { wrapper.ActiveTexture(texture) }
+func ActiveTexture(texture Enum) { glw.ActiveTexture(texture) }
 
-func AttachShader(p Program, s Shader) { wrapper.AttachShader(p, s) }
+func AttachShader(p Program, s Shader) { glw.AttachShader(p, s) }
 
-func BindAttribLocation(p Program, a Attrib, name string) { wrapper.BindAttribLocation(p, a, name) }
+func BindAttribLocation(p Program, a Attrib, name string) { glw.BindAttribLocation(p, a, name) }
 
-func BindBuffer(target Enum, b Buffer) { wrapper.BindBuffer(target, b) }
+func BindBuffer(target Enum, b Buffer) { glw.BindBuffer(target, b) }
 
-func BindFramebuffer(target Enum, fb Framebuffer) { wrapper.BindFramebuffer(target, fb) }
+func BindFramebuffer(target Enum, fb Framebuffer) { glw.BindFramebuffer(target, fb) }
 
-func BindRenderbuffer(target Enum, rb Renderbuffer) { wrapper.BindRenderbuffer(target, rb) }
+func BindRenderbuffer(target Enum, rb Renderbuffer) { glw.BindRenderbuffer(target, rb) }
 
-func BindTexture(target Enum, t Texture) { wrapper.BindTexture(target, t) }
+func BindTexture(target Enum, t Texture) { glw.BindTexture(target, t) }
 
-func BindVertexArray(rb VertexArray) { wrapper.BindVertexArray(rb) }
+func BindVertexArray(rb VertexArray) { glw.BindVertexArray(rb) }
 
-func BlendColor(red, green, blue, alpha float32) { wrapper.BlendColor(red, green, blue, alpha) }
+func BlendColor(red, green, blue, alpha float32) { glw.BlendColor(red, green, blue, alpha) }
 
-func BlendEquation(mode Enum) { wrapper.BlendEquation(mode) }
+func BlendEquation(mode Enum) { glw.BlendEquation(mode) }
 
 func BlendEquationSeparate(modeRGB, modeAlpha Enum) {
-	wrapper.BlendEquationSeparate(modeRGB, modeAlpha)
+	glw.BlendEquationSeparate(modeRGB, modeAlpha)
 }
 
-func BlendFunc(sfactor, dfactor Enum) { wrapper.BlendFunc(sfactor, dfactor) }
+func BlendFunc(sfactor, dfactor Enum) { glw.BlendFunc(sfactor, dfactor) }
 
 func BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha Enum) {
-	wrapper.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
+	glw.BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
 }
 
-func BufferInit(target Enum, size int, usage Enum) { wrapper.BufferInit(target, size, usage) }
+func BufferInit(target Enum, size int, usage Enum) { glw.BufferInit(target, size, usage) }
 
-func BufferData(target Enum, src any, usage Enum) { wrapper.BufferData(target, src, usage) }
+func BufferData(target Enum, src any, usage Enum) { glw.BufferData(target, src, usage) }
 
 func BufferSubData(target Enum, offset int, src any) {
-	wrapper.BufferSubData(target, offset, src)
+	glw.BufferSubData(target, offset, src)
 }
 
-func CheckFramebufferStatus(target Enum) Enum { return wrapper.CheckFramebufferStatus(target) }
+func CheckFramebufferStatus(target Enum) Enum { return glw.CheckFramebufferStatus(target) }
 
-func Clear(mask Enum) { wrapper.Clear(mask) }
+func Clear(mask Enum) { glw.Clear(mask) }
 
-func ClearColor(red, green, blue, alpha float32) { wrapper.ClearColor(red, green, blue, alpha) }
+func ClearColor(red, green, blue, alpha float32) { glw.ClearColor(red, green, blue, alpha) }
 
-func ClearDepthf(d float32) { wrapper.ClearDepthf(d) }
+func ClearDepthf(d float32) { glw.ClearDepthf(d) }
 
-func ClearStencil(s int) { wrapper.ClearStencil(s) }
+func ClearStencil(s int) { glw.ClearStencil(s) }
 
-func ColorMask(red, green, blue, alpha bool) { wrapper.ColorMask(red, green, blue, alpha) }
+func ColorMask(red, green, blue, alpha bool) { glw.ColorMask(red, green, blue, alpha) }
 
-func CompileShader(s Shader) { wrapper.CompileShader(s) }
+func CompileShader(s Shader) { glw.CompileShader(s) }
 
 func CompressedTexImage2D(target Enum, level int, internalformat Enum, width, height, border int, data []byte) {
-	wrapper.CompressedTexImage2D(target, level, internalformat, width, height, border, data)
+	glw.CompressedTexImage2D(target, level, internalformat, width, height, border, data)
 }
 
 func CompressedTexSubImage2D(target Enum, level, xoffset, yoffset, width, height int, format Enum, data []byte) {
-	wrapper.CompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, data)
+	glw.CompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, data)
 }
 
 func CopyTexImage2D(target Enum, level int, internalformat Enum, x, y, width, height, border int) {
-	wrapper.CopyTexImage2D(target, level, internalformat, x, y, width, height, border)
+	glw.CopyTexImage2D(target, level, internalformat, x, y, width, height, border)
 }
 
 func CopyTexSubImage2D(target Enum, level, xoffset, yoffset, x, y, width, height int) {
-	wrapper.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
+	glw.CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
 }
 
-func CreateBuffer() Buffer { return wrapper.CreateBuffer() }
+func CreateBuffer() Buffer { return glw.CreateBuffer() }
 
-func CreateFramebuffer() Framebuffer { return wrapper.CreateFramebuffer() }
+func CreateFramebuffer() Framebuffer { return glw.CreateFramebuffer() }
 
-func CreateProgram() Program { return wrapper.CreateProgram() }
+func CreateProgram() Program { return glw.CreateProgram() }
 
-func CreateRenderbuffer() Renderbuffer { return wrapper.CreateRenderbuffer() }
+func CreateRenderbuffer() Renderbuffer { return glw.CreateRenderbuffer() }
 
-func CreateShader(ty Enum) Shader { return wrapper.CreateShader(ty) }
+func CreateShader(ty Enum) Shader { return glw.CreateShader(ty) }
 
-func CreateTexture() Texture { return wrapper.CreateTexture() }
+func CreateTexture() Texture { return glw.CreateTexture() }
 
-func CreateVertexArray() VertexArray { return wrapper.CreateVertexArray() }
+func CreateVertexArray() VertexArray { return glw.CreateVertexArray() }
 
-func CullFace(mode Enum) { wrapper.CullFace(mode) }
+func CullFace(mode Enum) { glw.CullFace(mode) }
 
-func DeleteBuffer(v Buffer) { wrapper.DeleteBuffer(v) }
+func DeleteBuffer(v Buffer) { glw.DeleteBuffer(v) }
 
-func DeleteFramebuffer(v Framebuffer) { wrapper.DeleteFramebuffer(v) }
+func DeleteFramebuffer(v Framebuffer) { glw.DeleteFramebuffer(v) }
 
-func DeleteProgram(p Program) { wrapper.DeleteProgram(p) }
+func DeleteProgram(p Program) { glw.DeleteProgram(p) }
 
-func DeleteRenderbuffer(v Renderbuffer) { wrapper.DeleteRenderbuffer(v) }
+func DeleteRenderbuffer(v Renderbuffer) { glw.DeleteRenderbuffer(v) }
 
-func DeleteShader(s Shader) { wrapper.DeleteShader(s) }
+func DeleteShader(s Shader) { glw.DeleteShader(s) }
 
-func DeleteTexture(v Texture) { wrapper.DeleteTexture(v) }
+func DeleteTexture(v Texture) { glw.DeleteTexture(v) }
 
-func DeleteVertexArray(v VertexArray) { wrapper.DeleteVertexArray(v) }
+func DeleteVertexArray(v VertexArray) { glw.DeleteVertexArray(v) }
 
-func DepthFunc(fn Enum) { wrapper.DepthFunc(fn) }
+func DepthFunc(fn Enum) { glw.DepthFunc(fn) }
 
-func DepthMask(flag bool) { wrapper.DepthMask(flag) }
+func DepthMask(flag bool) { glw.DepthMask(flag) }
 
-func DepthRangef(n, f float32) { wrapper.DepthRangef(n, f) }
+func DepthRangef(n, f float32) { glw.DepthRangef(n, f) }
 
-func DetachShader(p Program, s Shader) { wrapper.DetachShader(p, s) }
+func DetachShader(p Program, s Shader) { glw.DetachShader(p, s) }
 
-func Disable(cap Enum) { wrapper.Disable(cap) }
+func Disable(cap Enum) { glw.Disable(cap) }
 
-func DisableVertexAttribArray(a Attrib) { wrapper.DisableVertexAttribArray(a) }
+func DisableVertexAttribArray(a Attrib) { glw.DisableVertexAttribArray(a) }
 
-func DrawArrays(mode Enum, first, count int) { wrapper.DrawArrays(mode, first, count) }
+func DrawArrays(mode Enum, first, count int) { glw.DrawArrays(mode, first, count) }
 
 func DrawElements(mode Enum, count int, ty Enum, offset int) {
-	wrapper.DrawElements(mode, count, ty, offset)
+	glw.DrawElements(mode, count, ty, offset)
 }
 
-func Enable(cap Enum) { wrapper.Enable(cap) }
+func Enable(cap Enum) { glw.Enable(cap) }
 
-func EnableVertexAttribArray(a Attrib) { wrapper.EnableVertexAttribArray(a) }
+func EnableVertexAttribArray(a Attrib) { glw.EnableVertexAttribArray(a) }
 
-func Finish() { wrapper.Finish() }
+func Finish() { glw.Finish() }
 
-func Flush() { wrapper.Flush() }
+func Flush() { glw.Flush() }
 
 func FramebufferRenderbuffer(target, attachment, rbTarget Enum, rb Renderbuffer) {
-	wrapper.FramebufferRenderbuffer(target, attachment, rbTarget, rb)
+	glw.FramebufferRenderbuffer(target, attachment, rbTarget, rb)
 }
 
 func FramebufferTexture2D(target, attachment, texTarget Enum, t Texture, level int) {
-	wrapper.FramebufferTexture2D(target, attachment, texTarget, t, level)
+	glw.FramebufferTexture2D(target, attachment, texTarget, t, level)
 }
 
-func FrontFace(mode Enum) { wrapper.FrontFace(mode) }
+func FrontFace(mode Enum) { glw.FrontFace(mode) }
 
-func GenerateMipmap(target Enum) { wrapper.GenerateMipmap(target) }
+func GenerateMipmap(target Enum) { glw.GenerateMipmap(target) }
 
 func GetActiveAttrib(p Program, index uint32) (name string, size int, ty Enum) {
-	return wrapper.GetActiveAttrib(p, index)
+	return glw.GetActiveAttrib(p, index)
 }
 
 func GetActiveUniform(p Program, index uint32) (name string, size int, ty Enum) {
-	return wrapper.GetActiveUniform(p, index)
+	return glw.GetActiveUniform(p, index)
 }
 
-func GetAttachedShaders(p Program) []Shader { return wrapper.GetAttachedShaders(p) }
+func GetAttachedShaders(p Program) []Shader { return glw.GetAttachedShaders(p) }
 
-func GetAttribLocation(p Program, name string) Attrib { return wrapper.GetAttribLocation(p, name) }
+func GetAttribLocation(p Program, name string) Attrib { return glw.GetAttribLocation(p, name) }
 
-func GetBooleanv(dst []bool, pname Enum) { wrapper.GetBooleanv(dst, pname) }
+func GetBooleanv(dst []bool, pname Enum) { glw.GetBooleanv(dst, pname) }
 
-func GetFloatv(dst []float32, pname Enum) { wrapper.GetFloatv(dst, pname) }
+func GetFloatv(dst []float32, pname Enum) { glw.GetFloatv(dst, pname) }
 
-func GetIntegerv(dst []int32, pname Enum) { wrapper.GetIntegerv(dst, pname) }
+func GetIntegerv(dst []int32, pname Enum) { glw.GetIntegerv(dst, pname) }
 
-func GetInteger(pname Enum) int { return wrapper.GetInteger(pname) }
+func GetInteger(pname Enum) int { return glw.GetInteger(pname) }
 
-func GetBufferParameteri(target, value Enum) int { return wrapper.GetBufferParameteri(target, value) }
+func GetBufferParameteri(target, value Enum) int { return glw.GetBufferParameteri(target, value) }
 
-func GetError() Enum { return wrapper.GetError() }
+func GetError() Enum { return glw.GetError() }
 
 func GetFramebufferAttachmentParameteri(target, attachment, pname Enum) int {
-	return wrapper.GetFramebufferAttachmentParameteri(target, attachment, pname)
+	return glw.GetFramebufferAttachmentParameteri(target, attachment, pname)
 }
 
-func GetProgrami(p Program, pname Enum) int { return wrapper.GetProgrami(p, pname) }
+func GetProgrami(p Program, pname Enum) int { return glw.GetProgrami(p, pname) }
 
-func GetProgramInfoLog(p Program) string { return wrapper.GetProgramInfoLog(p) }
+func GetProgramInfoLog(p Program) string { return glw.GetProgramInfoLog(p) }
 
 func GetRenderbufferParameteri(target, pname Enum) int {
-	return wrapper.GetRenderbufferParameteri(target, pname)
+	return glw.GetRenderbufferParameteri(target, pname)
 }
 
-func GetShaderi(s Shader, pname Enum) int { return wrapper.GetShaderi(s, pname) }
+func GetShaderi(s Shader, pname Enum) int { return glw.GetShaderi(s, pname) }
 
-func GetShaderInfoLog(s Shader) string { return wrapper.GetShaderInfoLog(s) }
+func GetShaderInfoLog(s Shader) string { return glw.GetShaderInfoLog(s) }
 
 func GetShaderPrecisionFormat(shadertype, precisiontype Enum) (rangeLow, rangeHigh, precision int) {
-	return wrapper.GetShaderPrecisionFormat(shadertype, precisiontype)
+	return glw.GetShaderPrecisionFormat(shadertype, precisiontype)
 }
 
-func GetShaderSource(s Shader) string { return wrapper.GetShaderSource(s) }
+func GetShaderSource(s Shader) string { return glw.GetShaderSource(s) }
 
-func GetString(pname Enum) string { return wrapper.GetString(pname) }
+func GetString(pname Enum) string { return glw.GetString(pname) }
 
 func GetTexParameterfv(dst []float32, target, pname Enum) {
-	wrapper.GetTexParameterfv(dst, target, pname)
+	glw.GetTexParameterfv(dst, target, pname)
 }
 
 func GetTexParameteriv(dst []int32, target, pname Enum) {
-	wrapper.GetTexParameteriv(dst, target, pname)
+	glw.GetTexParameteriv(dst, target, pname)
 }
 
-func GetUniformfv(dst []float32, src Uniform, p Program) { wrapper.GetUniformfv(dst, src, p) }
+func GetUniformfv(dst []float32, src Uniform, p Program) { glw.GetUniformfv(dst, src, p) }
 
-func GetUniformiv(dst []int32, src Uniform, p Program) { wrapper.GetUniformiv(dst, src, p) }
+func GetUniformiv(dst []int32, src Uniform, p Program) { glw.GetUniformiv(dst, src, p) }
 
-func GetUniformLocation(p Program, name string) Uniform { return wrapper.GetUniformLocation(p, name) }
+func GetUniformLocation(p Program, name string) Uniform { return glw.GetUniformLocation(p, name) }
 
-func GetVertexAttribf(src Attrib, pname Enum) float32 { return wrapper.GetVertexAttribf(src, pname) }
+func GetVertexAttribf(src Attrib, pname Enum) float32 { return glw.GetVertexAttribf(src, pname) }
 
 func GetVertexAttribfv(dst []float32, src Attrib, pname Enum) {
-	wrapper.GetVertexAttribfv(dst, src, pname)
+	glw.GetVertexAttribfv(dst, src, pname)
 }
 
-func GetVertexAttribi(src Attrib, pname Enum) int32 { return wrapper.GetVertexAttribi(src, pname) }
+func GetVertexAttribi(src Attrib, pname Enum) int32 { return glw.GetVertexAttribi(src, pname) }
 
 func GetVertexAttribiv(dst []int32, src Attrib, pname Enum) {
-	wrapper.GetVertexAttribiv(dst, src, pname)
+	glw.GetVertexAttribiv(dst, src, pname)
 }
 
-func Hint(target, mode Enum) { wrapper.Hint(target, mode) }
+func Hint(target, mode Enum) { glw.Hint(target, mode) }
 
-func IsBuffer(b Buffer) bool { return wrapper.IsBuffer(b) }
+func IsBuffer(b Buffer) bool { return glw.IsBuffer(b) }
 
-func IsEnabled(cap Enum) bool { return wrapper.IsEnabled(cap) }
+func IsEnabled(cap Enum) bool { return glw.IsEnabled(cap) }
 
-func IsFramebuffer(fb Framebuffer) bool { return wrapper.IsFramebuffer(fb) }
+func IsFramebuffer(fb Framebuffer) bool { return glw.IsFramebuffer(fb) }
 
-func IsProgram(p Program) bool { return wrapper.IsProgram(p) }
+func IsProgram(p Program) bool { return glw.IsProgram(p) }
 
-func IsRenderbuffer(rb Renderbuffer) bool { return wrapper.IsRenderbuffer(rb) }
+func IsRenderbuffer(rb Renderbuffer) bool { return glw.IsRenderbuffer(rb) }
 
-func IsShader(s Shader) bool { return wrapper.IsShader(s) }
+func IsShader(s Shader) bool { return glw.IsShader(s) }
 
-func IsTexture(t Texture) bool { return wrapper.IsTexture(t) }
+func IsTexture(t Texture) bool { return glw.IsTexture(t) }
 
-func LineWidth(width float32) { wrapper.LineWidth(width) }
+func LineWidth(width float32) { glw.LineWidth(width) }
 
-func LinkProgram(p Program) { wrapper.LinkProgram(p) }
+func LinkProgram(p Program) { glw.LinkProgram(p) }
 
-func PixelStorei(pname Enum, param int32) { wrapper.PixelStorei(pname, param) }
+func PixelStorei(pname Enum, param int32) { glw.PixelStorei(pname, param) }
 
-func PolygonOffset(factor, units float32) { wrapper.PolygonOffset(factor, units) }
+func PolygonOffset(factor, units float32) { glw.PolygonOffset(factor, units) }
 
 func ReadPixels(dst []byte, x, y, width, height int, format, ty Enum) {
-	wrapper.ReadPixels(dst, x, y, width, height, format, ty)
+	glw.ReadPixels(dst, x, y, width, height, format, ty)
 }
 
-func ReleaseShaderCompiler() { wrapper.ReleaseShaderCompiler() }
+func ReleaseShaderCompiler() { glw.ReleaseShaderCompiler() }
 
 func RenderbufferStorage(target, internalFormat Enum, width, height int) {
-	wrapper.RenderbufferStorage(target, internalFormat, width, height)
+	glw.RenderbufferStorage(target, internalFormat, width, height)
 }
 
-func SampleCoverage(value float32, invert bool) { wrapper.SampleCoverage(value, invert) }
+func SampleCoverage(value float32, invert bool) { glw.SampleCoverage(value, invert) }
 
-func Scissor(x, y, width, height int32) { wrapper.Scissor(x, y, width, height) }
+func Scissor(x, y, width, height int32) { glw.Scissor(x, y, width, height) }
 
-func ShaderSource(s Shader, src string) { wrapper.ShaderSource(s, src) }
+func ShaderSource(s Shader, src string) { glw.ShaderSource(s, src) }
 
-func StencilFunc(fn Enum, ref int, mask uint32) { wrapper.StencilFunc(fn, ref, mask) }
+func StencilFunc(fn Enum, ref int, mask uint32) { glw.StencilFunc(fn, ref, mask) }
 
 func StencilFuncSeparate(face, fn Enum, ref int, mask uint32) {
-	wrapper.StencilFuncSeparate(face, fn, ref, mask)
+	glw.StencilFuncSeparate(face, fn, ref, mask)
 }
 
-func StencilMask(mask uint32) { wrapper.StencilMask(mask) }
+func StencilMask(mask uint32) { glw.StencilMask(mask) }
 
-func StencilMaskSeparate(face Enum, mask uint32) { wrapper.StencilMaskSeparate(face, mask) }
+func StencilMaskSeparate(face Enum, mask uint32) { glw.StencilMaskSeparate(face, mask) }
 
-func StencilOp(fail, zfail, zpass Enum) { wrapper.StencilOp(fail, zfail, zpass) }
+func StencilOp(fail, zfail, zpass Enum) { glw.StencilOp(fail, zfail, zpass) }
 
 func StencilOpSeparate(face, sfail, dpfail, dppass Enum) {
-	wrapper.StencilOpSeparate(face, sfail, dpfail, dppass)
+	glw.StencilOpSeparate(face, sfail, dpfail, dppass)
 }
 
 func TexImage2D(target Enum, level int, internalFormat int, width, height int, format Enum, ty Enum, data []byte) {
-	wrapper.TexImage2D(target, level, internalFormat, width, height, format, ty, data)
+	glw.TexImage2D(target, level, internalFormat, width, height, format, ty, data)
 }
 
 func TexSubImage2D(target Enum, level int, x, y, width, height int, format, ty Enum, data []byte) {
-	wrapper.TexSubImage2D(target, level, x, y, width, height, format, ty, data)
+	glw.TexSubImage2D(target, level, x, y, width, height, format, ty, data)
 }
 
-func TexParameterf(target, pname Enum, param float32) { wrapper.TexParameterf(target, pname, param) }
+func TexParameterf(target, pname Enum, param float32) { glw.TexParameterf(target, pname, param) }
 
 func TexParameterfv(target, pname Enum, params []float32) {
-	wrapper.TexParameterfv(target, pname, params)
+	glw.TexParameterfv(target, pname, params)
 }
 
-func TexParameteri(target, pname Enum, param int) { wrapper.TexParameteri(target, pname, param) }
+func TexParameteri(target, pname Enum, param int) { glw.TexParameteri(target, pname, param) }
 
 func TexParameteriv(target, pname Enum, params []int32) {
-	wrapper.TexParameteriv(target, pname, params)
+	glw.TexParameteriv(target, pname, params)
 }
 
-func Uniform1f(dst Uniform, v float32) { wrapper.Uniform1f(dst, v) }
+func Uniform1f(dst Uniform, v float32) { glw.Uniform1f(dst, v) }
 
-func Uniform1fv(dst Uniform, src []float32) { wrapper.Uniform1fv(dst, src) }
+func Uniform1fv(dst Uniform, src []float32) { glw.Uniform1fv(dst, src) }
 
-func Uniform1i(dst Uniform, v int) { wrapper.Uniform1i(dst, v) }
+func Uniform1i(dst Uniform, v int) { glw.Uniform1i(dst, v) }
 
-func Uniform1iv(dst Uniform, src []int32) { wrapper.Uniform1iv(dst, src) }
+func Uniform1iv(dst Uniform, src []int32) { glw.Uniform1iv(dst, src) }
 
-func Uniform2f(dst Uniform, v0, v1 float32) { wrapper.Uniform2f(dst, v0, v1) }
+func Uniform2f(dst Uniform, v0, v1 float32) { glw.Uniform2f(dst, v0, v1) }
 
-func Uniform2fv(dst Uniform, src []float32) { wrapper.Uniform2fv(dst, src) }
+func Uniform2fv(dst Uniform, src []float32) { glw.Uniform2fv(dst, src) }
 
-func Uniform2i(dst Uniform, v0, v1 int) { wrapper.Uniform2i(dst, v0, v1) }
+func Uniform2i(dst Uniform, v0, v1 int) { glw.Uniform2i(dst, v0, v1) }
 
-func Uniform2iv(dst Uniform, src []int32) { wrapper.Uniform2iv(dst, src) }
+func Uniform2iv(dst Uniform, src []int32) { glw.Uniform2iv(dst, src) }
 
-func Uniform3f(dst Uniform, v0, v1, v2 float32) { wrapper.Uniform3f(dst, v0, v1, v2) }
+func Uniform3f(dst Uniform, v0, v1, v2 float32) { glw.Uniform3f(dst, v0, v1, v2) }
 
-func Uniform3fv(dst Uniform, src []float32) { wrapper.Uniform3fv(dst, src) }
+func Uniform3fv(dst Uniform, src []float32) { glw.Uniform3fv(dst, src) }
 
-func Uniform3i(dst Uniform, v0, v1, v2 int32) { wrapper.Uniform3i(dst, v0, v1, v2) }
+func Uniform3i(dst Uniform, v0, v1, v2 int32) { glw.Uniform3i(dst, v0, v1, v2) }
 
-func Uniform3iv(dst Uniform, src []int32) { wrapper.Uniform3iv(dst, src) }
+func Uniform3iv(dst Uniform, src []int32) { glw.Uniform3iv(dst, src) }
 
-func Uniform4f(dst Uniform, v0, v1, v2, v3 float32) { wrapper.Uniform4f(dst, v0, v1, v2, v3) }
+func Uniform4f(dst Uniform, v0, v1, v2, v3 float32) { glw.Uniform4f(dst, v0, v1, v2, v3) }
 
-func Uniform4fv(dst Uniform, src []float32) { wrapper.Uniform4fv(dst, src) }
+func Uniform4fv(dst Uniform, src []float32) { glw.Uniform4fv(dst, src) }
 
-func Uniform4i(dst Uniform, v0, v1, v2, v3 int32) { wrapper.Uniform4i(dst, v0, v1, v2, v3) }
+func Uniform4i(dst Uniform, v0, v1, v2, v3 int32) { glw.Uniform4i(dst, v0, v1, v2, v3) }
 
-func Uniform4iv(dst Uniform, src []int32) { wrapper.Uniform4iv(dst, src) }
+func Uniform4iv(dst Uniform, src []int32) { glw.Uniform4iv(dst, src) }
 
-func UniformMatrix2fv(dst Uniform, src []float32) { wrapper.UniformMatrix2fv(dst, src) }
+func UniformMatrix2fv(dst Uniform, src []float32) { glw.UniformMatrix2fv(dst, src) }
 
-func UniformMatrix3fv(dst Uniform, src []float32) { wrapper.UniformMatrix3fv(dst, src) }
+func UniformMatrix3fv(dst Uniform, src []float32) { glw.UniformMatrix3fv(dst, src) }
 
-func UniformMatrix4fv(dst Uniform, src []float32) { wrapper.UniformMatrix4fv(dst, src) }
+func UniformMatrix4fv(dst Uniform, src []float32) { glw.UniformMatrix4fv(dst, src) }
 
-func UseProgram(p Program) { wrapper.UseProgram(p) }
+func UseProgram(p Program) { glw.UseProgram(p) }
 
-func ValidateProgram(p Program) { wrapper.ValidateProgram(p) }
+func ValidateProgram(p Program) { glw.ValidateProgram(p) }
 
-func VertexAttrib1f(dst Attrib, x float32) { wrapper.VertexAttrib1f(dst, x) }
+func VertexAttrib1f(dst Attrib, x float32) { glw.VertexAttrib1f(dst, x) }
 
-func VertexAttrib1fv(dst Attrib, src []float32) { wrapper.VertexAttrib1fv(dst, src) }
+func VertexAttrib1fv(dst Attrib, src []float32) { glw.VertexAttrib1fv(dst, src) }
 
-func VertexAttrib2f(dst Attrib, x, y float32) { wrapper.VertexAttrib2f(dst, x, y) }
+func VertexAttrib2f(dst Attrib, x, y float32) { glw.VertexAttrib2f(dst, x, y) }
 
-func VertexAttrib2fv(dst Attrib, src []float32) { wrapper.VertexAttrib2fv(dst, src) }
+func VertexAttrib2fv(dst Attrib, src []float32) { glw.VertexAttrib2fv(dst, src) }
 
-func VertexAttrib3f(dst Attrib, x, y, z float32) { wrapper.VertexAttrib3f(dst, x, y, z) }
+func VertexAttrib3f(dst Attrib, x, y, z float32) { glw.VertexAttrib3f(dst, x, y, z) }
 
-func VertexAttrib3fv(dst Attrib, src []float32) { wrapper.VertexAttrib3fv(dst, src) }
+func VertexAttrib3fv(dst Attrib, src []float32) { glw.VertexAttrib3fv(dst, src) }
 
-func VertexAttrib4f(dst Attrib, x, y, z, w float32) { wrapper.VertexAttrib4f(dst, x, y, z, w) }
+func VertexAttrib4f(dst Attrib, x, y, z, w float32) { glw.VertexAttrib4f(dst, x, y, z, w) }
 
-func VertexAttrib4fv(dst Attrib, src []float32) { wrapper.VertexAttrib4fv(dst, src) }
+func VertexAttrib4fv(dst Attrib, src []float32) { glw.VertexAttrib4fv(dst, src) }
 
 func VertexAttribPointer(dst Attrib, size int, ty Enum, normalized bool, stride, offset int) {
-	wrapper.VertexAttribPointer(dst, size, ty, normalized, stride, offset)
+	glw.VertexAttribPointer(dst, size, ty, normalized, stride, offset)
 }
 
-func Viewport(x, y, width, height int) { wrapper.Viewport(x, y, width, height) }
+func Viewport(x, y, width, height int32) { glw.Viewport(x, y, width, height) }
 
 func GetUniformBlockIndex(p Program, name string) uint32 {
-	return wrapper.GetUniformBlockIndex(p, name)
+	return glw.GetUniformBlockIndex(p, name)
 }
 
 func UniformBlockBinding(p Program, index, bind uint32) {
-	wrapper.UniformBlockBinding(p, index, bind)
+	glw.UniformBlockBinding(p, index, bind)
 }
 
 func BindBufferBase(target Enum, n uint32, b Buffer) {
-	wrapper.BindBufferBase(target, n, b)
+	glw.BindBufferBase(target, n, b)
 }
 
 func GetActiveUniformi(p Program, index uint32, pname Enum) int32 {
-	return wrapper.GetActiveUniformi(p, index, pname)
+	return glw.GetActiveUniformi(p, index, pname)
 }
 
 func GetActiveUniformBlockiv(p Program, index uint32, pname Enum, params []int32) {
-	wrapper.GetActiveUniformBlockiv(p, index, pname, params)
+	glw.GetActiveUniformBlockiv(p, index, pname, params)
 }
 
 func GetActiveUniformBlockName(p Program, index uint32) string {
-	return wrapper.GetActiveUniformBlockName(p, index)
+	return glw.GetActiveUniformBlockName(p, index)
 }
 
 func DrawArraysInstanced(mode Enum, first, count, primcount uint32) {
-	wrapper.DrawArraysInstanced(mode, first, count, primcount)
+	glw.DrawArraysInstanced(mode, first, count, primcount)
 }
 
 func DrawElementsInstanced(mode Enum, count uint32, typ Enum, offset, primcount uint32) {
-	wrapper.DrawElementsInstanced(mode, count, typ, offset, primcount)
+	glw.DrawElementsInstanced(mode, count, typ, offset, primcount)
 }
 
 func VertexAttribDivisor(index Attrib, divisor uint32) {
-	wrapper.VertexAttribDivisor(index, divisor)
+	glw.VertexAttribDivisor(index, divisor)
 }
 
 /*

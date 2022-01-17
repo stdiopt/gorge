@@ -48,7 +48,7 @@ func newRenderer(g *gorge.Context) *Render {
 	gl.FrontFace(gl.CW)
 	gl.CullFace(gl.BACK)
 
-	// should be on material
+	// initialize a bunch of defaults to avoid stateful to fail.
 	gl.Disable(gl.BLEND)
 	gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 

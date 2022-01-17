@@ -126,10 +126,10 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 
 		cam := s.Camera.Camera()
 		gl.Viewport(
-			int(s.Viewport[0]),
-			int(s.Viewport[1]),
-			int(s.Viewport[2]),
-			int(s.Viewport[3]),
+			int32(s.Viewport[0]),
+			int32(s.Viewport[1]),
+			int32(s.Viewport[2]),
+			int32(s.Viewport[3]),
 		)
 
 		gl.Enable(gl.SCISSOR_TEST)

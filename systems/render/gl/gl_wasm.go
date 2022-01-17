@@ -984,7 +984,7 @@ func (g Wrapper) VertexAttribPointer(dst Attrib, size int, ty Enum, normalized b
 // normalizes device coordinates to window coordinates.
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glViewport.xhtml
-func (g Wrapper) Viewport(x, y, width, height int) {
+func (g Wrapper) Viewport(x, y, width, height int32) {
 	g.Call("viewport", x, y, width, height)
 }
 
