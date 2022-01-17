@@ -139,7 +139,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 
 	depthFBO := gl.CreateFramebuffer()
 
-	s := &lights{
+	ls := &lights{
 		renderer:        r,
 		depthFBO:        depthFBO,
 		depthDirShader:  depthDirShader,
@@ -153,7 +153,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 		// lightNames: lightNames,
 	}
 
-	return func(ri *render.Step) {
+	return func(s *render.Step) {
 		depthCubeIndex := 0
 		depth2DIndex := 0
 		lights := r.Lights.Items()
@@ -168,23 +168,23 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 
 			switch l.Type {
 			case gorge.LightDirectional:
-				if !l.DisableShadow {
-					lightDepthIndex = depth2DIndex
-					mat4 = s.processDepth2D(ri, light, depth2DIndex)
-					ri.Samplers[depthNames[depth2DIndex].Depth2D] = s.depth2DTex[depth2DIndex]
-					depth2DIndex++
-				}
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(0))
-			case gorge.LightPoint:
-				if !l.DisableShadow {
-					lightDepthIndex = depthCubeIndex
-					s.processDepthCube(ri, light, depthCubeIndex)
-					ri.Samplers[depthNames[depthCubeIndex].DepthCube] = s.depthCubeTex[depthCubeIndex]
-					// ri.SamplesCube[fmt.Sprintf("depthCube[%d].depthMap", depthCubeIndex)] = s.depthCubeTex[depthCubeIndex]
-					depthCubeIndex++
+				if l.DisableShadow {
+					continue
 				}
-				// Capture cubeDepth if any
+				lightDepthIndex = depth2DIndex
+				mat4 = ls.processDepth2D(s, light, depth2DIndex)
+				s.Samplers[depthNames[depth2DIndex].Depth2D] = ls.depth2DTex[depth2DIndex]
+				depth2DIndex++
+			case gorge.LightPoint:
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(1))
+				if l.DisableShadow {
+					continue
+				}
+				lightDepthIndex = depthCubeIndex
+				ls.processDepthCube(s, light, depthCubeIndex)
+				s.Samplers[depthNames[depthCubeIndex].DepthCube] = ls.depthCubeTex[depthCubeIndex]
+				depthCubeIndex++
 			case gorge.LightSpot:
 				// Same as Directional but with a projection tex
 				lightsUBO.WriteOffset(lightNames[ti].Type, int32(2))
@@ -202,8 +202,8 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 		// This should be on define
 		lightsUBO.WriteOffset("nLights", int32(r.Lights.Len()))
 		lightsUBO.Flush()
-		ri.Ubos["Lights"] = lightsUBO.ID()
-		next(ri)
+		s.Ubos["Lights"] = lightsUBO.ID()
+		next(s)
 	}
 }
 

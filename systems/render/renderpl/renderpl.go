@@ -24,7 +24,6 @@ func Pipeline(r *render.Context, fns ...PipelineFunc) render.StepFunc {
 func Default(g *gorge.Context) {
 	r := render.FromContext(g)
 	r.SetRenderStage(Pipeline(r,
-		// CubeSkyboxStage,
 		ProceduralSkybox,
 		EachCamera(
 			PrepareCamera,

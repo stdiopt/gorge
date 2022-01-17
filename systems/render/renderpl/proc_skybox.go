@@ -61,7 +61,7 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 	camProj := m32.Perspective(90, 1, .1, 10)
 
 	prevLightDir := m32.Vec3{0, 0, 0}
-	return func(ri *render.Step) {
+	return func(s *render.Step) {
 		// Find first directional light
 		// Do this elsewhere like on prepare
 		lightDir := m32.Vec3{-3, -3, -3} // Else we will use this
@@ -73,12 +73,12 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 			}
 		}
 		if lightDir == prevLightDir {
-			next(ri)
+			next(s)
 			return
 		}
 		prevLightDir = lightDir
 		// grab Env into cube
-		oldVP := ri.Viewport
+		oldVP := s.Viewport
 		gl.Viewport(0, 0, cubeTexSz, cubeTexSz)
 		gl.BindFramebuffer(gl.FRAMEBUFFER, targetFBO)
 		gl.BindVertexArray(skyboxVAO)
@@ -102,9 +102,9 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 		gl.BindFramebuffer(gl.FRAMEBUFFER, gl.Null)
 		gl.Viewport(int(oldVP[0]), int(oldVP[1]), int(oldVP[2]), int(oldVP[3]))
 
-		ri.Props["hasEnvMap"] = true
-		ri.Samplers["envMap"] = cubeTex
-		next(ri)
+		s.Props["hasEnvMap"] = true
+		s.Samplers["envMap"] = cubeTex
+		next(s)
 	}
 }
 

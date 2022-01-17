@@ -30,40 +30,40 @@ func EachCamera(pipes ...PipelineFunc) PipelineFunc {
 // - prepare upload buffer
 // - upload transform and color attribs
 func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
-	return func(p *render.Step) {
-		cam := p.Camera.Camera()
+	return func(s *render.Step) {
+		cam := s.Camera.Camera()
 
-		p.Viewport = cam.CalcViewport(r.Gorge().ScreenSize())
-		width := p.Viewport[2]
-		height := p.Viewport[3]
+		s.Viewport = cam.CalcViewport(r.Gorge().ScreenSize())
+		width := s.Viewport[2]
+		height := s.Viewport[3]
 
 		// Defaults for default material
-		p.Lights = r.Lights.Items()
+		s.Lights = r.Lights.Items()
 
-		mat := p.Camera.Mat4()
-		p.Projection = cam.ProjectionWithAspect(width / height)
-		p.View = mat.Inv()
-		p.CamPos = mat.Col(3).Vec3()
-		p.Ambient = cam.ClearColor
-		VP := p.Projection.Mul(p.View)
+		mat := s.Camera.Mat4()
+		s.Projection = cam.ProjectionWithAspect(width / height)
+		s.View = mat.Inv()
+		s.CamPos = mat.Col(3).Vec3()
+		s.Ambient = cam.ClearColor
+		VP := s.Projection.Mul(s.View)
 
-		p.Props["VP"] = VP
-		p.Props["ambient"] = p.View
-		p.Props["viewPos"] = p.CamPos
+		s.Props["VP"] = VP
+		s.Props["ambient"] = s.View
+		s.Props["viewPos"] = s.CamPos
 
-		p.CameraUBO.WriteOffset("VP", VP)
-		p.CameraUBO.WriteOffset("ambient", cam.ClearColor)
-		p.CameraUBO.WriteOffset("viewPos", p.CamPos)
-		p.CameraUBO.Flush()
+		s.CameraUBO.WriteOffset("VP", VP)
+		s.CameraUBO.WriteOffset("ambient", cam.ClearColor)
+		s.CameraUBO.WriteOffset("viewPos", s.CamPos)
+		s.CameraUBO.Flush()
 
-		p.Ubos["Camera"] = p.CameraUBO.ID()
+		s.Ubos["Camera"] = s.CameraUBO.ID()
 
 		// ri.renderables = ri.renderables[:0]
 
 		{ // queues
 			// we can't reset just yet if we don't delete from the thingie
 			// ri.QueuesIndex = ri.QueuesIndex[:0]
-			for _, q := range p.Queues {
+			for _, q := range s.Queues {
 				q.Renderables = q.Renderables[:0]
 			}
 		}
@@ -83,8 +83,8 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			}
 			// Check if we already processed this in some previous camera
 			// we don't need to reupload transform attribute
-			if p.RenderNumber != re.RenderNumber {
-				re.Update(p)
+			if s.RenderNumber != re.RenderNumber {
+				re.Update(s)
 			}
 
 			// If VBO is nil we skip
@@ -95,25 +95,25 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			// queue index
 			qi := re.Renderable().Queue
 			// Select queue to insert
-			q, ok := p.Queues[qi]
+			q, ok := s.Queues[qi]
 			if !ok {
 				q = &render.Queue{
 					Renderables: []*render.RenderableGroup{},
 				}
-				p.Queues[qi] = q
-				p.QueuesIndex = append(p.QueuesIndex, qi)
+				s.Queues[qi] = q
+				s.QueuesIndex = append(s.QueuesIndex, qi)
 			}
 			// Sort insert
 			q.Renderables = append(q.Renderables, re)
 		}
 		// NEW: Should sort By Order renderable
 		// we could eventually add Zsorter here too
-		for _, q := range p.Queues {
+		for _, q := range s.Queues {
 			sort.Sort(renderableGroupSorter(q.Renderables))
 		}
 
-		sort.Ints(p.QueuesIndex)
-		next(p)
+		sort.Ints(s.QueuesIndex)
+		next(s)
 	}
 }
 
@@ -121,23 +121,23 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 	// Get skybox AND procedural skybox renderer
 	skyBox := CameraSkybox(r, "envMap")
-	return func(ri *render.Step) {
+	return func(s *render.Step) {
 		// Render a SkyboxMaterial quad
 
-		cam := ri.Camera.Camera()
+		cam := s.Camera.Camera()
 		gl.Viewport(
-			int(ri.Viewport[0]),
-			int(ri.Viewport[1]),
-			int(ri.Viewport[2]),
-			int(ri.Viewport[3]),
+			int(s.Viewport[0]),
+			int(s.Viewport[1]),
+			int(s.Viewport[2]),
+			int(s.Viewport[3]),
 		)
 
 		gl.Enable(gl.SCISSOR_TEST)
 		gl.Scissor(
-			int32(ri.Viewport[0]),
-			int32(ri.Viewport[1]),
-			int32(ri.Viewport[2]),
-			int32(ri.Viewport[3]),
+			int32(s.Viewport[0]),
+			int32(s.Viewport[1]),
+			int32(s.Viewport[2]),
+			int32(s.Viewport[3]),
 		)
 		// Reset maskings
 		gl.ColorMask(true, true, true, true)
@@ -152,7 +152,7 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 		switch cam.ClearFlag {
 		case gorge.ClearSkybox:
 			// Based on camera material
-			skyBox(ri)
+			skyBox(s)
 		case gorge.ClearColor:
 			gl.ClearColor(cam.ClearColor[0], cam.ClearColor[1], cam.ClearColor[2], 1)
 			gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -162,7 +162,7 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			// Nothing duh
 		}
 		gl.Disable(gl.SCISSOR_TEST)
-		next(ri)
+		next(s)
 	}
 }
 
