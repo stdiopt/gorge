@@ -8,6 +8,12 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
+// Store this on renderable
+type renderable struct {
+	shader *Shader
+	vbo    *VBO
+}
+
 // RenderableGroup represents instance set of renderables
 type RenderableGroup struct {
 	// Instances
@@ -23,14 +29,13 @@ type RenderableGroup struct {
 
 	tro *bufutil.Cached[float32]
 
-	vbo    *VBO
-	shader *Shader
+	// vbo *VBO
+	// shader *Shader
 
 	// Cached material
 	material *gorge.Material
 	hash     uint // both mesh and material defines hash
 
-	// vboUpdate    bool
 	troResize bool
 }
 
@@ -47,6 +52,9 @@ func (rg *RenderableGroup) init() bool {
 	rg.tro = bufutil.NewCached[float32](rg.renderer.buffers.New(gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW))
 	rg.tro.Init(4 + 16 + 16) // 1 position
 
+	gorge.SetGPU(rg.renderable, &renderable{
+		vbo: vbo,
+	})
 	return true
 }
 
@@ -69,12 +77,15 @@ func (rg *RenderableGroup) Remove(r Renderable) {
 
 // Destroy unreferences all resources on this group.
 func (rg *RenderableGroup) Destroy() {
+	gorge.SetGPU(rg.renderable, nil)
+
 	rg.clearVAOS()
 	rg.tro.Destroy()
+	// Remove stuff from renderable
+
 	rg.renderable = nil
-	rg.vbo = nil
+	// rg.vbo = nil
 	rg.material = nil
-	rg.shader = nil
 }
 
 // Front returns the first Renderable on this group.
@@ -84,11 +95,18 @@ func (rg *RenderableGroup) Front() Renderable {
 
 // Update updates any related gpu buffer on the group based on pass
 // we update the group with the pass render number which might be updated
-func (rg *RenderableGroup) Update(p *Step) {
+func (rg *RenderableGroup) Update(s *Step) {
+	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
+	if !ok {
+		panic("something wrong")
+		// rr = &renderable{}
+		// gorge.SetGPU(rg.renderable, rr)
+	}
+
 	vbo, _ := rg.renderer.vbos.Get(rg.renderable.Mesh)
-	if vbo != rg.vbo {
+	if vbo != rr.vbo {
 		// Need to be aware if the the VBO format changed here
-		rg.vbo = vbo
+		rr.vbo = vbo
 		rg.clearVAOS()
 	}
 	if vbo == nil || vbo.VertexLen == 0 {
@@ -97,18 +115,18 @@ func (rg *RenderableGroup) Update(p *Step) {
 
 	hash := rg.material.DefinesHash() ^ rg.renderable.Mesh.DefinesHash()
 	if rg.material != rg.renderable.Material || hash != rg.hash {
-		s := rg.renderer.shaders.GetX(rg.renderable)
+		shdr := rg.renderer.shaders.GetX(rg.renderable)
 		// Rebuild VAO since material or mesh changed and we need to update
 		// VertexAttribs
-		if rg.shader != nil && rg.shader.attribsHash != s.attribsHash {
-			gl.DeleteVertexArray(rg.shaderVAO[rg.shader.attribsHash])
-			delete(rg.shaderVAO, rg.shader.attribsHash)
+		if rr.shader != nil && rr.shader.attribsHash != shdr.attribsHash {
+			gl.DeleteVertexArray(rg.shaderVAO[rr.shader.attribsHash])
+			delete(rg.shaderVAO, rr.shader.attribsHash)
 		}
 
 		// Recache stuff
 		rg.material = rg.renderable.Material
-		rg.shader = s
 		rg.hash = hash
+		rr.shader = shdr
 	}
 
 	// unitSize in floats
@@ -145,12 +163,16 @@ func (rg *RenderableGroup) Update(p *Step) {
 		rg.Count++
 	}
 	rg.tro.Flush()
-	rg.RenderNumber = p.RenderNumber
+	rg.RenderNumber = s.RenderNumber
 }
 
 // VBO returns the renderable VBO.
 func (rg *RenderableGroup) VBO() *VBO {
-	return rg.vbo
+	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
+	if !ok {
+		return nil
+	}
+	return rr.vbo
 }
 
 // VAO returns an existing VAO for shader hash, if vao doesn't exists it
@@ -159,7 +181,9 @@ func (rg *RenderableGroup) VBO() *VBO {
 // for normals vertexbuffers etc.
 func (rg *RenderableGroup) VAO(shader *Shader) gl.VertexArray {
 	if shader == nil {
-		shader = rg.shader
+		if rr, ok := gorge.GetGPU(rg.renderable).(*renderable); ok {
+			shader = rr.shader
+		}
 	}
 	if vao, ok := rg.shaderVAO[shader.attribsHash]; ok {
 		return vao
@@ -216,10 +240,14 @@ func (rg *RenderableGroup) bindAttribs(vao gl.VertexArray, shader *Shader) {
 		}
 	}
 
-	if rg.vbo == nil || rg.vbo.VertexLen == 0 {
+	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
+	if !ok {
+		return
+	}
+	if rr.vbo == nil || rr.vbo.VertexLen == 0 {
 		return
 	}
 
-	rg.vbo.BindAttribs(shader)
+	rr.vbo.BindAttribs(shader)
 	gl.BindVertexArray(gl.Null)
 }

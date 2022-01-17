@@ -50,6 +50,7 @@ type Entity struct {
 
 	name string // debug purposes
 
+	masked bool
 	// TODO: {lpf} give it a proper name.
 	onAdd      EntityFunc
 	clientArea *Entity
@@ -162,6 +163,11 @@ func (e *Entity) SetLayout(l Layouter) {
 		return
 	}
 	e.layouter = l
+}
+
+// SetMasked sets if the element will mask.
+func (e *Entity) SetMasked(m bool) {
+	e.masked = m
 }
 
 // GetEntities implement gorge.Container.

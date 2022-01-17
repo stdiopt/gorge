@@ -43,14 +43,8 @@ type graphicer interface {
 
 func rectElement(ent graphicer) Func {
 	return func(b *Builder) {
-		p := b.Root()
-		p.AddElement(ent)
-		gorge.HandleFunc(p, func(gorgeui.EventUpdate) {
-			r := p.Rect()
-			t := ent.Transform()
-			t.Scale[0] = r[2] - r[0]
-			t.Scale[1] = r[3] - r[1]
-		})
+		root := b.Root()
+		root.AddElement(ent)
 		// Defaults renderable, use it on label too
 		b.Observe("color", ObsFunc(ent.Colorable().SetColorv))
 		b.Observe("material", ObsFunc(ent.Renderable().SetMaterial))
@@ -64,8 +58,14 @@ func rectElement(ent graphicer) Func {
 			ent.Renderable().ColorMask = b
 		}))
 		b.Observe("order", ObsFunc(ent.Renderable().SetOrder))
+		gorge.HandleFunc(root, func(gorgeui.EventUpdate) {
+			r := root.Rect()
+			t := ent.Transform()
+			t.Scale[0] = r[2] - r[0]
+			t.Scale[1] = r[3] - r[1]
+		})
 		// Defaults
-		p.Set("color", m32.Color(0, 0, 0, .2))
+		root.Set("color", m32.Color(0, 0, 0, .2))
 	}
 }
 

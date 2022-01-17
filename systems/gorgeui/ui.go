@@ -85,7 +85,7 @@ func (w *UI) Rect() m32.Vec4 {
 	}
 }
 
-func (w *UI) CalcDim() m32.Vec2 {
+func (w *UI) CalcSize() m32.Vec2 {
 	cam := w.Camera.Camera()
 	if cam.ProjectionType != gorge.ProjectionOrtho {
 		return w.Dim

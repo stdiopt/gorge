@@ -23,17 +23,17 @@ func dorender(r *render.Context, s *render.Step) {
 			s.StencilDirty = false
 		}
 		renderables := s.Queues[qi].Renderables
-		for _, re := range renderables {
-			mlen := re.Instances.Len()
+		for _, rg := range renderables {
+			mlen := rg.Instances.Len()
 			if mlen == 0 {
 				continue
 			}
 
-			r.SetupShader(s, re)
-			vao := re.VAO(nil)
+			r.SetupShader(s, rg.Front())
+			vao := rg.VAO(nil)
 			gl.BindVertexArray(vao)
-			drawMode := render.DrawMode(re.Renderable().GetDrawMode())
-			r.Draw(drawMode, re.VBO(), re.Count)
+			drawMode := render.DrawMode(rg.Renderable().GetDrawMode())
+			r.Draw(drawMode, rg.VBO(), rg.Count)
 			gl.BindVertexArray(gl.Null)
 		}
 	}

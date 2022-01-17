@@ -1,5 +1,7 @@
 package gorge
 
+import "fmt"
+
 // BlendType for material
 // TODO: Fix this blending stuff with src and dst for Func maybe
 type BlendType uint32
@@ -22,6 +24,6 @@ func (b BlendType) String() string {
 	case BlendDisable:
 		return "BlendDisable"
 	default:
-		return "BlendTypeUnknown"
+		return fmt.Sprintf("BlendTypeUnknown(%d)", b)
 	}
 }

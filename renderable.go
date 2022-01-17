@@ -23,6 +23,7 @@ const (
 // RenderableComponent contains info for renderer
 // material and mesh
 type RenderableComponent struct {
+	GPU
 	Name string
 	*Material
 	*Mesh

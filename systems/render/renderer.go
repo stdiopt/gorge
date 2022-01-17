@@ -250,9 +250,13 @@ func (r *Render) PassShadow(ri *Step, s *Shader) {
 				gl.BindTexture(gl.TEXTURE_2D, gl.Null)
 			}
 
+			rr, ok := gorge.GetGPU(group.renderable).(*renderable)
+			if !ok {
+				continue
+			}
 			drawMode := DrawMode(group.Renderable().GetDrawMode())
 			gl.BindVertexArray(vao)
-			r.Draw(drawMode, group.vbo, group.Count)
+			r.Draw(drawMode, rr.vbo, group.Count)
 			gl.BindVertexArray(gl.Null)
 		}
 	}
@@ -264,12 +268,18 @@ func (r *Render) PassShadow(ri *Step, s *Shader) {
 // pipeline to draw the sky box
 func (r *Render) SetupShader(
 	ri *Step,
-	group *RenderableGroup,
+	re Renderable,
 ) {
-	mesh := group.Renderable().Mesh
-	mat := group.Renderable().Material
-	// Get shader by thing
-	shader := group.shader
+	mesh := re.Renderable().Mesh
+	mat := re.Renderable().Material
+	var shader *Shader
+	var vbo *VBO
+	if rr, ok := gorge.GetGPU(re.Renderable()).(*renderable); ok {
+		shader = rr.shader
+		vbo = rr.vbo
+	}
+
+	// Get cached shader by thing
 
 	// avoid this calls by storing the state globally?
 	switch mat.Blend {
@@ -307,7 +317,7 @@ func (r *Render) SetupShader(
 		gl.Enable(gl.CULL_FACE)
 	}
 
-	if group.vbo.FrontFacing == gorge.FrontFacingCCW {
+	if vbo.FrontFacing == gorge.FrontFacingCCW {
 		gl.FrontFace(gl.CCW)
 	} else {
 		gl.FrontFace(gl.CW)
@@ -334,7 +344,7 @@ func (r *Render) SetupShader(
 	shader.Bind()
 	// This is new since I don't have any a_Attribute left
 	// Pick only the first
-	re := group.Front() // Get an instance
+	// re := group.Front() // Get an instance
 	modelMat4 := re.Mat4()
 
 	for k, u := range shader.uniforms {

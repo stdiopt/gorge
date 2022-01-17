@@ -1,5 +1,7 @@
 package gorge
 
+import "fmt"
+
 // GPU reference for resources binded in renderer (texture,mesh)
 type GPU struct {
 	gpu any
@@ -19,9 +21,11 @@ func GetGPU(r any) any {
 
 // SetGPU sets gpu data in the resourceRef
 func SetGPU(r, v any) {
-	if r, ok := r.(interface{ setGPU(any) }); ok {
-		r.setGPU(v)
+	g, ok := r.(interface{ setGPU(any) })
+	if !ok {
+		panic(fmt.Sprintf("%T is not a gpu resource", r))
 	}
+	g.setGPU(v)
 }
 
 // TextureRef implements a gpu only texture resource.
