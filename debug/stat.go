@@ -191,7 +191,8 @@ func (s *statSystem) Update() string {
 	fmt.Fprintf(buf, "GL Version: %v\n", s.glVersion)
 	fmt.Fprintf(buf, "GL Renderer: %v\n", s.glRenderer)
 
-	fmt.Fprintf(buf, "gpu vbos: %v, tex: %v, shaders: %v, ins: %v, buffers: %v\n",
+	fmt.Fprintf(buf, "gpu vaos: %v, vbos: %v, tex: %v, shaders: %v, ins: %v, buffers: %v\n",
+		s.rendererStat.VAOs,
 		s.rendererStat.VBOs,
 		s.rendererStat.Textures,
 		s.rendererStat.Shaders,

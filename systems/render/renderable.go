@@ -1,6 +1,9 @@
 package render
 
 import (
+	"log"
+	"runtime"
+
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/setlist"
 	"github.com/stdiopt/gorge/m32"
@@ -8,35 +11,51 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
-// Store this on renderable
+var vaoCount int
+
+// This will be attached on renderableComponent to track VAO's and related
+// built shaders
 type renderable struct {
-	shader *Shader
-	vbo    *VBO
+	// VAO per shader attrib hash
+	shaderVAO map[uint]gl.VertexArray
+	shader    *Shader
+	vbo       *VBO
+	// multiple instances transform
+	tro       *bufutil.Cached[float32]
+	troResize bool
+
+	// cached stuff
+	renderNumber int
+	material     *gorge.Material
+
+	// Cached material
+	hash uint // both mesh and material defines hash
+
+}
+
+func (r *renderable) clearVAOS() {
+	for k, vao := range r.shaderVAO {
+		gl.DeleteVertexArray(vao)
+		vaoCount--
+		delete(r.shaderVAO, k)
+	}
+}
+
+func (r *renderable) destroy() {
+	r.clearVAOS()
+	r.tro.Destroy()
+	r.vbo = nil
 }
 
 // RenderableGroup represents instance set of renderables
 type RenderableGroup struct {
+	renderer *Render
 	// Instances
-	Instances    setlist.SetList[Renderable]
-	RenderNumber int
-	Count        uint32
+	Instances setlist.SetList[Renderable]
+	// Count is the number of ACTIVE renderable in this group
+	Count uint32
 
-	renderer   *Render
 	renderable *gorge.RenderableComponent
-
-	// VAO per shader attrib hash
-	shaderVAO map[uint]gl.VertexArray
-
-	tro *bufutil.Cached[float32]
-
-	// vbo *VBO
-	// shader *Shader
-
-	// Cached material
-	material *gorge.Material
-	hash     uint // both mesh and material defines hash
-
-	troResize bool
 }
 
 func (rg *RenderableGroup) init() bool {
@@ -47,14 +66,23 @@ func (rg *RenderableGroup) init() bool {
 	if vbo == nil {
 		return false
 	}
-	rg.shaderVAO = map[uint]gl.VertexArray{}
+	// rg.shaderVAO = map[uint]gl.VertexArray{}
 
-	rg.tro = bufutil.NewCached[float32](rg.renderer.buffers.New(gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW))
-	rg.tro.Init(4 + 16 + 16) // 1 position
+	tro := bufutil.NewCached[float32](rg.renderer.buffers.New(gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW))
+	tro.Init(4 + 16 + 16) // 1 position
 
-	gorge.SetGPU(rg.renderable, &renderable{
-		vbo: vbo,
+	rr := &renderable{
+		shaderVAO: map[uint]gl.VertexArray{},
+		vbo:       vbo,
+		tro:       tro,
+	}
+
+	runtime.SetFinalizer(rr, func(r *renderable) {
+		rg.renderer.gorge.RunInMain(func() {
+			r.destroy()
+		})
 	})
+	gorge.SetGPU(rg.renderable, rr)
 	return true
 }
 
@@ -66,26 +94,27 @@ func (rg *RenderableGroup) Renderable() *gorge.RenderableComponent {
 // Add adds a new instance to this set.
 func (rg *RenderableGroup) Add(r Renderable) {
 	rg.Instances.Add(r)
-	rg.troResize = true
+	if rr, ok := gorge.GetGPU(rg.renderable).(*renderable); ok {
+		rr.troResize = true
+	}
 }
 
 // Remove removes an instance from this set.
 func (rg *RenderableGroup) Remove(r Renderable) {
 	rg.Instances.Remove(r)
-	rg.troResize = true
+	if rr, ok := gorge.GetGPU(rg.renderable).(*renderable); ok {
+		rr.troResize = true
+	}
 }
 
 // Destroy unreferences all resources on this group.
 func (rg *RenderableGroup) Destroy() {
 	gorge.SetGPU(rg.renderable, nil)
-
-	rg.clearVAOS()
-	rg.tro.Destroy()
 	// Remove stuff from renderable
 
 	rg.renderable = nil
 	// rg.vbo = nil
-	rg.material = nil
+	// rg.material = nil
 }
 
 // Front returns the first Renderable on this group.
@@ -98,43 +127,46 @@ func (rg *RenderableGroup) Front() Renderable {
 func (rg *RenderableGroup) Update(s *Step) {
 	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
 	if !ok {
-		panic("something wrong")
-		// rr = &renderable{}
-		// gorge.SetGPU(rg.renderable, rr)
+		rr = &renderable{}
+		gorge.SetGPU(rg.renderable, rr)
+	}
+	// No need to update for this render as it was already updated
+	if s.RenderNumber == rr.renderNumber {
+		return
 	}
 
 	vbo, _ := rg.renderer.vbos.Get(rg.renderable.Mesh)
 	if vbo != rr.vbo {
 		// Need to be aware if the the VBO format changed here
 		rr.vbo = vbo
-		rg.clearVAOS()
+		rr.clearVAOS()
 	}
 	if vbo == nil || vbo.VertexLen == 0 {
 		return
 	}
 
-	hash := rg.material.DefinesHash() ^ rg.renderable.Mesh.DefinesHash()
-	if rg.material != rg.renderable.Material || hash != rg.hash {
+	hash := rr.material.DefinesHash() ^ rg.renderable.Mesh.DefinesHash()
+	if rr.material != rg.renderable.Material || hash != rr.hash {
 		shdr := rg.renderer.shaders.GetX(rg.renderable)
 		// Rebuild VAO since material or mesh changed and we need to update
 		// VertexAttribs
 		if rr.shader != nil && rr.shader.attribsHash != shdr.attribsHash {
-			gl.DeleteVertexArray(rg.shaderVAO[rr.shader.attribsHash])
-			delete(rg.shaderVAO, rr.shader.attribsHash)
+			gl.DeleteVertexArray(rr.shaderVAO[rr.shader.attribsHash])
+			delete(rr.shaderVAO, rr.shader.attribsHash)
 		}
 
 		// Recache stuff
-		rg.material = rg.renderable.Material
-		rg.hash = hash
+		rr.hash = hash
+		rr.material = rg.renderable.Material
 		rr.shader = shdr
 	}
 
 	// unitSize in floats
 	unitSize := 4 + 16 + 16
-	if rg.troResize {
-		rg.troResize = false
+	if rr.troResize {
+		rr.troResize = false
 		sz := rg.Instances.Len() * unitSize
-		rg.tro.Init(sz)
+		rr.tro.Init(sz)
 	}
 
 	offs := 0
@@ -156,14 +188,14 @@ func (rg *RenderableGroup) Update(s *Step) {
 			color = v.GetColor()
 		}
 		totSize := unitSize
-		rg.tro.WriteAt(color[:], offs)
-		rg.tro.WriteAt(m[:], offs+4)
-		rg.tro.WriteAt(um[:], offs+4+16)
+		rr.tro.WriteAt(color[:], offs)
+		rr.tro.WriteAt(m[:], offs+4)
+		rr.tro.WriteAt(um[:], offs+4+16)
 		offs += totSize
 		rg.Count++
 	}
-	rg.tro.Flush()
-	rg.RenderNumber = s.RenderNumber
+	rr.tro.Flush()
+	rr.renderNumber = s.RenderNumber
 }
 
 // VBO returns the renderable VBO.
@@ -180,36 +212,37 @@ func (rg *RenderableGroup) VBO() *VBO {
 // there might be different VAO's per shader as some shaders might not care
 // for normals vertexbuffers etc.
 func (rg *RenderableGroup) VAO(shader *Shader) gl.VertexArray {
-	if shader == nil {
-		if rr, ok := gorge.GetGPU(rg.renderable).(*renderable); ok {
-			shader = rr.shader
-		}
+	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
+	if !ok {
+		log.Println("[WARN] Creating empty renderable")
+		rr = &renderable{}
+		gorge.SetGPU(rg.renderable, rr)
 	}
-	if vao, ok := rg.shaderVAO[shader.attribsHash]; ok {
+	if shader == nil {
+		shader = rr.shader
+	}
+	if vao, ok := rr.shaderVAO[shader.attribsHash]; ok {
 		return vao
 	}
 
+	vaoCount++
 	vao := gl.CreateVertexArray()
 	rg.bindAttribs(vao, shader)
-	rg.shaderVAO[shader.attribsHash] = vao
+	rr.shaderVAO[shader.attribsHash] = vao
 
 	return vao
 }
 
-// clearVAOS resets arrao objects for all shaders.
-func (rg *RenderableGroup) clearVAOS() {
-	for k, vao := range rg.shaderVAO {
-		gl.DeleteVertexArray(vao)
-		delete(rg.shaderVAO, k)
-	}
-}
-
 // Bring Back named attribs please
 func (rg *RenderableGroup) bindAttribs(vao gl.VertexArray, shader *Shader) {
+	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
+	if !ok {
+		return
+	}
 	// log.Println("re bind attribs for VAO:", vao)
 	gl.BindVertexArray(vao)
 	// Setup TRO
-	rg.tro.Bind()
+	rr.tro.Bind()
 	vec4size := 4 * 4 // 4 floats in bytes size
 	totSizeBytes := (4 + 16 + 16) * 4
 
@@ -240,10 +273,6 @@ func (rg *RenderableGroup) bindAttribs(vao gl.VertexArray, shader *Shader) {
 		}
 	}
 
-	rr, ok := gorge.GetGPU(rg.renderable).(*renderable)
-	if !ok {
-		return
-	}
 	if rr.vbo == nil || rr.vbo.VertexLen == 0 {
 		return
 	}

@@ -81,11 +81,8 @@ func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			if reMask&camMask == 0 {
 				continue
 			}
-			// Check if we already processed this in some previous camera
-			// we don't need to reupload transform attribute
-			if s.RenderNumber != re.RenderNumber {
-				re.Update(s)
-			}
+			// This won't be updated if render number is the same
+			re.Update(s)
 
 			// If VBO is nil we skip
 			if v := re.VBO(); v == nil || v.VertexLen == 0 {

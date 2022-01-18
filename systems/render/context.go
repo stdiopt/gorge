@@ -64,6 +64,7 @@ func FromContext(g *gorge.Context) *Context {
 		statTimeCount -= dt
 		if statTimeCount < 0 {
 			gorge.Trigger(g, EventStat{
+				VAOs:           vaoCount,
 				Textures:       r.textures.count,
 				VBOs:           r.vbos.count,
 				Shaders:        r.shaders.count,
