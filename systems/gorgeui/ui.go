@@ -23,6 +23,7 @@ type UI struct {
 
 	entities []gorge.Entity
 
+	// Also add focus and stuff
 	gorge *gorge.Context
 }
 
@@ -150,6 +151,34 @@ func (w *UI) Remove(ents ...gorge.Entity) {
 	if w.Attached && w.gorge != nil {
 		w.gorge.Remove(ents...)
 	}
+}
+
+func (w *UI) update(dt float32) {
+	type renderable interface {
+		Renderable() *gorge.RenderableComponent
+	}
+
+	order := 0
+	count := 0
+	var walk func(e gorge.Entity)
+	walk = func(e gorge.Entity) {
+		count++
+		if e, ok := e.(renderable); ok {
+			r := e.Renderable()
+			r.Order = order
+			order++
+		}
+		if e, ok := e.(gorge.EntityContainer); ok {
+			for _, ee := range e.GetEntities() {
+				walk(ee)
+			}
+		}
+	}
+
+	for _, e := range w.entities {
+		walk(e)
+	}
+	// log.Printf("entity count: %v, order: %v", count, order)
 }
 
 type uiSorter []*UI

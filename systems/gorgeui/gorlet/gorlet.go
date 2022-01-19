@@ -50,7 +50,6 @@ type Entity struct {
 
 	name string // debug purposes
 
-	masked bool
 	// TODO: {lpf} give it a proper name.
 	onAdd      EntityFunc
 	clientArea *Entity
@@ -165,11 +164,6 @@ func (e *Entity) SetLayout(l Layouter) {
 	e.layouter = l
 }
 
-// SetMasked sets if the element will mask.
-func (e *Entity) SetMasked(m bool) {
-	e.masked = m
-}
-
 // GetEntities implement gorge.Container.
 func (e *Entity) GetEntities() []gorge.Entity {
 	return e.container
@@ -268,13 +262,21 @@ func (e *Entity) Attached(ent gorgeui.Entity) {
 }
 
 // Set invoke any observer attached to the named propery.
+// exceptional case:
+// _maskDepth:
+//   - if entity has observers it will call them
+//   - if not it will be sent to children of the entity
 func (e *Entity) Set(name string, value any) {
-	if e.observers == nil {
-		return
-	}
 	if fns, ok := e.observers[name]; ok {
 		for _, fn := range fns {
 			fn(value)
+		}
+		return
+	}
+	// Extra case we pass this to all children.
+	if name == "_maskDepth" {
+		for _, c := range e.children {
+			c.Set(name, value)
 		}
 	}
 }

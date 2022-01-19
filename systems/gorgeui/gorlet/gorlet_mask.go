@@ -1,0 +1,53 @@
+package gorlet
+
+import (
+	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/systems/gorgeui"
+)
+
+func Mask() Func {
+	return func(b *Builder) {
+		root := b.Root()
+
+		maskOn := Create(Quad())
+		maskOn.Set("colorMask", &[4]bool{false, false, false, false})
+		maskOn.SetDisableRaycast(true)
+
+		root.AddElement(maskOn)
+
+		container := b.BeginContainer()
+		b.ClientArea()
+		b.EndPanel()
+
+		// b.Use("stencil", calcMaskOff(0))
+		b.Use("colorMask", &[4]bool{false, false, false, false})
+		maskOff := b.Create(Quad())
+		maskOff.Set("colorMask", &[4]bool{false, false, false, false})
+		maskOff.SetDisableRaycast(true)
+		root.AddElement(maskOff)
+
+		depthMask := 0
+		b.Observe("_maskDepth", ObsFunc(func(n int) {
+			depthMask = n
+		}))
+
+		gorge.HandleFunc(root, func(gorgeui.EventUpdate) {
+			maskOn.Set("stencil", calcMaskOn(depthMask))
+			maskOff.Set("stencil", calcMaskOff(depthMask))
+			for _, c := range container.Children() {
+				c.Set("_maskDepth", depthMask+1)
+			}
+		})
+		root.Set("_maskDepth", 0)
+	}
+}
+
+// BeginMask pushes a Mask entity into builder.
+func (b *Builder) BeginMask() *Entity {
+	return b.Begin(Mask())
+}
+
+// EndMask convinient alias to End.
+func (b *Builder) EndMask() {
+	b.End()
+}

@@ -121,6 +121,9 @@ func (s *system) setupEvents(g *gorge.Context) {
 		}
 	})
 	gorge.HandleFunc(g, func(e gorge.EventPostUpdate) {
+		for ui := range s.uis {
+			ui.update(e.DeltaTime())
+		}
 		for _, el := range s.elems {
 			triggerOn(el, EventUpdate(e.DeltaTime()))
 		}

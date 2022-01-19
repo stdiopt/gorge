@@ -57,7 +57,20 @@ func rectElement(ent graphicer) Func {
 		b.Observe("colorMask", ObsFunc(func(b *[4]bool) {
 			ent.Renderable().ColorMask = b
 		}))
+		// Forget order here
 		b.Observe("order", ObsFunc(ent.Renderable().SetOrder))
+		b.Observe("_maskDepth", ObsFunc(func(n int) {
+			s := calcMaskOn(n)
+			s.WriteMask = 0
+			s.Fail = gorge.StencilOpKeep
+			s.ZFail = gorge.StencilOpKeep
+			s.ZPass = gorge.StencilOpKeep
+
+			ent.Renderable().Stencil = s
+			for _, c := range root.Children() {
+				c.Set("_maskDepth", n)
+			}
+		}))
 		gorge.HandleFunc(root, func(gorgeui.EventUpdate) {
 			r := root.Rect()
 			t := ent.Transform()

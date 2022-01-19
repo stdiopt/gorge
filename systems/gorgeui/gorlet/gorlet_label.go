@@ -101,6 +101,17 @@ func Label(t string) Func {
 			// log.Println("Receiving stencil on label", s)
 			ent.Stencil = s
 		}))
+		b.Observe("_maskDepth", ObsFunc(func(d int) {
+			s := calcMaskOn(d)
+			s.WriteMask = 0x00
+			s.Fail = gorge.StencilOpKeep
+			s.ZFail = gorge.StencilOpKeep
+			s.ZPass = gorge.StencilOpKeep
+			ent.Renderable().Stencil = s
+			for _, c := range root.Children() {
+				c.Set("_maskDepth", d)
+			}
+		}))
 
 		root.Set("text", t)
 	}
