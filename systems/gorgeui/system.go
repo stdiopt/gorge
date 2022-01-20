@@ -36,102 +36,8 @@ type system struct {
 }
 
 func (s *system) setupEvents(g *gorge.Context) {
-	event.Handle(g, func(e input.EventPointer) {
-		s.deltaMouse = e.Pointers[0].Pos.Sub(s.curMouse)
-		s.curMouse = e.Pointers[0].Pos
-		hit, r := s.rayTest(s.curMouse)
+	event.Handle(g, s.handlePointer)
 
-		curDown := s.pointDown
-
-		if e.Type == input.MouseWheel {
-			if hit != nil {
-				p := &PointerData{
-					RayResult: r,
-					Delta:     s.deltaMouse,
-					Position:  s.curMouse,
-					Wheel:     e.Pointers[0].ScrollDelta,
-					Target:    hit,
-				}
-				EachParent(hit, func(e Entity) bool {
-					triggerOn(e, EventPointerWheel{p})
-					return !p.stopPropagation
-				})
-			}
-		}
-
-		if e.Type == input.MouseDown && e.Button == 0 {
-			s.pointDown = hit
-			s.pointDownPos = s.curMouse
-			if hit != nil {
-				p := &PointerData{
-					RayResult: r,
-					Delta:     s.deltaMouse,
-					Position:  s.curMouse,
-					Target:    hit,
-				}
-				EachParent(hit, func(e Entity) bool {
-					triggerOn(e, EventPointerDown{p})
-					return !p.stopPropagation
-				})
-			}
-		}
-		if e.Type == input.MouseUp && e.Button == 0 {
-			if s.pointDown != nil {
-				p := &PointerData{
-					RayResult: r,
-					Delta:     s.deltaMouse,
-					Position:  s.curMouse,
-					Target:    hit,
-				}
-				EachParent(s.pointDown, func(e Entity) bool {
-					triggerOn(e, EventPointerUp{p})
-					return !p.stopPropagation
-				})
-				s.pointDown = nil
-			}
-			if s.dragging != nil {
-				p := &PointerData{
-					RayResult: r,
-					Delta:     s.deltaMouse,
-					Position:  s.curMouse,
-					Target:    hit,
-				}
-				triggerOn(s.dragging, EventDragEnd{p})
-				s.dragging = nil
-			}
-		}
-
-		// Drag detection
-		// I mouse is still down and not nil and pointerDown is still and dragging is nil
-		if s.pointDown != nil && curDown == s.pointDown && s.dragging == nil {
-			p := &PointerData{
-				RayResult: r,
-				Delta:     s.deltaMouse,
-				Position:  s.curMouse,
-				Target:    hit,
-			}
-			ui := RootUI(s.pointDown)
-			d := s.curMouse.Sub(s.pointDownPos).Abs()
-			if d[0] > ui.DragThreshold || d[1] > ui.DragThreshold {
-				EachParent(hit, func(e Entity) bool {
-					if !e.Element().DragEvents {
-						return true
-					}
-					s.dragging = e
-					triggerOn(s.dragging, EventDragBegin{p})
-					return false
-				})
-			}
-		} else if s.dragging != nil {
-			p := &PointerData{
-				RayResult: r,
-				Delta:     s.deltaMouse,
-				Position:  s.curMouse,
-				Target:    hit,
-			}
-			triggerOn(s.dragging, EventDrag{p})
-		}
-	})
 	event.Handle(g, func(gorge.EventPreUpdate) {
 		if s.Debug != 0 {
 			s.dbg.Clear()
@@ -203,6 +109,128 @@ func (s *system) removeEntity(e Entity) {
 	}
 }
 
+func (s *system) handlePointer(e input.EventPointer) {
+	s.deltaMouse = e.Pointers[0].Pos.Sub(s.curMouse)
+	s.curMouse = e.Pointers[0].Pos
+
+	hit, res := s.rayTest(s.curMouse)
+
+	pd := &PointerData{
+		RayResult: res,
+		Delta:     s.deltaMouse,
+		Position:  s.curMouse,
+		Wheel:     e.Pointers[0].ScrollDelta,
+		Target:    hit,
+	}
+	curDown := s.pointDown
+
+	if e.Type == input.MouseWheel {
+		if hit != nil {
+			/*p := &PointerData{
+				RayResult: r,
+				Delta:     s.deltaMouse,
+				Position:  s.curMouse,
+				Wheel:     e.Pointers[0].ScrollDelta,
+				Target:    hit,
+			}*/
+			EachParent(hit, func(e Entity) bool {
+				triggerOn(e, EventPointerWheel{pd})
+				return !pd.stopPropagation
+			})
+		}
+	}
+
+	if e.Type == input.MouseDown && e.Button == 0 && s.dragging == nil {
+		s.pointDown = hit
+		s.pointDownPos = s.curMouse
+		if hit != nil {
+			p := &PointerData{
+				RayResult: r,
+				Delta:     s.deltaMouse,
+				Position:  s.curMouse,
+				Target:    hit,
+			}
+			EachParent(hit, func(e Entity) bool {
+				triggerOn(e, EventPointerDown{p})
+				return !p.stopPropagation
+			})
+		}
+	}
+	if e.Type == input.MouseUp && e.Button == 0 {
+		if s.pointDown != nil {
+			p := &PointerData{
+				RayResult: r,
+				Delta:     s.deltaMouse,
+				Position:  s.curMouse,
+				Target:    hit,
+			}
+			EachParent(s.pointDown, func(e Entity) bool {
+				triggerOn(e, EventPointerUp{p})
+				return !p.stopPropagation
+			})
+			s.pointDown = nil
+		}
+		if s.dragging != nil {
+			p := &PointerData{
+				RayResult: r,
+				Delta:     s.deltaMouse,
+				Position:  s.curMouse,
+				Target:    hit,
+			}
+			triggerOn(s.dragging, EventDragEnd{p})
+			s.dragging = nil
+		}
+	}
+
+	// Drag detection
+	// I mouse is still down and not nil and pointerDown is still and dragging is nil
+	if s.pointDown != nil && curDown == s.pointDown && s.dragging == nil {
+		p := &PointerData{
+			RayResult: r,
+			Delta:     s.deltaMouse,
+			Position:  s.curMouse,
+			Target:    hit,
+		}
+		ui := RootUI(s.pointDown)
+		d := s.curMouse.Sub(s.pointDownPos).Abs()
+		if d[0] > ui.DragThreshold || d[1] > ui.DragThreshold {
+			/*EachParent(hit, func(e Entity) bool {
+				if !e.Element().DragEvents {
+					return true
+				}
+				s.dragging = e
+				triggerOn(s.dragging, EventDragBegin{p})
+				return false
+			})*/
+			EachParent(s.pointDown, func(e Entity) bool {
+				if !e.Element().DragEvents {
+					return true
+				}
+				s.dragging = e
+				triggerOn(s.dragging, EventDragBegin{p})
+				return false
+			})
+
+			/*
+				// Drag on unit
+				if hit.Element().DragEvents {
+					s.dragging = hit
+					log.Println("Start dragging:", s.dragging)
+					triggerOn(s.dragging, EventDragBegin{p})
+				}
+			*/
+		}
+	} else if s.dragging != nil {
+		p := &PointerData{
+			RayResult: r, // R should be done on dragged?
+			Delta:     s.deltaMouse,
+			Position:  s.curMouse,
+			Target:    hit,
+		}
+		triggerOn(s.dragging, EventDrag{p})
+	}
+}
+
 func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
 	uiMap := map[*UI][]Entity{}
 	uis := []*UI{}
@@ -220,7 +248,6 @@ func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
 	sort.Sort(uiSorter(uis))
 	for _, u := range uis {
 		elems := uiMap[u]
-
 		r := ray.FromScreen(s.gorge.ScreenSize(), u.Camera, pointerPos)
 
 		for i := len(elems) - 1; i >= 0; i-- {
@@ -229,15 +256,7 @@ func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
 			if bw.DisableRaycast {
 				continue
 			}
-			t := k.RectTransform()
-			rect := t.Rect()
-			m := t.Mat4()
-
-			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3()
-			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
-			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
-
-			if res := ray.IntersectRect(r, v0, v1, v2); res.Hit {
+			if res := rayRect(r, k); res.Hit {
 				return k, res
 			}
 		}
@@ -245,6 +264,10 @@ func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
 	return nil, ray.Result{}
 }
 
+// Ray test and return an entity
+// if the pick is the same to the pointOver it will return
+// if not it will trigger Pointer leave on the existing pointOver
+// and PointerEnter on the new pick
 func (s *system) rayTest(pointerPos m32.Vec2) (Entity, ray.Result) {
 	hit, r := s.rayPick(pointerPos)
 	// debug
@@ -272,6 +295,7 @@ func (s *system) rayTest(pointerPos m32.Vec2) (Entity, ray.Result) {
 		return commonParent == nil
 	})
 
+	// Move this to handleEvents
 	{
 		p := &PointerData{RayResult: r, Target: exitFrom}
 		EachParent(exitFrom, func(exitEl Entity) bool {

@@ -3,6 +3,7 @@ package gorgeui
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/m32/ray"
 )
 
 // RectTransformer transform interface for UI elements
@@ -53,4 +54,15 @@ func v4f(v ...float32) m32.Vec4 {
 	default:
 		return m32.Vec4{v[0], v[1], v[2], v[3]}
 	}
+}
+
+func rayRect(r ray.Ray, e Entity) ray.Result {
+	rect := e.RectTransform().Rect()
+	m := e.Mat4()
+
+	v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3()
+	v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
+	v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
+
+	return ray.IntersectRect(r, v0, v1, v2)
 }

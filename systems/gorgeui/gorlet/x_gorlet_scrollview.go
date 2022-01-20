@@ -1,31 +1,34 @@
 package gorlet
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
+type scroll struct {
+	disabled bool
+	entity   *Entity
+	size     float32
+	value    float32
+}
+
 func Scroll() Func {
 	return func(b *Builder) {
 		background := b.Prop("background", m32.Color(0, .3))
-
 		var (
 			container  *Entity
 			scrollable *Entity
-			scroll     [2]*Entity
-			vSize      float32 = 1
-			hSize      float32 = 1
-			vScroll    float32 = 0
-			hScroll    float32 = 0
+			scroll     = [2]scroll{
+				{size: 1},
+				{size: 1},
+			}
 		)
 
 		b.Use("color", background)
 		b.BeginPanel()
 		{
-			b.UseRect(0, 0, vSize, hSize)
+			b.UseRect(0, 0, scroll[1].size, scroll[0].size)
 			scrollable = b.BeginMask()
 			{
 				b.UseAnchor(0, 0, 1, 0)
@@ -38,75 +41,120 @@ func Scroll() Func {
 
 			// Horizontal
 			b.UseAnchor(0, 1, 1, 1)
-			b.UseRect(0, -hSize, vSize, hSize)
+			// b.UseRect(0, -scroll[0].size, scroll[1].size, scroll[0].size)
+			b.UseRect(0)
 			b.Use("color", m32.Color(0, 0, 0, .2))
-			scroll[0] = b.HScrollBar(func(v float32) {
+			scroll[0].entity = b.HScrollBar(func(v float32) {
+				if scroll[0].disabled {
+					return
+				}
+				v = m32.Clamp(v, 0, 1)
+				if v == scroll[0].value {
+					return
+				}
 				sz := scrollable.CalcSize()
 				b := container.CalcBounds()
+				if sz[0]/b[2] > 1 {
+					return
+				}
 				container.Position[0] = v * (sz[0] - b[2])
-				hScroll = v
+				scroll[0].value = v
 			})
 
 			// Vertical scrollBar
 			b.UseAnchor(1, 0, 1, 1)
-			b.UseRect(-vSize, 0, hSize, vSize)
+			// b.UseRect(-scroll[1].size, 0, scroll[0].size, scroll[1].size)
+			b.UseRect(0)
 			b.Use("color", m32.Color(0, 0, 0, .2))
-			scroll[1] = b.VScrollBar(func(v float32) {
+			scroll[1].entity = b.VScrollBar(func(v float32) {
+				if scroll[1].disabled {
+					return
+				}
+				v = m32.Clamp(v, 0, 1)
+				if v == scroll[1].value {
+					return
+				}
 				sz := scrollable.CalcSize()
 				b := container.CalcBounds()
+				if sz[1]/b[3] > 1 {
+					return
+				}
 				container.Position[1] = v * (sz[1] - b[3])
-				vScroll = v
+				scroll[1].value = v
 			})
 		}
 		b.EndPanel()
 
 		updateScrolls := func() {
-			scrollable.SetRect(0, 0, vSize, hSize)
-			scroll[0].SetRect(0, -hSize, vSize, hSize)
-			scroll[1].SetRect(-vSize, 0, vSize, hSize)
+			sz := m32.Vec2{}
+			if !scroll[0].disabled {
+				sz[0] = scroll[0].size
+			}
+			if !scroll[1].disabled {
+				sz[1] = scroll[1].size
+			}
+			scrollable.SetRect(0, 0, sz[1], sz[0])
+
+			scroll[0].entity.SetRect(0, -sz[0], sz[1], sz[0])
+			scroll[1].entity.SetRect(-sz[1], 0, sz[1], sz[0])
 		}
-		Observe(b, "scrollSize", func(v float32) {
-			hSize, vSize = v, v
-			updateScrolls()
+		Observe(b, "hscroll", func(b bool) {
+			scroll[0].disabled = !b
+		})
+		Observe(b, "vscroll", func(b bool) {
+			scroll[1].disabled = !b
 		})
 		Observe(b, "hscrollSize", func(v float32) {
-			hSize = v
+			scroll[0].size = v
 			updateScrolls()
-			log.Println("sizes:", hSize, vSize)
 		})
 		Observe(b, "vscrollSize", func(v float32) {
-			vSize = v
+			scroll[1].size = v
+			updateScrolls()
+		})
+		Observe(b, "scrollSize", func(v float32) {
+			scroll[0].size, scroll[1].size = v, v
 			updateScrolls()
 		})
 
 		root := b.Root()
 		event.Handle(root, func(e gorgeui.EventPointerWheel) {
-			scroll[0].Set("value", hScroll+e.Wheel[0])
-			scroll[1].Set("value", vScroll+e.Wheel[1]*0.01)
+			if !scroll[0].disabled {
+				h := scroll[0].value
+				scroll[0].entity.Set("value", m32.Clamp(h+e.Wheel[0]*0.01, 0, 1))
+			}
+			if !scroll[1].disabled {
+				v := scroll[1].value
+				scroll[1].entity.Set("value", m32.Clamp(v+e.Wheel[1]*0.01, 0, 1))
+			}
 		})
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			sz := scrollable.CalcSize()
 			b := container.CalcBounds()
 
-			if sz[0] >= b[2] {
-				scroll[0].Set("value", 0)
-				scroll[0].Set("handlerSize", sz[0])
-			} else if sz[0] < b[2] {
-				hs := sz[0] * (sz[0] / b[2])
-				curScroll := container.Position[0] / (sz[0] - b[2])
-				scroll[0].Set("value", curScroll)
-				scroll[0].Set("handlerSize", hs)
+			if !scroll[0].disabled {
+				if sz[0] >= b[2] {
+					scroll[0].entity.Set("value", 0)
+					scroll[0].entity.Set("handlerSize", sz[0])
+				} else if sz[0] < b[2] {
+					hs := sz[0] * (sz[0] / b[2])
+					curScroll := container.Position[0] / (sz[0] - b[2])
+					scroll[0].entity.Set("value", curScroll)
+					scroll[0].entity.Set("handlerSize", hs)
+				}
 			}
 
-			// Vertical
-			if sz[1] > b[3] {
-				scroll[1].Set("value", 0)
-				scroll[1].Set("handlerSize", sz[1])
-			} else if sz[1] < b[3] {
-				hs := sz[1] * (sz[1] / b[3])
-				curScroll := container.Position[1] / (sz[1] - b[3])
-				scroll[1].Set("value", curScroll)
-				scroll[1].Set("handlerSize", hs)
+			if !scroll[1].disabled {
+				// Vertical
+				if sz[1] > b[3] {
+					scroll[1].entity.Set("value", 0)
+					scroll[1].entity.Set("handlerSize", sz[1])
+				} else if sz[1] < b[3] {
+					hs := sz[1] * (sz[1] / b[3])
+					curScroll := container.Position[1] / (sz[1] - b[3])
+					scroll[1].entity.Set("value", curScroll)
+					scroll[1].entity.Set("handlerSize", hs)
+				}
 			}
 		})
 	}
