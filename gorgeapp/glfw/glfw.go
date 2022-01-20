@@ -155,8 +155,8 @@ func (s *glfwSystem) setupEvents() {
 	})
 
 	s.window.SetScrollCallback(
-		func(_ *glfw.Window, _, yoff float64) {
-			s.input.SetScrollDelta(-float32(yoff) * 6)
+		func(_ *glfw.Window, xoff, yoff float64) {
+			s.input.SetScrollDelta(m32.Vec2{float32(xoff) * 6, -float32(yoff) * 6})
 		},
 	)
 

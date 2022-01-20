@@ -18,6 +18,8 @@ func Scroll() Func {
 			scroll     [2]*Entity
 			vSize      float32 = 1
 			hSize      float32 = 1
+			vScroll    float32 = 0
+			hScroll    float32 = 0
 		)
 
 		b.Use("color", background)
@@ -42,6 +44,7 @@ func Scroll() Func {
 				sz := scrollable.CalcSize()
 				b := container.CalcBounds()
 				container.Position[0] = v * (sz[0] - b[2])
+				hScroll = v
 			})
 
 			// Vertical scrollBar
@@ -52,6 +55,7 @@ func Scroll() Func {
 				sz := scrollable.CalcSize()
 				b := container.CalcBounds()
 				container.Position[1] = v * (sz[1] - b[3])
+				vScroll = v
 			})
 		}
 		b.EndPanel()
@@ -76,6 +80,10 @@ func Scroll() Func {
 		})
 
 		root := b.Root()
+		event.Handle(root, func(e gorgeui.EventPointerWheel) {
+			scroll[0].Set("value", hScroll+e.Wheel[0])
+			scroll[1].Set("value", vScroll+e.Wheel[1]*0.01)
+		})
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			sz := scrollable.CalcSize()
 			b := container.CalcBounds()

@@ -44,15 +44,16 @@ func (r *CameraRig) HandleEvent(e event.Event) {
 		}
 		delta := e.Pointers[0].Pos.Sub(*r.lastP)
 		*r.lastP = e.Pointers[0].Pos
-		if e.Type == input.MouseWheel {
-			t := r.Camera.Transform()
-			dist := t.WorldPosition().Len()
-			multiplier := dist * 0.005
-			t.Translate(0, 0, e.Pointers[0].DeltaZ*multiplier)
-			if t.Position[2] < 0 {
-				t.Position[2] = 0
-			}
-		}
+		/*
+			if e.Type == input.MouseWheel {
+				t := r.Camera.Transform()
+				dist := t.WorldPosition().Len()
+				multiplier := dist * 0.005
+				t.Translate(0, 0, e.Pointers[0].DeltaZ*multiplier)
+				if t.Position[2] < 0 {
+					t.Position[2] = 0
+				}
+			}*/
 		if e.Type == input.MouseDown {
 			r.dragging = true
 		}

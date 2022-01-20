@@ -14,7 +14,7 @@ type mouseManager struct {
 	// MousePosition
 	mpos        m32.Vec2
 	deltaPos    m32.Vec2
-	scrollDelta float32
+	deltaScroll m32.Vec2
 }
 
 func (m *mouseManager) update() {
@@ -26,18 +26,18 @@ func (m *mouseManager) update() {
 			delete(m.buttonState, k)
 		}
 	}
-	m.scrollDelta = 0
+	m.deltaScroll = m32.Vec2{}
 	m.deltaPos = m32.Vec2{}
 }
 
-func (m *mouseManager) SetScrollDelta(delta float32) {
-	m.scrollDelta = delta
+func (m *mouseManager) SetScrollDelta(delta m32.Vec2) {
+	m.deltaScroll = delta
 
 	// Legacy
 	evt := EventPointer{
 		Type: MouseWheel,
 		Pointers: map[int]PointerData{
-			0: {DeltaZ: delta, Pos: m.mpos},
+			0: {ScrollDelta: delta, Pos: m.mpos},
 		},
 	}
 	gorge.Trigger(m.gorge, evt) // nolint: errcheck
@@ -69,8 +69,8 @@ func (m *mouseManager) SetMouseButtonState(b MouseButton, s ActionState) {
 	}
 
 	pd := PointerData{
-		DeltaZ: m.scrollDelta,
-		Pos:    m.mpos,
+		ScrollDelta: m.deltaScroll,
+		Pos:         m.mpos,
 	}
 
 	m.buttonState[b] = s
@@ -96,8 +96,8 @@ func (m *mouseManager) SetMouseButtonState(b MouseButton, s ActionState) {
 }
 
 // ScrollDelta returns scrollDelta.
-func (m *mouseManager) ScrollDelta() float32 {
-	return m.scrollDelta
+func (m *mouseManager) ScrollDelta() m32.Vec2 {
+	return m.deltaScroll
 }
 
 // CursorPosition returns the current cursor position.

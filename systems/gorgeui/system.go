@@ -43,6 +43,22 @@ func (s *system) setupEvents(g *gorge.Context) {
 
 		curDown := s.pointDown
 
+		if e.Type == input.MouseWheel {
+			if hit != nil {
+				p := &PointerData{
+					RayResult: r,
+					Delta:     s.deltaMouse,
+					Position:  s.curMouse,
+					Wheel:     e.Pointers[0].ScrollDelta,
+					Target:    hit,
+				}
+				EachParent(hit, func(e Entity) bool {
+					triggerOn(e, EventPointerWheel{p})
+					return !p.stopPropagation
+				})
+			}
+		}
+
 		if e.Type == input.MouseDown && e.Button == 0 {
 			s.pointDown = hit
 			s.pointDownPos = s.curMouse

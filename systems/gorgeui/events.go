@@ -15,6 +15,8 @@ type (
 	EventPointerDown struct{ *PointerData }
 	// EventPointerUp triggers when a pointer is unpressed on widget rect.
 	EventPointerUp struct{ *PointerData }
+	// EventPointerWheel triggers when use drags the mouse wheel over a rect.
+	EventPointerWheel struct{ *PointerData }
 	// EventDragBegin triggers when a pointer starts dragging from the widget rect.
 	EventDragBegin struct{ *PointerData }
 	// EventDrag triggers on the widget that started the drag.
@@ -30,6 +32,7 @@ type PointerData struct {
 	Target    Entity // could be a children
 	Position  m32.Vec2
 	Delta     m32.Vec2
+	Wheel     m32.Vec2
 	RayResult ray.Result
 
 	stopPropagation bool

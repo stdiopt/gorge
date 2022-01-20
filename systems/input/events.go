@@ -4,8 +4,8 @@ import "github.com/stdiopt/gorge/m32"
 
 // PointerData common
 type PointerData struct {
-	DeltaZ float32 // for Wheel
-	Pos    m32.Vec2
+	ScrollDelta m32.Vec2 // for Wheel
+	Pos         m32.Vec2
 }
 
 // EventPointer on canvas
