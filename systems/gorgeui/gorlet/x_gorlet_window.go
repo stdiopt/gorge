@@ -1,7 +1,7 @@
 package gorlet
 
 import (
-	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -38,7 +38,7 @@ func Window(def string) Func {
 		title := b.BeginPanel()
 		{
 			title.SetDragEvents(true)
-			gorge.HandleFunc(title, func(e gorgeui.EventDrag) {
+			event.Handle(title, func(e gorgeui.EventDrag) {
 				ui := gorgeui.RootUI(root)
 				wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
 				wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, m32.Vec2{}).GetPoint(1))
@@ -73,7 +73,7 @@ func Window(def string) Func {
 		resizer := b.Quad()
 		resizer.SetDragEvents(true)
 		b.EndPanel()
-		gorge.HandleFunc(resizer, func(e gorgeui.EventDrag) {
+		event.Handle(resizer, func(e gorgeui.EventDrag) {
 			ui := gorgeui.RootUI(root)
 			wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
 			wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, m32.Vec2{}).GetPoint(1))

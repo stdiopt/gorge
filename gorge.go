@@ -178,7 +178,7 @@ func (g *Gorge) Error(err error) {
 // HandleUpdate adds a listener that filters events and calls fn if it is the
 // EventUpdate.
 func (g *Gorge) HandleUpdate(fn func(float32)) {
-	HandleFunc(g, func(e EventUpdate) {
+	event.Handle(g, func(e EventUpdate) {
 		fn(float32(e))
 	})
 }
@@ -186,7 +186,7 @@ func (g *Gorge) HandleUpdate(fn func(float32)) {
 // HandleError registers a function that filters events and calls fn if event
 // is the EventError.
 func (g *Gorge) HandleError(fn func(err error)) {
-	HandleFunc(g, func(e EventError) {
+	event.Handle(g, func(e EventError) {
 		fn(e.Err)
 	})
 }

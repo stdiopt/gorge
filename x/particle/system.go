@@ -2,6 +2,7 @@ package particle
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 )
 
@@ -21,7 +22,7 @@ func System(g *gorge.Context) error {
 
 	emitters := []emitter{}
 
-	gorge.HandleFunc(g, func(e gorge.EventAddEntity) {
+	event.Handle(g, func(e gorge.EventAddEntity) {
 		em, ok := e.Entity.(emitter)
 		if !ok {
 			return
@@ -29,7 +30,7 @@ func System(g *gorge.Context) error {
 		em.Emitter().init(g, em)
 		emitters = append(emitters, em)
 	})
-	gorge.HandleFunc(g, func(e gorge.EventRemoveEntity) {
+	event.Handle(g, func(e gorge.EventRemoveEntity) {
 		em, ok := e.Entity.(emitter)
 		if !ok {
 			return
@@ -44,7 +45,7 @@ func System(g *gorge.Context) error {
 			}
 		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+	event.Handle(g, func(e gorge.EventUpdate) {
 		for _, em := range emitters {
 			em.Emitter().update(g, em, e.DeltaTime())
 			// Fixed rate

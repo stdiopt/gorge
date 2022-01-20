@@ -1,6 +1,8 @@
 package gorlet
 
-import "github.com/stdiopt/gorge"
+import (
+	"github.com/stdiopt/gorge"
+)
 
 func calcMaskOn(l int) *gorge.Stencil {
 	sbit := 1 << l
@@ -41,19 +43,12 @@ func calcMaskOff(l int) *gorge.Stencil {
 	}
 }
 
-/*
-func maskLevel(e *Entity) int {
-	lvl := -1
-	var next *Entity
-	for {
-		p, ok := e.Parent().(*Entity)
-		if !ok {
-			return lvl
-		}
-		if p.masked {
-			lvl++
-		}
-		next = p
-	}
+type observer interface {
+	Observe(string, func(interface{}))
 }
-*/
+
+func Observe[T any](o observer, name string, fn func(T)) {
+	// ObsFunc because we still use reflection to avoid int to float conversions
+	// which panic on interface{} until we find something better
+	o.Observe(name, ObsFunc(fn))
+}

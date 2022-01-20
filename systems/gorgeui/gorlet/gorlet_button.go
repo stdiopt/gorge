@@ -2,6 +2,7 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -34,7 +35,7 @@ func Button(clickfn func()) Func {
 			stateHover
 		)
 		var state buttonState
-		gorge.HandleFunc(root, func(e gorgeui.EventUpdate) {
+		event.Handle(root, func(e gorgeui.EventUpdate) {
 			s := fadeFactor
 			target := normal
 			switch {
@@ -51,36 +52,27 @@ func Button(clickfn func()) Func {
 				p.Set("color", color)
 			}
 		})
-		gorge.HandleFunc(root, func(gorgeui.EventPointerDown) {
+		event.Handle(root, func(gorgeui.EventPointerDown) {
 			state |= statePressed
 		})
-		gorge.HandleFunc(root, func(gorgeui.EventPointerUp) {
+		event.Handle(root, func(gorgeui.EventPointerUp) {
 			state &= ^statePressed
 			gorge.Trigger(root, EventClick{})
 			if clickfn != nil {
 				clickfn()
 			}
 		})
-		gorge.HandleFunc(root, func(gorgeui.EventPointerEnter) {
+		event.Handle(root, func(gorgeui.EventPointerEnter) {
 			state |= stateHover
 		})
-		gorge.HandleFunc(root, func(gorgeui.EventPointerLeave) {
+		event.Handle(root, func(gorgeui.EventPointerLeave) {
 			state &= ^stateHover
 		})
-
-		/*
-			root.HandleFunc(func(e event.Event) {
-				switch e := e.(type) {
-				case gorgeui.EventUpdate:
-				case gorgeui.EventPointerDown:
-				case gorgeui.EventPointerUp:
-				case gorgeui.EventPointerEnter:
-				case gorgeui.EventPointerLeave:
-
-				}
-			})
-		*/
 	}
+}
+
+func (b *Builder) Button(clickfn func()) *Entity {
+	return b.Add(Button(clickfn))
 }
 
 // BeginButton begins a button.

@@ -9,6 +9,8 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
+	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -93,6 +95,9 @@ func Create(fn Func) *Entity {
 		root: &curEntity{entity: defEntity},
 	}
 	fn(&b)
+	if b.clientArea != nil && b.clientArea != b.root.entity {
+		b.root.entity.SetClientArea(b.clientArea)
+	}
 
 	entityUpdate(b.root.entity)
 	return b.root.entity
@@ -171,6 +176,9 @@ func (e *Entity) GetEntities() []gorge.Entity {
 
 // Children returns this entity children.
 func (e *Entity) Children() []*Entity {
+	if e.clientArea != nil {
+		return e.clientArea.Children()
+	}
 	// Should it be fromClientArea?!
 	return e.children
 }
@@ -222,15 +230,6 @@ func (e *Entity) Remove(child *Entity) {
 	t := e.children
 	e.children = append(e.children[:n], e.children[n+1:]...)
 	t[len(t)-1] = nil
-}
-
-func (e *Entity) exists(c *Entity) bool {
-	for _, cc := range e.children {
-		if c == cc {
-			return true
-		}
-	}
-	return false
 }
 
 // AddElement adds an element to the entity
@@ -317,6 +316,36 @@ func (e *Entity) SetRelRect(v ...float32) {
 	e.SetRect(v...)
 }
 
+// CalcBounds calculates children bounds and positions and return min max
+// size
+func (e *Entity) CalcBounds() m32.Vec4 {
+	var ret m32.Vec4
+	sz := e.CalcSize()
+	ret[2] = sz[0] + e.Margin[0] + e.Margin[2]
+	ret[3] = sz[1] + e.Margin[1] + e.Margin[3]
+	for _, e := range e.children {
+		b := e.CalcBounds()
+		ret[0] = m32.Min(ret[0], e.Position[0]+b[0])
+		ret[1] = m32.Min(ret[1], e.Position[1]+b[1])
+		ret[2] = m32.Max(ret[2], e.Position[0]+b[2])
+		ret[3] = m32.Max(ret[3], e.Position[1]+b[3])
+	}
+	return ret
+}
+
+// IntersectFromScreen intersects the entity rect from screen coordinates.
+func (e *Entity) IntersectFromScreen(pos m32.Vec2) ray.Result {
+	sz := e.CalcSize()
+	m := e.Mat4()
+	v0 := m.MulV4(m32.Vec4{0, 0, 0, 1}).Vec3()     // 0
+	v1 := m.MulV4(m32.Vec4{sz[0], 0, 0, 1}).Vec3() // right
+	v2 := m.MulV4(m32.Vec4{0, sz[1], 0, 1}).Vec3() // up)
+
+	ui := gorgeui.RootUI(e)
+	r := ray.FromScreen(ui.ScreenSize(), ui.Camera, pos)
+	return ray.IntersectRect(r, v0, v1, v2)
+}
+
 func (e *Entity) indexOf(c *Entity) int {
 	for i, c2 := range e.children {
 		if c == c2 {
@@ -336,8 +365,9 @@ func (e *Entity) add(children ...gorge.Entity) {
 		e.container.Add(c)
 	}
 	if e.ElementComponent.Attached {
+		// Wrong
 		ui := gorgeui.RootUI(e)
-		ui.Add(children...)
+		ui.GAdd(children...)
 	}
 }
 
@@ -352,6 +382,6 @@ func (e *Entity) remove(children ...gorge.Entity) {
 	}
 	if e.ElementComponent.Attached {
 		ui := gorgeui.RootUI(e)
-		ui.Remove(children...)
+		ui.GRemove(children...)
 	}
 }

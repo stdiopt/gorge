@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/primitive"
@@ -48,10 +49,10 @@ func StatText(g *gorge.Context) {
 	timeInterval := float32(0)
 
 	var preMark time.Time
-	gorge.HandleFunc(g, func(gorge.EventPreUpdate) {
+	event.Handle(g, func(gorge.EventPreUpdate) {
 		preMark = time.Now()
 	})
-	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+	event.Handle(g, func(e gorge.EventUpdate) {
 		if ic.KeyUp(input.KeyF10) {
 			s.txt.SetText(s.Update())
 		}
@@ -70,10 +71,10 @@ func StatText(g *gorge.Context) {
 		fmt.Println(s.Update())
 		fmt.Println("\033[0m")
 	})
-	gorge.HandleFunc(g, func(gorge.EventRender) {
+	event.Handle(g, func(gorge.EventRender) {
 		s.updateDuration = time.Since(preMark)
 	})
-	gorge.HandleFunc(g, func(e render.EventStat) {
+	event.Handle(g, func(e render.EventStat) {
 		s.rendererStat = e
 	})
 }
@@ -129,10 +130,10 @@ func Stat(g *gorge.Context) error {
 	timeInterval := float32(0)
 
 	var preMark time.Time
-	gorge.HandleFunc(g, func(gorge.EventPreUpdate) {
+	event.Handle(g, func(gorge.EventPreUpdate) {
 		preMark = time.Now()
 	})
-	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+	event.Handle(g, func(e gorge.EventUpdate) {
 		s.recalc()
 
 		if ic.KeyUp(input.KeyF10) {
@@ -161,10 +162,10 @@ func Stat(g *gorge.Context) error {
 
 		plane.SetScale(half[0]+padding, 0, half[1]+padding)
 	})
-	gorge.HandleFunc(g, func(gorge.EventRender) {
+	event.Handle(g, func(gorge.EventRender) {
 		s.updateDuration = time.Since(preMark)
 	})
-	gorge.HandleFunc(g, func(e render.EventStat) {
+	event.Handle(g, func(e render.EventStat) {
 		s.rendererStat = e
 	})
 	return nil

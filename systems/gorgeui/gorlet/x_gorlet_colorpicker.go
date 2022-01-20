@@ -2,6 +2,7 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -94,10 +95,10 @@ func ColorPicker(fn func(m32.Vec4)) Func {
 
 			root.Set("color", val)
 		}
-		gorge.HandleFunc(picker, func(e gorgeui.EventPointerDown) { pickColor(e.PointerData) })
-		gorge.HandleFunc(picker, func(e gorgeui.EventDragBegin) { pickColor(e.PointerData) })
-		gorge.HandleFunc(picker, func(e gorgeui.EventDrag) { pickColor(e.PointerData) })
-		gorge.HandleFunc(outColor, func(e gorgeui.EventDrag) {
+		event.Handle(picker, func(e gorgeui.EventPointerDown) { pickColor(e.PointerData) })
+		event.Handle(picker, func(e gorgeui.EventDragBegin) { pickColor(e.PointerData) })
+		event.Handle(picker, func(e gorgeui.EventDrag) { pickColor(e.PointerData) })
+		event.Handle(outColor, func(e gorgeui.EventDrag) {
 			val[3] = m32.Clamp(val[3]-e.Delta[1]*.01, 0, 1)
 			root.Set("color", val)
 		})

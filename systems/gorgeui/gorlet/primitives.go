@@ -2,6 +2,7 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -71,7 +72,7 @@ func rectElement(ent graphicer) Func {
 				c.Set("_maskDepth", n)
 			}
 		}))
-		gorge.HandleFunc(root, func(gorgeui.EventUpdate) {
+		event.Handle(root, func(gorgeui.EventUpdate) {
 			r := root.Rect()
 			t := ent.Transform()
 			t.Scale[0] = r[2] - r[0]

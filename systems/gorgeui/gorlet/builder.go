@@ -36,9 +36,9 @@ type nextData struct {
 
 // Builder used to build a guilet.
 type Builder struct {
-	next nextData
-
-	onAddFn func(e *Entity)
+	next       nextData
+	clientArea *Entity
+	onAddFn    func(e *Entity)
 
 	stack []*curEntity
 	root  *curEntity
@@ -55,12 +55,8 @@ func (b *Builder) Root() *Entity {
 // ClientArea sets the root entity client area, when adding entities using Add
 // those will be added to the current container
 // calling this twice will override the previous call.
-func (b Builder) ClientArea() {
-	cur := b.cur()
-	if cur == b.root {
-		return
-	}
-	b.root.entity.SetClientArea(cur.entity)
+func (b *Builder) ClientArea() {
+	b.clientArea = b.cur().entity
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 )
 
 var ctxKey = struct{ string }{"render"}
@@ -33,10 +34,10 @@ func FromContext(g *gorge.Context) *Context {
 		statTimeCount  float32 = 3
 		renderDuration time.Duration
 	)
-	gorge.HandleFunc(g, func(gorge.EventStart) {
+	event.Handle(g, func(gorge.EventStart) {
 		r.Init()
 	})
-	gorge.HandleFunc(g, func(e gorge.EventAddEntity) {
+	event.Handle(g, func(e gorge.EventAddEntity) {
 		// Not a switch since the entity can be both a Camera and a Light.
 		if v, ok := e.Entity.(Camera); ok {
 			r.AddCamera(v)
@@ -48,7 +49,7 @@ func FromContext(g *gorge.Context) *Context {
 			r.AddRenderable(v)
 		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventRemoveEntity) {
+	event.Handle(g, func(e gorge.EventRemoveEntity) {
 		if v, ok := e.Entity.(Camera); ok {
 			r.RemoveCamera(v)
 		}
@@ -59,7 +60,7 @@ func FromContext(g *gorge.Context) *Context {
 			r.RemoveRenderable(v)
 		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventRender) {
+	event.Handle(g, func(e gorge.EventRender) {
 		dt := float32(e)
 		statTimeCount -= dt
 		if statTimeCount < 0 {
@@ -85,7 +86,7 @@ func FromContext(g *gorge.Context) *Context {
 		r.Render()
 		renderDuration = time.Since(mark)
 	})
-	gorge.HandleFunc(g, func(e gorge.EventResourceUpdate) {
+	event.Handle(g, func(e gorge.EventResourceUpdate) {
 		switch rr := e.Resource.(type) {
 		case *gorge.TextureData:
 			r.textures.Update(rr)

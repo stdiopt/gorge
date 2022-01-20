@@ -16,10 +16,6 @@ func Trigger[T any](b event.Buser, v T) {
 	event.Trigger(b, v)
 }
 
-func HandleFunc[T any](b event.Buser, fn func(T)) {
-	event.HandleFunc(b, fn)
-}
-
 // EventPreUpdate type
 type EventPreUpdate float32
 

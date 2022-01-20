@@ -126,9 +126,7 @@ func (w *UI) Add(ents ...gorge.Entity) {
 		}
 	}
 	w.entities = append(w.entities, ents...)
-	if w.Attached && w.gorge != nil {
-		w.gorge.Add(ents...)
-	}
+	w.GAdd(ents...)
 }
 
 // Remove alias to remove entities from gorge.
@@ -148,6 +146,18 @@ func (w *UI) Remove(ents ...gorge.Entity) {
 			}
 		}
 	}
+	w.GRemove(ents...)
+}
+
+// GAdd adds to gorge if attached.
+func (w *UI) GAdd(ents ...gorge.Entity) {
+	if w.Attached && w.gorge != nil {
+		w.gorge.Add(ents...)
+	}
+}
+
+// GRemove removes from gorge if attached.
+func (w *UI) GRemove(ents ...gorge.Entity) {
 	if w.Attached && w.gorge != nil {
 		w.gorge.Remove(ents...)
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -112,11 +113,6 @@ func Slider(min, max float32, fn func(float32)) Func {
 			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3() // 0
 			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
 			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
-			/*m := track.Mat4()
-			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3() // 0
-			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
-			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
-			*/
 
 			ui := gorgeui.RootUI(root)
 			r := ray.FromScreen(ui.ScreenSize(), ui.Camera, pd.Position)
@@ -131,17 +127,17 @@ func Slider(min, max float32, fn func(float32)) Func {
 			root.Set("value", real(v))
 			// log.Println("Res:", res.Position[0])
 		}
-		gorge.HandleFunc(root, func(e gorgeui.EventPointerUp) {
+		event.Handle(root, func(e gorgeui.EventPointerUp) {
 			if dragging {
 				return
 			}
 			dodrag(e.PointerData)
 		})
-		gorge.HandleFunc(root, func(e gorgeui.EventDrag) {
+		event.Handle(root, func(e gorgeui.EventDrag) {
 			dragging = true
 			dodrag(e.PointerData)
 		})
-		gorge.HandleFunc(root, func(gorgeui.EventDragEnd) {
+		event.Handle(root, func(gorgeui.EventDragEnd) {
 			dragging = false
 		})
 

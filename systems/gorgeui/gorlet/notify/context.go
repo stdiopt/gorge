@@ -5,6 +5,7 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/anim"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
 )
 
@@ -67,8 +68,8 @@ func FromContext(g *gorge.Context) *Context {
 		uiCam: uiCam,
 		ui:    ui,
 	}
-	gorge.HandleFunc(g, s.createNotification)
-	gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+	event.Handle(g, s.createNotification)
+	event.Handle(g, func(e gorge.EventUpdate) {
 		if len(s.cards) == 0 {
 			return
 		}

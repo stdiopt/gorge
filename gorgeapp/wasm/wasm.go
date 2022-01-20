@@ -93,10 +93,10 @@ func (s *wasmSystem) System(g *gorge.Context) error {
 	s.input = input.FromContext(g)
 	// g.PutProp(s.glctx)
 	s.checkCanvasSize()
-	gorge.HandleFunc(g, func(gorge.EventStart) {
+	event.Handle(g, func(gorge.EventStart) {
 		s.setupEvents()
 	})
-	gorge.HandleFunc(g, func(gorge.EventAfterStart) {
+	event.Handle(g, func(gorge.EventAfterStart) {
 		var prevFrameTime float64 = 0
 		var ticker js.Func
 		skip := 5

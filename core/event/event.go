@@ -62,7 +62,7 @@ func Trigger[T any](bb Buser, v T) {
 	}
 }
 
-func HandleFunc[T any](bb Buser, h HandlerFunc[T]) {
+func Handle[T any](bb Buser, h HandlerFunc[T]) {
 	b := bb.bus()
 
 	i, l := search[T](bb)

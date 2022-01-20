@@ -15,7 +15,7 @@ posChannel.SetKey(5, m32.Vec3{1, 0, 0}) // 5 segonds after
 
 a.Start()
 
-gorge.HandleFunc(g, func(e gorge.EventUpdate) {
+event.HandleFunc(g, func(e gorge.EventUpdate) {
 	a.UpdateDelta(e.DeltaTime())
 })
 ```

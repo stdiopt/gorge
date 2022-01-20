@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/text"
@@ -55,7 +56,7 @@ func Spinner(lbl string, fn func(float32)) Func {
 		}))
 
 		// root.SetDragEvents(true)
-		gorge.HandleFunc(root, func(e gorgeui.EventDrag) {
+		event.Handle(root, func(e gorgeui.EventDrag) {
 			root.Set("value", val+e.Delta[0]*0.01)
 		})
 		root.Set("value", 0)

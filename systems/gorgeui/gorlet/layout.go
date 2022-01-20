@@ -57,6 +57,19 @@ func AutoHeight(spacing float32) LayoutFunc {
 	}
 }
 
+func ContentSize() LayoutFunc {
+	return func(ent *Entity) {
+		ent.Dim = m32.Vec2{}
+		ent.Anchor[2] = ent.Anchor[0]
+		ent.Anchor[3] = ent.Anchor[1]
+
+		b := ent.CalcBounds()
+
+		ent.Dim[0] = b[2]
+		ent.Dim[1] = b[3]
+	}
+}
+
 // Placement
 
 // Vertical placement

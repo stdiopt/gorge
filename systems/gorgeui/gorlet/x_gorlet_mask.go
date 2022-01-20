@@ -1,7 +1,7 @@
 package gorlet
 
 import (
-	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -17,7 +17,7 @@ func Mask() Func {
 
 		container := b.BeginContainer()
 		b.ClientArea()
-		b.EndPanel()
+		b.EndContainer()
 
 		// b.Use("stencil", calcMaskOff(0))
 		b.Use("colorMask", &[4]bool{false, false, false, false})
@@ -31,14 +31,13 @@ func Mask() Func {
 			depthMask = n
 		}))
 
-		gorge.HandleFunc(root, func(gorgeui.EventUpdate) {
+		event.Handle(root, func(gorgeui.EventUpdate) {
 			maskOn.Set("stencil", calcMaskOn(depthMask))
 			maskOff.Set("stencil", calcMaskOff(depthMask))
 			for _, c := range container.Children() {
 				c.Set("_maskDepth", depthMask+1)
 			}
 		})
-		root.Set("_maskDepth", 0)
 	}
 }
 

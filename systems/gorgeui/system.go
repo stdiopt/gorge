@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/m32"
 	"github.com/stdiopt/gorge/m32/ray"
 	"github.com/stdiopt/gorge/systems/input"
@@ -35,7 +36,7 @@ type system struct {
 }
 
 func (s *system) setupEvents(g *gorge.Context) {
-	gorge.HandleFunc(g, func(e input.EventPointer) {
+	event.Handle(g, func(e input.EventPointer) {
 		s.deltaMouse = e.Pointers[0].Pos.Sub(s.curMouse)
 		s.curMouse = e.Pointers[0].Pos
 		hit, r := s.rayTest(s.curMouse)
@@ -115,12 +116,12 @@ func (s *system) setupEvents(g *gorge.Context) {
 			triggerOn(s.dragging, EventDrag{p})
 		}
 	})
-	gorge.HandleFunc(g, func(gorge.EventPreUpdate) {
+	event.Handle(g, func(gorge.EventPreUpdate) {
 		if s.Debug != 0 {
 			s.dbg.Clear()
 		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventPostUpdate) {
+	event.Handle(g, func(e gorge.EventPostUpdate) {
 		for ui := range s.uis {
 			ui.update(e.DeltaTime())
 		}
@@ -132,12 +133,12 @@ func (s *system) setupEvents(g *gorge.Context) {
 			s.debugRects()
 		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventAddEntity) {
+	event.Handle(g, func(e gorge.EventAddEntity) {
 		if v, ok := e.Entity.(Entity); ok {
 			s.addEntity(v)
 		}
 	})
-	gorge.HandleFunc(g, func(e gorge.EventRemoveEntity) {
+	event.Handle(g, func(e gorge.EventRemoveEntity) {
 		if v, ok := e.Entity.(Entity); ok {
 			s.removeEntity(v)
 		}
@@ -214,8 +215,8 @@ func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
 			}
 			t := k.RectTransform()
 			rect := t.Rect()
-
 			m := t.Mat4()
+
 			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3()
 			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
 			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
@@ -307,22 +308,6 @@ func (s *system) debugRects() {
 
 		s.dbg.SetColor(1, 0, 0, 1)
 		s.dbg.AddLine(planePos, planePos.Add(planeNorm))
-
-		// Position cross
-		// s.dbg.SetColor(1, 1, 0, 1)
-		// s.dbg.AddLine(t.Position.Add(m32.Vec3{-1, 0, 0}), t.Position.Add(m32.Vec3{1, 0, 0}))
-		// s.dbg.AddLine(t.Position.Add(m32.Vec3{0, -1, 0}), t.Position.Add(m32.Vec3{0, 1, 0}))
-		/*{
-			t.Mat4() // Transform() // this updates transforms anyway
-			pos := t.t1.WorldPosition()
-			s.dbg.SetColor(1, 0, 0, 1)
-			s.dbg.AddCross(pos, .5)
-		}
-		{
-			pos := t.t2.WorldPosition()
-			s.dbg.SetColor(0, 1, 0, 1)
-			s.dbg.AddCross(pos, .5)
-		}*/
 
 		s.dbg.SetColor(.5+rs.Float32()*.5, rs.Float32(), rs.Float32(), 1)
 		v3 := m.MulV4(m32.Vec4{rect[2], rect[3], 0, 1}).Vec3()

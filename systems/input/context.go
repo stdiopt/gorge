@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 )
 
 type input = Input
@@ -24,7 +25,7 @@ func FromContext(g *gorge.Context) *Context {
 		keyManager:   keyManager{gorge: g},
 		mouseManager: mouseManager{gorge: g},
 	}
-	gorge.HandleFunc(g, func(gorge.EventPostUpdate) {
+	event.Handle(g, func(gorge.EventPostUpdate) {
 		s.keyManager.update()
 		s.mouseManager.update()
 	})
