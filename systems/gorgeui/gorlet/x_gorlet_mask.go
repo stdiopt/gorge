@@ -8,7 +8,8 @@ import (
 func Mask() Func {
 	return func(b *Builder) {
 		root := b.Root()
-
+		// This will Clip input
+		root.Masked = true
 		maskOn := Create(Quad())
 		maskOn.Set("colorMask", &[4]bool{false, false, false, false})
 		maskOn.SetDisableRaycast(true)
@@ -20,7 +21,6 @@ func Mask() Func {
 		b.EndContainer()
 
 		// b.Use("stencil", calcMaskOff(0))
-		b.Use("colorMask", &[4]bool{false, false, false, false})
 		maskOff := b.Create(Quad())
 		maskOff.Set("colorMask", &[4]bool{false, false, false, false})
 		maskOff.SetDisableRaycast(true)

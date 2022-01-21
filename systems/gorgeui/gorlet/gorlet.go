@@ -58,6 +58,9 @@ type Entity struct {
 	layouter   Layouter
 
 	observers map[string][]ObserverFunc
+
+	// Temp solution for the thing
+	Masked bool
 }
 
 // Create creates builds and prepares a guilet
@@ -111,6 +114,10 @@ func entityUpdate(ent *Entity) {
 	for _, c := range ent.Children() {
 		entityUpdate(c)
 	}
+}
+
+func (e *Entity) IsMasked() bool {
+	return e.Masked
 }
 
 // XXX:

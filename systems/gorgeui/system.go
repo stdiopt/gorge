@@ -163,14 +163,6 @@ func (s *system) handlePointer(e input.EventPointer) {
 		ui := RootUI(s.pointDown)
 		d := s.curMouse.Sub(s.pointDownPos).Abs()
 		if d[0] > ui.DragThreshold || d[1] > ui.DragThreshold {
-			/*EachParent(hit, func(e Entity) bool {
-				if !e.Element().DragEvents {
-					return true
-				}
-				s.dragging = e
-				triggerOn(s.dragging, EventDragBegin{p})
-				return false
-			})*/
 			EachParent(s.pointDown, func(e Entity) bool {
 				if !e.Element().DragEvents {
 					return true
@@ -179,21 +171,66 @@ func (s *system) handlePointer(e input.EventPointer) {
 				triggerOn(s.dragging, EventDragBegin{pd})
 				return false
 			})
-
-			/*
-				// Drag on unit
-				if hit.Element().DragEvents {
-					s.dragging = hit
-					log.Println("Start dragging:", s.dragging)
-					triggerOn(s.dragging, EventDragBegin{p})
-				}
-			*/
 		}
 	} else if s.dragging != nil {
 		triggerOn(s.dragging, EventDrag{pd})
 	}
 }
 
+// NewPick, it might be slower but can overcome masked entities
+func (s *system) rayPick(pointerPos gm.Vec2) (Entity, ray.Result) {
+	type masker interface{ IsMasked() bool }
+	// Organize UI's
+	uis := []*UI{}
+	for ui := range s.uis {
+		uis = append(uis, ui)
+	}
+	sort.Sort(uiSorter(uis))
+
+	var pick func(r ray.Ray, e Entity) (Entity, ray.Result)
+
+	pick = func(r ray.Ray, e Entity) (Entity, ray.Result) {
+		res := rayRect(r, e)
+		// if entity is interface we check against it, else we continue checking
+		if !res.Hit {
+			if m, ok := e.(masker); ok && m.IsMasked() {
+				return e, res
+			}
+		}
+
+		c, ok := e.(gorge.EntityContainer)
+		if !ok {
+			return e, res
+		}
+		children := c.GetEntities()
+		for i := len(children) - 1; i >= 0; i-- {
+			ce := children[i]
+
+			ge, ok := ce.(Entity)
+			if !ok { // skip non entity
+				continue
+			}
+			// slip ray cast disabled
+			if ge.Element().DisableRaycast {
+				continue
+			}
+			if ret, res := pick(r, ge); res.Hit {
+				return ret, res
+			}
+		}
+		return e, res
+	}
+
+	for _, u := range uis {
+		r := ray.FromScreen(s.gorge.ScreenSize(), u.Camera, pointerPos)
+		if ent, res := pick(r, u); res.Hit {
+			return ent, res
+		}
+	}
+	return nil, ray.Result{}
+}
+
+/*
 func (s *system) rayPick(pointerPos gm.Vec2) (Entity, ray.Result) {
 	uiMap := map[*UI][]Entity{}
 	uis := []*UI{}
@@ -226,6 +263,8 @@ func (s *system) rayPick(pointerPos gm.Vec2) (Entity, ray.Result) {
 	}
 	return nil, ray.Result{}
 }
+
+/**/
 
 // Ray test and return an entity
 // if the pick is the same to the pointOver it will return
