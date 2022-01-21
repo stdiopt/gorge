@@ -2,15 +2,15 @@ package text
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"golang.org/x/image/font"
 )
 
 // Glyph char information
 type Glyph struct {
-	Uv1  m32.Vec2
-	Uv2  m32.Vec2
-	Size m32.Vec2
+	Uv1  gm.Vec2
+	Uv2  gm.Vec2
+	Size gm.Vec2
 
 	Advance  float32
 	BearingH float32
@@ -39,8 +39,8 @@ func (f *Font) getGlyph(ch rune) Glyph {
 type FontOptions struct {
 	Resolution int
 	Chars      string
-	Background *m32.Vec4
-	Foreground *m32.Vec4
+	Background *gm.Vec4
+	Foreground *gm.Vec4
 }
 
 // FontOptionsFunc func to manipulate font options.
@@ -54,14 +54,14 @@ func FontResolution(n int) FontOptionsFunc {
 }
 
 // FontBackground sets the font texture background option.
-func FontBackground(c m32.Vec4) FontOptionsFunc {
+func FontBackground(c gm.Vec4) FontOptionsFunc {
 	return func(opt *FontOptions) {
 		opt.Background = &c
 	}
 }
 
 // FontForeground sets the font texture foreground option.
-func FontForeground(c m32.Vec4) FontOptionsFunc {
+func FontForeground(c gm.Vec4) FontOptionsFunc {
 	return func(opt *FontOptions) {
 		opt.Foreground = &c
 	}

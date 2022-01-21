@@ -9,8 +9,8 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/m32/ray"
+	"github.com/stdiopt/gorge/math/gm"
+	"github.com/stdiopt/gorge/math/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -318,28 +318,28 @@ func (e *Entity) SetRelRect(v ...float32) {
 
 // CalcBounds calculates children bounds and positions and return min max
 // size
-func (e *Entity) CalcBounds() m32.Vec4 {
-	var ret m32.Vec4
+func (e *Entity) CalcBounds() gm.Vec4 {
+	var ret gm.Vec4
 	sz := e.CalcSize()
 	ret[2] = sz[0] + e.Margin[0] + e.Margin[2]
 	ret[3] = sz[1] + e.Margin[1] + e.Margin[3]
 	for _, e := range e.children {
 		b := e.CalcBounds()
-		ret[0] = m32.Min(ret[0], e.Position[0]+b[0])
-		ret[1] = m32.Min(ret[1], e.Position[1]+b[1])
-		ret[2] = m32.Max(ret[2], e.Position[0]+b[2])
-		ret[3] = m32.Max(ret[3], e.Position[1]+b[3])
+		ret[0] = gm.Min(ret[0], e.Position[0]+b[0])
+		ret[1] = gm.Min(ret[1], e.Position[1]+b[1])
+		ret[2] = gm.Max(ret[2], e.Position[0]+b[2])
+		ret[3] = gm.Max(ret[3], e.Position[1]+b[3])
 	}
 	return ret
 }
 
 // IntersectFromScreen intersects the entity rect from screen coordinates.
-func (e *Entity) IntersectFromScreen(pos m32.Vec2) ray.Result {
+func (e *Entity) IntersectFromScreen(pos gm.Vec2) ray.Result {
 	sz := e.CalcSize()
 	m := e.Mat4()
-	v0 := m.MulV4(m32.Vec4{0, 0, 0, 1}).Vec3()     // 0
-	v1 := m.MulV4(m32.Vec4{sz[0], 0, 0, 1}).Vec3() // right
-	v2 := m.MulV4(m32.Vec4{0, sz[1], 0, 1}).Vec3() // up)
+	v0 := m.MulV4(gm.Vec4{0, 0, 0, 1}).Vec3()     // 0
+	v1 := m.MulV4(gm.Vec4{sz[0], 0, 0, 1}).Vec3() // right
+	v2 := m.MulV4(gm.Vec4{0, sz[1], 0, 1}).Vec3() // up)
 
 	ui := gorgeui.RootUI(e)
 	r := ray.FromScreen(ui.ScreenSize(), ui.Camera, pos)

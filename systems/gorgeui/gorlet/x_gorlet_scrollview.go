@@ -2,7 +2,7 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -15,7 +15,7 @@ type scroll struct {
 
 func Scroll() Func {
 	return func(b *Builder) {
-		background := b.Prop("background", m32.Color(0, .3))
+		background := b.Prop("background", gm.Color(0, .3))
 		var (
 			container  *Entity
 			scrollable *Entity
@@ -43,12 +43,12 @@ func Scroll() Func {
 			b.UseAnchor(0, 1, 1, 1)
 			// b.UseRect(0, -scroll[0].size, scroll[1].size, scroll[0].size)
 			b.UseRect(0)
-			b.Use("color", m32.Color(0, 0, 0, .2))
+			b.Use("color", gm.Color(0, 0, 0, .2))
 			scroll[0].entity = b.HScrollBar(func(v float32) {
 				if scroll[0].disabled {
 					return
 				}
-				v = m32.Clamp(v, 0, 1)
+				v = gm.Clamp(v, 0, 1)
 				if v == scroll[0].value {
 					return
 				}
@@ -65,12 +65,12 @@ func Scroll() Func {
 			b.UseAnchor(1, 0, 1, 1)
 			// b.UseRect(-scroll[1].size, 0, scroll[0].size, scroll[1].size)
 			b.UseRect(0)
-			b.Use("color", m32.Color(0, 0, 0, .2))
+			b.Use("color", gm.Color(0, 0, 0, .2))
 			scroll[1].entity = b.VScrollBar(func(v float32) {
 				if scroll[1].disabled {
 					return
 				}
-				v = m32.Clamp(v, 0, 1)
+				v = gm.Clamp(v, 0, 1)
 				if v == scroll[1].value {
 					return
 				}
@@ -86,7 +86,7 @@ func Scroll() Func {
 		b.EndPanel()
 
 		updateScrolls := func() {
-			sz := m32.Vec2{}
+			sz := gm.Vec2{}
 			if !scroll[0].disabled {
 				sz[0] = scroll[0].size
 			}
@@ -121,11 +121,11 @@ func Scroll() Func {
 		event.Handle(root, func(e gorgeui.EventPointerWheel) {
 			if !scroll[0].disabled {
 				h := scroll[0].value
-				scroll[0].entity.Set("value", m32.Clamp(h+e.Wheel[0]*0.01, 0, 1))
+				scroll[0].entity.Set("value", gm.Clamp(h+e.Wheel[0]*0.01, 0, 1))
 			}
 			if !scroll[1].disabled {
 				v := scroll[1].value
-				scroll[1].entity.Set("value", m32.Clamp(v+e.Wheel[1]*0.01, 0, 1))
+				scroll[1].entity.Set("value", gm.Clamp(v+e.Wheel[1]*0.01, 0, 1))
 			}
 		})
 		event.Handle(root, func(gorgeui.EventUpdate) {
@@ -157,6 +157,7 @@ func Scroll() Func {
 				}
 			}
 		})
+		root.Set("scrollSize", 1)
 	}
 }
 
@@ -173,11 +174,11 @@ func VScrollBar(fn func(float32)) Func {
 func ScrollBar(dir Direction, fn func(float32)) Func {
 	return func(b *Builder) {
 		var (
-			backgroundColor = b.Prop("backgroundColor", m32.Color(.4, .2))
+			backgroundColor = b.Prop("backgroundColor", gm.Color(.4, .2))
 			handlerColor    = b.Prop("handlerColor")
 		)
 		var (
-			dragging    *m32.Vec2
+			dragging    *gm.Vec2
 			handlerSize = float32(4)
 			val         float32
 			track       *Entity
@@ -214,11 +215,11 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 		}
 		b.EndPanel()
 
-		Observe(b, "handlerColor", func(c m32.Vec4) {
+		Observe(b, "handlerColor", func(c gm.Vec4) {
 			handler.Set("color", c)
 		})
 		Observe(b, "value", func(v float32) {
-			v = m32.Clamp(v, 0, 1)
+			v = gm.Clamp(v, 0, 1)
 			if val == v {
 				return
 			}
@@ -256,7 +257,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 				v := res.UV[1]
 				v -= handlerSize / root.Rect()[3] / 2
 			}
-			v = m32.Clamp(v, 0, 1)
+			v = gm.Clamp(v, 0, 1)
 			root.Set("value", v)
 		})
 		event.Handle(root, func(e gorgeui.EventDragBegin) {

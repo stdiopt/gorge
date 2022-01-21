@@ -4,7 +4,7 @@ package anim
 import (
 	"time"
 
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 type Channeler interface {
@@ -130,9 +130,9 @@ func (a *Animation) update() {
 func (a *Animation) loopTime(ct, last float32) float32 {
 	switch a.loop {
 	case LoopAlways:
-		ct = m32.Mod(ct, last)
+		ct = gm.Mod(ct, last)
 	case LoopMirror:
-		ct = m32.Mod(ct, 2*last)
+		ct = gm.Mod(ct, 2*last)
 		if ct > last {
 			ct = last - (ct - last)
 			return ct

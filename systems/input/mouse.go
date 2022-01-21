@@ -3,7 +3,7 @@ package input
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // This might better be mouse?
@@ -12,9 +12,9 @@ type mouseManager struct {
 	buttonState map[MouseButton]ActionState
 	// Need to handle current mouse position and whatnots
 	// MousePosition
-	mpos        m32.Vec2
-	deltaPos    m32.Vec2
-	deltaScroll m32.Vec2
+	mpos        gm.Vec2
+	deltaPos    gm.Vec2
+	deltaScroll gm.Vec2
 }
 
 func (m *mouseManager) update() {
@@ -26,11 +26,11 @@ func (m *mouseManager) update() {
 			delete(m.buttonState, k)
 		}
 	}
-	m.deltaScroll = m32.Vec2{}
-	m.deltaPos = m32.Vec2{}
+	m.deltaScroll = gm.Vec2{}
+	m.deltaPos = gm.Vec2{}
 }
 
-func (m *mouseManager) SetScrollDelta(delta m32.Vec2) {
+func (m *mouseManager) SetScrollDelta(delta gm.Vec2) {
 	m.deltaScroll = delta
 
 	// Legacy
@@ -43,7 +43,7 @@ func (m *mouseManager) SetScrollDelta(delta m32.Vec2) {
 	gorge.Trigger(m.gorge, evt) // nolint: errcheck
 }
 
-func (m *mouseManager) SetCursorPosition(p m32.Vec2) {
+func (m *mouseManager) SetCursorPosition(p gm.Vec2) {
 	m.deltaPos = m.mpos.Sub(p)
 	m.mpos = p
 
@@ -59,7 +59,7 @@ func (m *mouseManager) SetCursorPosition(p m32.Vec2) {
 }
 
 // SetCursorDelta sets cursor position by delta.
-func (m *mouseManager) SetCursorDelta(d m32.Vec2) {
+func (m *mouseManager) SetCursorDelta(d gm.Vec2) {
 	m.SetCursorPosition(m.mpos.Add(d))
 }
 
@@ -96,17 +96,17 @@ func (m *mouseManager) SetMouseButtonState(b MouseButton, s ActionState) {
 }
 
 // ScrollDelta returns scrollDelta.
-func (m *mouseManager) ScrollDelta() m32.Vec2 {
+func (m *mouseManager) ScrollDelta() gm.Vec2 {
 	return m.deltaScroll
 }
 
 // CursorPosition returns the current cursor position.
-func (m *mouseManager) CursorPosition() m32.Vec2 {
+func (m *mouseManager) CursorPosition() gm.Vec2 {
 	return m.mpos
 }
 
 // CursorDelta returns the current cursor position.
-func (m *mouseManager) CursorDelta() m32.Vec2 {
+func (m *mouseManager) CursorDelta() gm.Vec2 {
 	return m.deltaPos
 }
 

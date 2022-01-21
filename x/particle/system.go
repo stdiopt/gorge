@@ -3,11 +3,11 @@ package particle
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 type emitter interface {
-	Mat4() m32.Mat4
+	Mat4() gm.Mat4
 	Transform() *gorge.TransformComponent
 	Emitter() *EmitterComponent
 }

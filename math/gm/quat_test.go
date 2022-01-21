@@ -1,9 +1,9 @@
-package m32_test
+package gm_test
 
 import (
 	"testing"
 
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 func TestQuat(t *testing.T) {
@@ -15,23 +15,23 @@ func TestQuat(t *testing.T) {
 
 		{
 			name: "Add",
-			in:   m32.Quat{1, 2, 3, 4}.Add(m32.Quat{1, 1, 1, 1}),
-			want: m32.Quat{2, 3, 4, 5},
+			in:   gm.Quat{1, 2, 3, 4}.Add(gm.Quat{1, 1, 1, 1}),
+			want: gm.Quat{2, 3, 4, 5},
 		},
 		{
 			name: "Normalize",
-			in:   m32.Quat{5, 4, 3, 2}.Normalize(),
-			want: m32.Quat{0.68041384, 0.5443311, 0.4082483, 0.27216554},
+			in:   gm.Quat{5, 4, 3, 2}.Normalize(),
+			want: gm.Quat{0.68041384, 0.5443311, 0.4082483, 0.27216554},
 		},
 		{
 			name: "Mul",
-			in:   m32.Quat{1, 1, 1, 1}.Mul(m32.Quat{2, 0, 0, 1}),
-			want: m32.Quat{3, 3, -1, -1},
+			in:   gm.Quat{1, 1, 1, 1}.Mul(gm.Quat{2, 0, 0, 1}),
+			want: gm.Quat{3, 3, -1, -1},
 		},
 		{
 			name: "Mat4",
-			in:   m32.Quat{1, 1, 1, 1}.Mat4(),
-			want: m32.Mat4{
+			in:   gm.Quat{1, 1, 1, 1}.Mat4(),
+			want: gm.Mat4{
 				-3, 4, 0, 0,
 				0, -3, 4, 0,
 				4, 0, -3, 0,

@@ -1,11 +1,11 @@
-package m32
+package gm
 
 import "math"
 
 // Vec2 vector2
-type Vec2 [2]float32
+type Vec2 [2]Float
 
-func V2(v ...float32) Vec2 {
+func V2(v ...Float) Vec2 {
 	switch len(v) {
 	case 0:
 		return Vec2{}
@@ -17,8 +17,8 @@ func V2(v ...float32) Vec2 {
 }
 
 // Len returns the len of v.
-func (v Vec2) Len() float32 {
-	return float32(math.Hypot(float64(v[0]), float64(v[1])))
+func (v Vec2) Len() Float {
+	return Float(math.Hypot(float64(v[0]), float64(v[1])))
 }
 
 // Add sums the elements with v2 and returns a new vec2.
@@ -32,17 +32,17 @@ func (v Vec2) Sub(v2 Vec2) Vec2 {
 }
 
 // Mul returns a new vec2 with the multiplication of each element with c.
-func (v Vec2) Mul(c float32) Vec2 {
+func (v Vec2) Mul(c Float) Vec2 {
 	return Vec2{v[0] * c, v[1] * c}
 }
 
 // Vec3 returns a vec3 with the extra value z.
-func (v Vec2) Vec3(z float32) Vec3 {
+func (v Vec2) Vec3(z Float) Vec3 {
 	return Vec3{v[0], v[1], z}
 }
 
 // Vec4 returns a vec4 with the extra values z and w.
-func (v Vec2) Vec4(z, w float32) Vec4 {
+func (v Vec2) Vec4(z, w Float) Vec4 {
 	return Vec4{v[0], v[1], z, w}
 }
 
@@ -63,7 +63,7 @@ func (v Vec2) Abs() Vec2 {
 }
 
 // Lerp Linear interpolation between 2 vecs2.
-func (v Vec2) Lerp(b Vec2, t float32) Vec2 {
+func (v Vec2) Lerp(b Vec2, t Float) Vec2 {
 	return Vec2{
 		v[0] + t*(b[0]-v[0]),
 		v[1] + t*(b[1]-v[1]),

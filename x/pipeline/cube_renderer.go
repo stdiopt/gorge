@@ -1,14 +1,14 @@
 package pipeline
 
 import (
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
 // RenderCube with a specific CubeMap sampler
-func (pl *PL) RenderCube(srcMap string, vp m32.Vec4) PipelineFunc {
+func (pl *PL) RenderCube(srcMap string, vp gm.Vec4) PipelineFunc {
 	return func(r *render.Context, next StepFunc) StepFunc {
 		shader := r.NewShader(static.Shaders.CubeEnv)
 
@@ -43,7 +43,7 @@ func (pl *PL) RenderCube(srcMap string, vp m32.Vec4) PipelineFunc {
 	}
 }
 
-func (p *PL) RenderQuad(srcMap string, vp m32.Vec4) PipelineFunc {
+func (p *PL) RenderQuad(srcMap string, vp gm.Vec4) PipelineFunc {
 	return func(r *render.Context, next StepFunc) StepFunc {
 		emptyVAO := gl.CreateVertexArray()
 		shader := r.NewShader(static.Shaders.Quad)
@@ -78,7 +78,7 @@ func (p *PL) RenderQuad(srcMap string, vp m32.Vec4) PipelineFunc {
 	}
 }
 
-func (pl *PL) RenderQuadDepth(srcMap string, vp m32.Vec4) PipelineFunc {
+func (pl *PL) RenderQuadDepth(srcMap string, vp gm.Vec4) PipelineFunc {
 	return func(r *render.Context, next StepFunc) StepFunc {
 		emptyVAO := gl.CreateVertexArray()
 		shader := r.NewShader(static.Shaders.QuadDepth)

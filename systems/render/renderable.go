@@ -6,7 +6,7 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/setlist"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/render/bufutil"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
@@ -183,8 +183,8 @@ func (rg *RenderableGroup) Update(s *Step) {
 		// Do the transformations
 		m := r.Mat4()
 		um := m.Inv().Transpose() // New: Normal Matrix
-		color := m32.Vec4{1, 1, 1, 1}
-		if v, ok := r.(interface{ GetColor() m32.Vec4 }); ok {
+		color := gm.Vec4{1, 1, 1, 1}
+		if v, ok := r.(interface{ GetColor() gm.Vec4 }); ok {
 			color = v.GetColor()
 		}
 		totSize := unitSize

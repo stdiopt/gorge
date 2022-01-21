@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
@@ -395,7 +395,7 @@ func (s *Shader) Set(k string, v any) {
 
 func (s *Shader) set(u *uniform, v any) {
 	if v == nil {
-		zeroMat := m32.Mat4{}
+		zeroMat := [16]float32{}
 		// TODO: more types
 		switch u.ty {
 		case gl.BOOL:
@@ -410,6 +410,8 @@ func (s *Shader) set(u *uniform, v any) {
 			gl.Uniform4f(u.loc, 0, 0, 0, 0)
 		case gl.FLOAT_MAT4:
 			gl.UniformMatrix4fv(u.loc, zeroMat[:])
+			// Orig
+			// gl.UniformMatrix4fv(u.loc, zeroMat[:])
 		case gl.SAMPLER_2D, gl.SAMPLER_CUBE:
 			// ignore samplers
 
@@ -434,18 +436,18 @@ func (s *Shader) set(u *uniform, v any) {
 	case int:
 		gl.Uniform1i(u.loc, v)
 	case float32:
-		gl.Uniform1f(u.loc, v)
+		gl.Uniform1f(u.loc, float32(v))
 	case float64:
 		gl.Uniform1f(u.loc, float32(v))
-	case m32.Vec2:
+	case gm.Vec2:
 		gl.Uniform2fv(u.loc, v[:])
-	case m32.Vec3:
+	case gm.Vec3:
 		gl.Uniform3fv(u.loc, v[:])
-	case m32.Vec4:
+	case gm.Vec4:
 		gl.Uniform4fv(u.loc, v[:])
-	case m32.Mat3:
+	case gm.Mat3:
 		gl.UniformMatrix3fv(u.loc, v[:])
-	case m32.Mat4:
+	case gm.Mat4:
 		gl.UniformMatrix4fv(u.loc, v[:])
 
 	// Pointer support
@@ -457,16 +459,17 @@ func (s *Shader) set(u *uniform, v any) {
 		gl.Uniform1f(u.loc, *v)
 	case *float64:
 		gl.Uniform1f(u.loc, float32(*v))
-	case *m32.Vec2:
+	case *gm.Vec2:
 		gl.Uniform2fv(u.loc, (*v)[:])
-	case *m32.Vec3:
+	case *gm.Vec3:
 		gl.Uniform3fv(u.loc, (*v)[:])
-	case *m32.Vec4:
+	case *gm.Vec4:
 		gl.Uniform4fv(u.loc, (*v)[:])
-	case *m32.Mat3:
+	case *gm.Mat3:
 		gl.UniformMatrix3fv(u.loc, (*v)[:])
-	case *m32.Mat4:
+	case *gm.Mat4:
 		gl.UniformMatrix4fv(u.loc, (*v)[:])
+
 	default:
 		panic(fmt.Sprintf("not implemented: %T", v))
 	}

@@ -2,7 +2,7 @@
 package pipeline
 
 import (
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/gl"
 	"github.com/stdiopt/gorge/systems/render/renderpl"
@@ -19,17 +19,17 @@ type (
 )
 
 var (
-	camTargets = []m32.Mat4{
-		m32.LookAt(m32.Vec3{}, m32.Vec3{1, 0, 0}, m32.Vec3{0, -1, 0}),
-		m32.LookAt(m32.Vec3{}, m32.Vec3{-1, 0, 0}, m32.Vec3{0, -1, 0}),
+	camTargets = []gm.Mat4{
+		gm.LookAt(gm.Vec3{}, gm.Vec3{1, 0, 0}, gm.Vec3{0, -1, 0}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{-1, 0, 0}, gm.Vec3{0, -1, 0}),
 
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, 1, 0}, m32.Vec3{0, 0, 1}),
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, -1, 0}, m32.Vec3{0, 0, -1}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, 1, 0}, gm.Vec3{0, 0, 1}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, -1, 0}, gm.Vec3{0, 0, -1}),
 
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, 0, 1}, m32.Vec3{0, -1, 0}),
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, 0, -1}, m32.Vec3{0, -1, 0}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, 0, 1}, gm.Vec3{0, -1, 0}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, 0, -1}, gm.Vec3{0, -1, 0}),
 	}
-	camProj = m32.Perspective(90, 1, .1, 10)
+	camProj = gm.Perspective(90, 1, .1, 10)
 )
 
 // PL pipeline instance that will reference VertexArray and VBOs.

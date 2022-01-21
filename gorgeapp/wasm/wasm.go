@@ -8,7 +8,7 @@ import (
 	"syscall/js"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render/gl"
 	"github.com/stdiopt/gorge/systems/resource"
@@ -130,7 +130,7 @@ func (s *wasmSystem) checkCanvasSize() {
 		s.canvas.Set("width", w)
 		s.canvas.Set("height", h)
 
-		s.gorge.SetScreenSize(m32.Vec2{float32(w), float32(h)})
+		s.gorge.SetScreenSize(gm.Vec2{float32(w), float32(h)})
 	}
 }
 
@@ -193,7 +193,7 @@ func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) any {
 		s.input.SetScrollDelta(float32(evt.Get("deltaY").Float()))
 	case "mousemove":
 		s.input.SetCursorPosition(
-			m32.Vec2{
+			gm.Vec2{
 				float32(evt.Get("pageX").Float() * s.CanvasResolution),
 				float32(evt.Get("pageY").Float() * s.CanvasResolution),
 			},
@@ -245,7 +245,7 @@ func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) any {
 		t := touches.Index(i)
 		id := t.Get("identifier").Int()
 		pts[id] = input.PointerData{
-			Pos: m32.Vec2{
+			Pos: gm.Vec2{
 				float32(t.Get("pageX").Float() * s.CanvasResolution),
 				float32(t.Get("pageY").Float() * s.CanvasResolution),
 			},
@@ -256,7 +256,7 @@ func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) any {
 		t := touches.Index(i)
 		id := t.Get("identifier").Int()
 		pts[id] = input.PointerData{
-			Pos: m32.Vec2{
+			Pos: gm.Vec2{
 				float32(t.Get("pageX").Float() * s.CanvasResolution),
 				float32(t.Get("pageY").Float() * s.CanvasResolution),
 			},

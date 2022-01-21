@@ -3,7 +3,7 @@ package gorge
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // MeshResourcer is an interface for mesh resource providers.
@@ -197,7 +197,7 @@ func (d *MeshData) Resource() MeshResource { return d }
 func (d *MeshData) isMesh() {}
 
 // CalcBounds calculate the bounding box for this mesh (slow)
-func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {
+func (d *MeshData) CalcBounds() (gm.Vec3, gm.Vec3) {
 	sz := d.Format.Size()
 	offs := 0
 	// Find renderer hardcoded aPosition attrib which is 2
@@ -208,18 +208,18 @@ func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {
 		offs += f.Size
 	}
 
-	var min m32.Vec3
-	var max m32.Vec3
+	var min gm.Vec3
+	var max gm.Vec3
 	v := d.Vertices[offs:]
 	copy(min[:], v)
 	copy(max[:], v)
 	for v := v[sz:]; sz < len(v); v = v[sz:] {
-		min[0] = m32.Min(v[0], min[0])
-		max[0] = m32.Max(v[0], max[0])
-		min[1] = m32.Min(v[1], min[1])
-		max[1] = m32.Max(v[1], max[1])
-		min[2] = m32.Min(v[2], min[2])
-		max[2] = m32.Max(v[2], max[2])
+		min[0] = gm.Min(v[0], min[0])
+		max[0] = gm.Max(v[0], max[0])
+		min[1] = gm.Min(v[1], min[1])
+		max[1] = gm.Max(v[1], max[1])
+		min[2] = gm.Min(v[2], min[2])
+		max[2] = gm.Max(v[2], max[2])
 
 		if sz > len(v) {
 			break
@@ -230,14 +230,14 @@ func (d *MeshData) CalcBounds() (m32.Vec3, m32.Vec3) {
 
 // ScaleUV manipulate meshData directly
 func (d *MeshData) ScaleUV(s ...float32) {
-	var scale m32.Vec2
+	var scale gm.Vec2
 	switch len(s) {
 	case 0:
 		return
 	case 1:
-		scale = m32.Vec2{s[0], s[0]}
+		scale = gm.Vec2{s[0], s[0]}
 	default:
-		scale = m32.Vec2{s[0], s[1]}
+		scale = gm.Vec2{s[0], s[1]}
 	}
 
 	sz := d.Format.Size()

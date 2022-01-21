@@ -1,4 +1,4 @@
-package m32
+package gm
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 // Mat3 is a 3x3 matrix in row major order.
 //
 // m[3*r + c] is the element in the r'th row and c'th column.
-type Mat3 [9]float32
+type Mat3 [9]Float
 
 // MulV3 return a the Vec3 multiplied by matrix.
 func (m Mat3) MulV3(v Vec3) Vec3 {
@@ -67,7 +67,7 @@ func (m Mat3) Sub(m2 Mat3) Mat3 {
 
 // MulS performs a scalar multiplcation of the matrix. This is equivalent to iterating
 // over every element of the matrix and multiply it by c.
-func (m Mat3) MulS(c float32) Mat3 {
+func (m Mat3) MulS(c Float) Mat3 {
 	return Mat3{m[0] * c, m[1] * c, m[2] * c, m[3] * c, m[4] * c, m[5] * c, m[6] * c, m[7] * c, m[8] * c}
 }
 
@@ -108,7 +108,7 @@ func (m Mat3) Transpose() Mat3 {
 // singularity and invertability, among other things. In this library, the
 // determinant is hard coded based on pre-computed cofactor expansion, and uses
 // no loops. Of course, the addition and multiplication must still be done.
-func (m Mat3) Det() float32 {
+func (m Mat3) Det() Float {
 	return m[0]*m[4]*m[8] + m[3]*m[7]*m[2] + m[6]*m[1]*m[5] - m[6]*m[4]*m[2] - m[3]*m[1]*m[8] - m[0]*m[7]*m[5]
 }
 
@@ -129,7 +129,7 @@ func (m Mat3) Det() float32 {
 // pre-computed determinant.
 func (m Mat3) Inv() Mat3 {
 	det := m.Det()
-	if FloatEqual(det, float32(0.0)) {
+	if FloatEqual(det, Float(0.0)) {
 		return Mat3{}
 	}
 
@@ -162,7 +162,7 @@ func (m Mat3) ApproxEqual(m2 Mat3) bool {
 // ApproxEqualThreshold performs an element-wise approximate equality test
 // between two matrices with a given epsilon threshold, as if
 // FloatEqualThreshold had been used.
-func (m Mat3) ApproxEqualThreshold(m2 Mat3, threshold float32) bool {
+func (m Mat3) ApproxEqualThreshold(m2 Mat3, threshold Float) bool {
 	for i := range m {
 		if !FloatEqualThreshold(m[i], m2[i], threshold) {
 			return false
@@ -174,7 +174,7 @@ func (m Mat3) ApproxEqualThreshold(m2 Mat3, threshold float32) bool {
 // ApproxFuncEqual performs an element-wise approximate equality test between two matrices
 // with a given equality functions, intended to be used with FloatEqualFunc; although and comparison
 // function may be used in practice.
-func (m Mat3) ApproxFuncEqual(m2 Mat3, eq func(float32, float32) bool) bool {
+func (m Mat3) ApproxFuncEqual(m2 Mat3, eq func(Float, Float) bool) bool {
 	for i := range m {
 		if !eq(m[i], m2[i]) {
 			return false
@@ -189,7 +189,7 @@ func (m Mat3) ApproxFuncEqual(m2 Mat3, eq func(float32, float32) bool) bool {
 //
 // This method is garbage-in garbage-out. For instance, on a Mat4 asking for
 // At(5,0) will work just like At(1,1). Or it may panic if it's out of bounds.
-func (m Mat3) At(row, col int) float32 {
+func (m Mat3) At(row, col int) Float {
 	return m[col*3+row]
 }
 
@@ -198,7 +198,7 @@ func (m Mat3) At(row, col int) float32 {
 //
 // This method is garbage-in garbage-out. For instance, on a Mat4 asking for
 // Set(5,0,val) will work just like Set(1,1,val). Or it may panic if it's out of bounds.
-func (m *Mat3) Set(row, col int, value float32) {
+func (m *Mat3) Set(row, col int, value Float) {
 	m[col*3+row] = value
 }
 
@@ -240,7 +240,7 @@ func (m Mat3) Cols() (col0, col1, col2 Vec3) {
 
 // Trace is a basic operation on a square matrix that simply
 // sums up all elements on the main diagonal (meaning all elements such that row==col).
-func (m Mat3) Trace() float32 {
+func (m Mat3) Trace() Float {
 	return m[0] + m[4] + m[8]
 }
 
@@ -266,7 +266,7 @@ func (m Mat3) String() string {
 }
 
 // M3Scale returns a Scale matrix.
-func M3Scale(sx, sy float32) Mat3 {
+func M3Scale(sx, sy Float) Mat3 {
 	return Mat3{
 		sx, 0, 0,
 		0, sy, 0,
@@ -275,7 +275,7 @@ func M3Scale(sx, sy float32) Mat3 {
 }
 
 // M3Rotate returns a 2D rotation matrix based on radians 'angle'.
-func M3Rotate(angle float32) Mat3 {
+func M3Rotate(angle Float) Mat3 {
 	// angle = (angle * math.Pi) / 180.0
 	sin, cos := Sin(angle), Cos(angle)
 	return Mat3{cos, sin, 0, -sin, cos, 0, 0, 0, 1}

@@ -1,8 +1,6 @@
 package gorlet
 
-import (
-	"github.com/stdiopt/gorge/m32"
-)
+import "github.com/stdiopt/gorge/math/gm"
 
 // FlexLayout will redimension children based on sizes.
 type FlexLayout struct {
@@ -50,7 +48,7 @@ func (l *FlexLayout) SetSizes(sizes ...float32) {
 	l.smaller = sizes[0]
 	for _, f := range sizes {
 		l.sum += f
-		l.smaller = m32.Min(l.smaller, f)
+		l.smaller = gm.Min(l.smaller, f)
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 func quadMeshData() *gorge.MeshData {
@@ -25,11 +25,11 @@ func quadMeshData() *gorge.MeshData {
 
 func polyMeshData(n int) *gorge.MeshData {
 	points := []float32{}
-	p := m32.Vec3{0, .5, 0}
+	p := gm.Vec3{0, .5, 0}
 	theta := float32(math.Pi) / (float32(n) / 2)
-	r := m32.M3Rotate(theta)
+	r := gm.M3Rotate(theta)
 	for i := 0; i < n+1; i++ {
-		o := p.Add(m32.Vec3{.5, .5, 0})
+		o := p.Add(gm.Vec3{.5, .5, 0})
 		points = append(points, o[:]...)
 		p = r.MulV3(p)
 	}

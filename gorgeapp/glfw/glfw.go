@@ -9,7 +9,7 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render/gl"
 	"github.com/stdiopt/gorge/systems/resource"
@@ -151,12 +151,12 @@ func (s *glfwSystem) System(g *gorge.Context) error {
 
 func (s *glfwSystem) setupEvents() {
 	s.window.SetSizeCallback(func(_ *glfw.Window, width, height int) {
-		s.gorge.SetScreenSize(m32.Vec2{float32(width), float32(height)})
+		s.gorge.SetScreenSize(gm.Vec2{float32(width), float32(height)})
 	})
 
 	s.window.SetScrollCallback(
 		func(_ *glfw.Window, xoff, yoff float64) {
-			s.input.SetScrollDelta(m32.Vec2{float32(xoff) * 6, -float32(yoff) * 6})
+			s.input.SetScrollDelta(gm.Vec2{float32(xoff) * 6, -float32(yoff) * 6})
 		},
 	)
 
@@ -181,16 +181,16 @@ func (s *glfwSystem) setupEvents() {
 	// sx, sy := s.window.GetSize()
 	// cx, cy := float64(sx/2), float64(sy/2)
 	// s.window.SetCursorPos(cx, cy)
-	// s.input.SetCursorPosition(m32.Vec2{float32(cx), float32(cy)})
+	// s.input.SetCursorPosition(gm.Vec2{float32(cx), float32(cy)})
 
 	s.window.SetCursorPosCallback(func(w *glfw.Window, x, y float64) {
 		if !s.cursorRelative {
-			s.input.SetCursorPosition(m32.Vec2{float32(x), float32(y)})
+			s.input.SetCursorPosition(gm.Vec2{float32(x), float32(y)})
 			return
 		}
 		sx, sy := w.GetSize()
 		cx, cy := float64(sx/2), float64(sy/2)
-		s.input.SetCursorDelta(m32.Vec2{float32(x - cx), float32(y - cy)})
+		s.input.SetCursorDelta(gm.Vec2{float32(x - cx), float32(y - cy)})
 		w.SetCursorPos(cx, cy)
 	})
 

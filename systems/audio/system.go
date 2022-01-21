@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/oto"
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/audio/proc"
 )
 
@@ -123,7 +123,7 @@ func (p *Processor) run() {
 				buf = buf[:100]
 			}
 
-			pos := m32.Vec3{}
+			pos := gm.Vec3{}
 			if e, ok := p.entity.(matrixer); ok {
 				pos = e.M4().Col(3).Vec3()
 			}
@@ -147,7 +147,7 @@ func (p *Processor) Run() {
 }
 
 type matrixer interface {
-	M4() m32.Mat4
+	M4() gm.Mat4
 }
 
 type rSourceEntity interface {

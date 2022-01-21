@@ -2,7 +2,7 @@ package gorgeutil
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 )
 
@@ -20,7 +20,7 @@ type GeomEntity struct {
 type Geom struct {
 	*gorge.TransformComponent
 	*gorge.Material
-	color m32.Vec4
+	color gm.Vec4
 
 	lines  *gorge.MeshData
 	points *gorge.MeshData
@@ -74,7 +74,7 @@ func NewGeom() *Geom {
 
 // SetColor set the current color state.
 func (dg *Geom) SetColor(r, g, b, a float32) {
-	dg.color = m32.Vec4{r, g, b, a}
+	dg.color = gm.Vec4{r, g, b, a}
 }
 
 // Clear clear the debug information.
@@ -96,7 +96,7 @@ func (dg *Geom) SetCullMask(m gorge.CullMaskFlags) {
 }
 
 // AddLine adds a line using the current color.
-func (dg *Geom) AddLine(p1 m32.Vec3, p2 m32.Vec3) {
+func (dg *Geom) AddLine(p1 gm.Vec3, p2 gm.Vec3) {
 	dg.lines.Vertices = append(dg.lines.Vertices,
 		p1[0], p1[1], p1[2], dg.color[0], dg.color[1], dg.color[2], dg.color[3],
 		p2[0], p2[1], p2[2], dg.color[0], dg.color[1], dg.color[2], dg.color[3],
@@ -105,7 +105,7 @@ func (dg *Geom) AddLine(p1 m32.Vec3, p2 m32.Vec3) {
 }
 
 // AddRect3 adds a rect based on 3 points and the current color.
-func (dg *Geom) AddRect3(p1, p2, p3 m32.Vec3) {
+func (dg *Geom) AddRect3(p1, p2, p3 gm.Vec3) {
 	e1 := p2.Sub(p1)
 	e2 := p3.Sub(p1)
 
@@ -115,7 +115,7 @@ func (dg *Geom) AddRect3(p1, p2, p3 m32.Vec3) {
 }
 
 // AddRect adds a rect based on 4 points and the current color.
-func (dg *Geom) AddRect(p1, p2, p3, p4 m32.Vec3) {
+func (dg *Geom) AddRect(p1, p2, p3, p4 gm.Vec3) {
 	dg.lines.Vertices = append(dg.lines.Vertices,
 		p1[0], p1[1], p1[2], dg.color[0], dg.color[1], dg.color[2], dg.color[3],
 		p2[0], p2[1], p2[2], dg.color[0], dg.color[1], dg.color[2], dg.color[3],
@@ -133,7 +133,7 @@ func (dg *Geom) AddRect(p1, p2, p3, p4 m32.Vec3) {
 }
 
 // AddPoint adds a single point with the current color..
-func (dg *Geom) AddPoint(p m32.Vec3) {
+func (dg *Geom) AddPoint(p gm.Vec3) {
 	dg.points.Vertices = append(dg.points.Vertices,
 		p[0], p[1], p[2], dg.color[0], dg.color[1], dg.color[2], dg.color[3],
 	)

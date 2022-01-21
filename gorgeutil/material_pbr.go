@@ -2,7 +2,7 @@ package gorgeutil
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 )
 
@@ -38,7 +38,7 @@ type PBRMaterial struct {
 func NewUnlitMaterial() *PBRMaterial {
 	mat := gorge.NewShaderMaterial(static.Shaders.DefaultNew)
 	mat.Define("MATERIAL_UNLIT", "USE_HDR")
-	mat.Set("u_BaseColorFactor", m32.Vec4{1, 1, 1, 1})
+	mat.Set("u_BaseColorFactor", gm.Vec4{1, 1, 1, 1})
 	return &PBRMaterial{
 		matType:  MaterialUnlit,
 		material: *mat,
@@ -54,7 +54,7 @@ func NewPBRMaterial() *PBRMaterial {
 	// default to 5 but might depent.
 	mat.Set("u_MipCount", 5)
 
-	mat.Set("u_BaseColorFactor", m32.Vec4{1, 1, 1, 1})
+	mat.Set("u_BaseColorFactor", gm.Vec4{1, 1, 1, 1})
 	mat.Set("u_Exposure", float32(1))
 	mat.Set("u_MetallicFactor", float32(1))
 	mat.Set("u_RoughnessFactor", float32(1))
@@ -100,7 +100,7 @@ func (m *PBRMaterial) SetHDR(b bool) {
 }
 
 // SetBaseColor sets the base color factor.
-func (m *PBRMaterial) SetBaseColor(v m32.Vec4) {
+func (m *PBRMaterial) SetBaseColor(v gm.Vec4) {
 	m.Set("u_BaseColorFactor", v)
 }
 
@@ -186,8 +186,8 @@ func (m *PBRMaterial) SetOcclusionStrength(v float32) {
 }
 
 // SetBaseUVTransform  sets the UV transform matrix.
-func (m *PBRMaterial) SetBaseUVTransform(v m32.Mat3) {
-	if v == m32.M3Ident() {
+func (m *PBRMaterial) SetBaseUVTransform(v gm.Mat3) {
+	if v == gm.M3Ident() {
 		m.Undefine("HAS_BASECOLOR_UV_TRANSFORM")
 		m.Set("u_BaseColorUVTransform", nil)
 		return

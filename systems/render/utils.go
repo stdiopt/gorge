@@ -2,25 +2,25 @@ package render
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
 // Light interface for light composition
 type Light interface {
-	Mat4() m32.Mat4
+	Mat4() gm.Mat4
 	Light() *gorge.LightComponent
 }
 
 // Camera interface for accepting camera structs
 type Camera interface {
-	Mat4() m32.Mat4
+	Mat4() gm.Mat4
 	Camera() *gorge.CameraComponent
 }
 
 // Renderable the renderer renderable component interface.
 type Renderable interface {
-	Mat4() m32.Mat4
+	Mat4() gm.Mat4
 	Renderable() *gorge.RenderableComponent
 }
 

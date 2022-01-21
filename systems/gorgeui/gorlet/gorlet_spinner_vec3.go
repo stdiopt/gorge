@@ -2,20 +2,20 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
-// SpinnerVec3 creates 3 spinners to control a m32.Vec3
-func SpinnerVec3(fn func(m32.Vec3)) Func {
+// SpinnerVec3 creates 3 spinners to control a gm.Vec3
+func SpinnerVec3(fn func(gm.Vec3)) Func {
 	return func(b *Builder) {
 		var (
 			fontScale   = b.Prop("fontScale", 2)
 			background  = b.Prop("background", nil)
-			labelColorX = b.Prop("x.labelColor", m32.Color(.5, 0, 0))
-			labelColorY = b.Prop("y.labelColor", m32.Color(0, .5, 0))
-			labelColorZ = b.Prop("z.labelColor", m32.Color(0, 0, .5))
+			labelColorX = b.Prop("x.labelColor", gm.Color(.5, 0, 0))
+			labelColorY = b.Prop("y.labelColor", gm.Color(0, .5, 0))
+			labelColorZ = b.Prop("z.labelColor", gm.Color(0, 0, .5))
 		)
-		var val m32.Vec3
+		var val gm.Vec3
 
 		root := b.Root()
 		obsFn := func(i int) func(v float32) {
@@ -44,7 +44,7 @@ func SpinnerVec3(fn func(m32.Vec3)) Func {
 
 		b.EndPanel()
 
-		b.Observe("value", ObsFunc(func(v m32.Vec3) {
+		b.Observe("value", ObsFunc(func(v gm.Vec3) {
 			if val == v {
 				return
 			}
@@ -59,6 +59,6 @@ func SpinnerVec3(fn func(m32.Vec3)) Func {
 }
 
 // SpinnerVec3 adds a spinner to builder.
-func (b *Builder) SpinnerVec3(fn func(m32.Vec3)) *Entity {
+func (b *Builder) SpinnerVec3(fn func(gm.Vec3)) *Entity {
 	return b.Add(SpinnerVec3(fn))
 }

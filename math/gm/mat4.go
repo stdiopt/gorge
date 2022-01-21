@@ -1,4 +1,4 @@
-package m32
+package gm
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 // Mat4 is a 4x4 matrix in row major order.
 //
 // m[4*r + c] is the element in the r'th row and c'th column.
-type Mat4 [16]float32
+type Mat4 [16]Float
 
 // Col returns a vector representing the corresponding column (starting at col 0).
 // This package makes no distinction between row and column vectors, so it
@@ -41,7 +41,7 @@ func (m Mat4) Add(m2 Mat4) Mat4 {
 
 // MulS performs a scalar multiplcation of the matrix. This is equivalent to iterating
 // over every element of the matrix and multiply it by c.
-func (m Mat4) MulS(v float32) Mat4 {
+func (m Mat4) MulS(v Float) Mat4 {
 	return Mat4{
 		m[0] * v, m[1] * v, m[2] * v, m[3] * v,
 		m[4] * v, m[5] * v, m[6] * v, m[7] * v,
@@ -89,7 +89,7 @@ func (m Mat4) MulV4(m2 Vec4) Vec4 {
 // singularity and invertability, among other things. In this library, the
 // determinant is hard coded based on pre-computed cofactor expansion, and uses
 // no loops. Of course, the addition and multiplication must still be done.
-func (m Mat4) Det() float32 {
+func (m Mat4) Det() Float {
 	return m[0]*m[5]*m[10]*m[15] -
 		m[0]*m[5]*m[11]*m[14] -
 		m[0]*m[6]*m[9]*m[15] +
@@ -131,7 +131,7 @@ func (m Mat4) Det() float32 {
 // In the future, an alternate function may be written which takes in a pre-computed determinant.
 func (m Mat4) Inv() Mat4 {
 	det := m.Det()
-	if FloatEqual(det, float32(0.0)) {
+	if FloatEqual(det, Float(0.0)) {
 		return Mat4{}
 	}
 
@@ -219,7 +219,7 @@ func (m Mat4) ApproxEqual(m2 Mat4) bool {
 // ApproxEqualThreshold performs an element-wise approximate equality test
 // between two matrices with a given epsilon threshold, as if
 // FloatEqualThreshold had been used.
-func (m Mat4) ApproxEqualThreshold(m2 Mat4, threshold float32) bool {
+func (m Mat4) ApproxEqualThreshold(m2 Mat4, threshold Float) bool {
 	for i := range m {
 		if !FloatEqualThreshold(m[i], m2[i], threshold) {
 			return false
@@ -232,7 +232,7 @@ func (m Mat4) ApproxEqualThreshold(m2 Mat4, threshold float32) bool {
 // two matrices with a given equality functions, intended to be used with
 // FloatEqualFunc; although and comparison
 // function may be used in practice.
-func (m Mat4) ApproxFuncEqual(m2 Mat4, eq func(float32, float32) bool) bool {
+func (m Mat4) ApproxFuncEqual(m2 Mat4, eq func(Float, Float) bool) bool {
 	for i := range m {
 		if !eq(m[i], m2[i]) {
 			return false
@@ -250,7 +250,7 @@ func (m Mat4) Row(row int) Vec4 {
 
 // Trace is a basic operation on a square matrix that simply
 // sums up all elements on the main diagonal (meaning all elements such that row==col).
-func (m Mat4) Trace() float32 {
+func (m Mat4) Trace() Float {
 	return m[0] + m[5] + m[10] + m[15]
 }
 
@@ -284,7 +284,7 @@ func M4Mul(ms ...Mat4) Mat4 {
 }
 
 // Translate3D returns a translation matrix
-func Translate3D(x, y, z float32) Mat4 {
+func Translate3D(x, y, z Float) Mat4 {
 	return Mat4{
 		1, 0, 0, 0,
 		0, 1, 0, 0,
@@ -294,7 +294,7 @@ func Translate3D(x, y, z float32) Mat4 {
 }
 
 // Scale3D returns a scale matrix
-func Scale3D(sx, sy, sz float32) Mat4 {
+func Scale3D(sx, sy, sz Float) Mat4 {
 	return Mat4{
 		sx, 0, 0, 0,
 		0, sy, 0, 0,

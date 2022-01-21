@@ -4,7 +4,7 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/anim"
 	"github.com/stdiopt/gorge/gorgeutil"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/gorgeui/gorlet"
 )
@@ -91,14 +91,14 @@ type card struct {
 
 func notifyWidget(e EventNotify) gorlet.Func {
 	return func(b *gorlet.Builder) {
-		color := m32.Color(0, 0, 0, .3)
+		color := gm.Color(0, 0, 0, .3)
 		switch e.Severity {
 		case SeverityInfo:
-			color = m32.Color(0, 0, 0, .3)
+			color = gm.Color(0, 0, 0, .3)
 		case SeverityWarn:
-			color = m32.Color(1, 1, 0, .3)
+			color = gm.Color(1, 1, 0, .3)
 		case SeverityError:
-			color = m32.Color(1, 0, 0, .3)
+			color = gm.Color(1, 0, 0, .3)
 		}
 		b.Root().SetLayout(gorlet.AutoHeight(0))
 		// Initial
@@ -118,13 +118,13 @@ func notifyWidget(e EventNotify) gorlet.Func {
 		b.EndPanel()
 
 		b.Observe("opacity", gorlet.ObsFunc(func(v float32) {
-			p.Set("color", m32.Color(
+			p.Set("color", gm.Color(
 				color[0],
 				color[1],
 				color[2],
 				v*.3,
 			))
-			l.Set("textColor", m32.Color(1, v))
+			l.Set("textColor", gm.Color(1, v))
 		}))
 	}
 }

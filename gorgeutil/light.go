@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // Light is a light entity which can be used directly on gorge.
@@ -61,8 +61,8 @@ func NewSpotLight() *Light {
 			Intensity:    100,
 			Color:        [3]float32{1, 1, 1},
 			Range:        100,
-			InnerConeCos: m32.Cos(30 * (math.Pi / 180)),
-			OuterConeCos: m32.Cos(40 * (math.Pi / 180)),
+			InnerConeCos: gm.Cos(30 * (math.Pi / 180)),
+			OuterConeCos: gm.Cos(40 * (math.Pi / 180)),
 		},
 	}
 }

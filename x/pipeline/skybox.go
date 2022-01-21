@@ -2,7 +2,7 @@ package pipeline
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -50,7 +50,7 @@ func (pl *PL) LoadHDR(src string, target string) PipelineFunc {
 			gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, pl.captureFBO)
 			gl.Viewport(0, 0, texSize, texSize)
 			for i := 0; i < 6; i++ {
-				equirectangularShader.Set("view", camTargets[i].Mul(m32.Scale3D(1, -1, 1)))
+				equirectangularShader.Set("view", camTargets[i].Mul(gm.Scale3D(1, -1, 1)))
 				gl.FramebufferTexture2D(
 					gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
 					gl.Enum(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i),

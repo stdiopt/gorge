@@ -8,7 +8,7 @@ import (
 	"unicode"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/resource"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -145,9 +145,9 @@ func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 		p2x := float32(gr.Max.X)
 		p2y := float32(gr.Max.Y)
 		glyphs[ch] = Glyph{
-			Uv1:      m32.Vec2{p1x / iw, p1y / ih},
-			Uv2:      m32.Vec2{p2x / iw, p2y / ih},
-			Size:     m32.Vec2{float32(gw) / scale, float32(gh) / scale},
+			Uv1:      gm.Vec2{p1x / iw, p1y / ih},
+			Uv2:      gm.Vec2{p2x / iw, p2y / ih},
+			Size:     gm.Vec2{float32(gw) / scale, float32(gh) / scale},
 			Advance:  float32(adv>>6) / scale,
 			BearingV: float32(bnd.Max.Y>>6) / scale,
 			BearingH: float32(bnd.Min.X>>6) / scale,
@@ -178,7 +178,7 @@ func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 	return nil
 }
 
-func vec4ToColor(v m32.Vec4) color.Color {
+func vec4ToColor(v gm.Vec4) color.Color {
 	v = v.Mul(255)
 	return color.RGBA{uint8(v[0]), uint8(v[1]), uint8(v[2]), uint8(v[3])}
 }
@@ -199,10 +199,10 @@ func glyphCount(s string) int {
 func calcSize(sz float32, n int) float32 {
 	a := sz * sz
 	ia := a / float32(n)
-	il := m32.Sqrt(ia)
-	nw := m32.Ceil(sz / il)
-	nh := m32.Ceil(sz / il)
-	l := m32.Min(sz/nw, sz/nh)
+	il := gm.Sqrt(ia)
+	nw := gm.Ceil(sz / il)
+	nh := gm.Ceil(sz / il)
+	l := gm.Min(sz/nw, sz/nh)
 
 	return l
 }

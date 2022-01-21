@@ -1,7 +1,7 @@
 package render
 
 import (
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/render/bufutil"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
@@ -12,7 +12,7 @@ type StepFunc func(ri *Step)
 // Step holds information about a render Step.
 type Step struct {
 	RenderNumber int
-	Viewport     m32.Vec4
+	Viewport     gm.Vec4
 
 	CameraUBO *bufutil.NamedOffset
 
@@ -27,10 +27,10 @@ type Step struct {
 
 	// Global specified uniforms, could be fetch from camera
 	// or directly on props
-	Projection m32.Mat4
-	View       m32.Mat4
-	CamPos     m32.Vec3
-	Ambient    m32.Vec3
+	Projection gm.Mat4
+	View       gm.Mat4
+	CamPos     gm.Vec3
+	Ambient    gm.Vec3
 
 	// Global props that will be set in every material
 	// As in, defaults

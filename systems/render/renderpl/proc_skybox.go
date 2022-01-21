@@ -2,7 +2,7 @@ package renderpl
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -48,28 +48,28 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 
 	// static Position 0,0,0
 	// we could add Height
-	camTargets := []m32.Mat4{
-		m32.LookAt(m32.Vec3{}, m32.Vec3{1, 0, 0}, m32.Vec3{0, -1, 0}),
-		m32.LookAt(m32.Vec3{}, m32.Vec3{-1, 0, 0}, m32.Vec3{0, -1, 0}),
+	camTargets := []gm.Mat4{
+		gm.LookAt(gm.Vec3{}, gm.Vec3{1, 0, 0}, gm.Vec3{0, -1, 0}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{-1, 0, 0}, gm.Vec3{0, -1, 0}),
 
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, 1, 0}, m32.Vec3{0, 0, 1}),
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, -1, 0}, m32.Vec3{0, 0, -1}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, 1, 0}, gm.Vec3{0, 0, 1}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, -1, 0}, gm.Vec3{0, 0, -1}),
 
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, 0, 1}, m32.Vec3{0, -1, 0}),
-		m32.LookAt(m32.Vec3{}, m32.Vec3{0, 0, -1}, m32.Vec3{0, -1, 0}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, 0, 1}, gm.Vec3{0, -1, 0}),
+		gm.LookAt(gm.Vec3{}, gm.Vec3{0, 0, -1}, gm.Vec3{0, -1, 0}),
 	}
-	camProj := m32.Perspective(90, 1, .1, 10)
+	camProj := gm.Perspective(90, 1, .1, 10)
 
-	prevLightDir := m32.Vec3{0, 0, 0}
+	prevLightDir := gm.Vec3{0, 0, 0}
 	return func(s *render.Step) {
 		// Find first directional light
 		// Do this elsewhere like on prepare
-		lightDir := m32.Vec3{-3, -3, -3} // Else we will use this
+		lightDir := gm.Vec3{-3, -3, -3} // Else we will use this
 		for _, rl := range r.Lights.Items() {
 			if rl.Light().Type == gorge.LightDirectional {
-				// lightDir = m32.Vec3{}.Sub(rl.TransformComponent().WorldPosition()).Normalize()
+				// lightDir = gm.Vec3{}.Sub(rl.TransformComponent().WorldPosition()).Normalize()
 				// lightDir = rl.Transform().Forward() // WHAT again?
-				lightDir = rl.Mat4().MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+				lightDir = rl.Mat4().MulV4(gm.Vec4{0, 0, -1, 0}).Vec3()
 			}
 		}
 		if lightDir == prevLightDir {

@@ -12,14 +12,14 @@ import (
 	"unsafe"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 const maxaddr = 0x7FFFFFFF
 
 type (
-	vec3 = m32.Vec3
-	vec2 = m32.Vec2
+	vec3 = gm.Vec3
+	vec2 = gm.Vec2
 )
 
 // we need asset loader
@@ -191,23 +191,23 @@ func readMesh(rd io.Reader) (*gorge.MeshData, error) {
 	return ptn.Data(), nil
 }
 
-func getVec3(parts []string) (m32.Vec3, error) {
-	var ret m32.Vec3
+func getVec3(parts []string) (gm.Vec3, error) {
+	var ret gm.Vec3
 	for i := 0; i < 3; i++ {
 		s := parts[i]
 		if err := parse(s, &ret[i]); err != nil {
-			return m32.Vec3{}, err
+			return gm.Vec3{}, err
 		}
 	}
 	return ret, nil
 }
 
-func getVec2(parts []string) (m32.Vec2, error) {
-	var ret m32.Vec2
+func getVec2(parts []string) (gm.Vec2, error) {
+	var ret gm.Vec2
 	for i := 0; i < 2; i++ {
 		s := parts[i]
 		if err := parse(s, &ret[i]); err != nil {
-			return m32.Vec2{}, err
+			return gm.Vec2{}, err
 		}
 	}
 	return ret, nil
@@ -230,9 +230,9 @@ func parse(s string, v any) error {
 
 // VertexPTN position tex normal vertex
 type VertexPTN struct {
-	Pos    m32.Vec3
-	Tex    m32.Vec2
-	Normal m32.Vec3
+	Pos    gm.Vec3
+	Tex    gm.Vec2
+	Normal gm.Vec3
 }
 
 // MeshDataPTN a slice of those vertices
@@ -243,7 +243,7 @@ type MeshDataPTN struct {
 }
 
 // Add a vertex
-func (m *MeshDataPTN) Add(p m32.Vec3, t m32.Vec2, n m32.Vec3) {
+func (m *MeshDataPTN) Add(p gm.Vec3, t gm.Vec2, n gm.Vec3) {
 	m.Vertices = append(m.Vertices, VertexPTN{p, t, n})
 }
 

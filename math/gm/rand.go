@@ -1,4 +1,4 @@
-package m32
+package gm
 
 import (
 	"math"
@@ -46,7 +46,7 @@ func (r Rand) rand() *rand.Rand {
 }
 
 // Cone returns a random direction on a cone
-func (r Rand) Cone(dir Vec3, spread float32) Vec3 {
+func (r Rand) Cone(dir Vec3, spread Float) Vec3 {
 	aa := r.Float32() * spread
 	radius, z := Sincos(aa)
 
@@ -58,15 +58,15 @@ func (r Rand) Cone(dir Vec3, spread float32) Vec3 {
 	return mdir.MulV4(ret.Vec4(1)).Vec3()
 }
 
-// Float32 returns a float32 with random values [0, 1] using inner rand
+// Float32 returns a Float with random values [0, 1] using inner rand
 // generator. if the inner source is nil it will use the global one.
-func (r Rand) Float32() float32 {
-	return r.rand().Float32()
+func (r Rand) Float32() Float {
+	return Float(r.rand().Float64())
 }
 
-// NFloat32 returns a float32 with random values between [-1,1]
-func (r Rand) NFloat32() float32 {
-	return 2*r.rand().Float32() - 1
+// NFloat32 returns a Float with random values between [-1,1]
+func (r Rand) NFloat32() Float {
+	return 2 * Float(r.rand().Float64()-1)
 }
 
 // UnitSphere generate random points in a sphere
@@ -99,7 +99,7 @@ func (r Rand) SphereSurface() Vec3 {
 	theta := u * 2.0 * math.Pi
 
 	phi := Acos(2.0*v - 1.0)
-	rr := float32(1) // Cbrt(rand.Float32())
+	rr := Float(1) // Cbrt(rand.Float32())
 
 	sinTheta := Sin(theta)
 	cosTheta := Cos(theta)

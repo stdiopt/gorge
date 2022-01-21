@@ -1,6 +1,6 @@
 package gorge
 
-import "github.com/stdiopt/gorge/m32"
+import "github.com/stdiopt/gorge/math/gm"
 
 // LightType type for lights
 type LightType int
@@ -18,7 +18,7 @@ const (
 type LightComponent struct {
 	Type      LightType // default point
 	Intensity float32
-	Color     m32.Vec3
+	Color     gm.Vec3
 	Range     float32
 
 	InnerConeCos float32
@@ -32,7 +32,7 @@ func NewLightComponent() *LightComponent {
 	return &LightComponent{
 		Type:      LightPoint,
 		Intensity: 100,
-		Color:     m32.Vec3{1, 1, 1},
+		Color:     gm.Vec3{1, 1, 1},
 		Range:     100,
 	}
 }
@@ -47,7 +47,7 @@ func (l *LightComponent) SetType(t LightType) {
 
 // SetColor sets light Color
 func (l *LightComponent) SetColor(r, g, b float32) {
-	l.Color = m32.Vec3{r, g, b}
+	l.Color = gm.Vec3{r, g, b}
 }
 
 // SetIntensity gets light intensity

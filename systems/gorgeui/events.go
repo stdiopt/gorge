@@ -1,8 +1,8 @@
 package gorgeui
 
 import (
-	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/m32/ray"
+	"github.com/stdiopt/gorge/math/gm"
+	"github.com/stdiopt/gorge/math/ray"
 )
 
 // Events used by widgets.
@@ -30,9 +30,9 @@ type (
 // PointerData common pointer data for pointer events.
 type PointerData struct {
 	Target    Entity // could be a children
-	Position  m32.Vec2
-	Delta     m32.Vec2
-	Wheel     m32.Vec2
+	Position  gm.Vec2
+	Delta     gm.Vec2
+	Wheel     gm.Vec2
 	RayResult ray.Result
 
 	stopPropagation bool

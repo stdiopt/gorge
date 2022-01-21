@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/static"
 )
@@ -88,7 +88,7 @@ func (g *Generator[T]) update(gg *gorge.Context, em emitter, dt float32) {
 	// New initializations
 	newPerFrame := ec.Rate * dt
 	numNewParticles := uint32(newPerFrame)
-	if rand.Float32() < newPerFrame-float32(numNewParticles) {
+	if float32(rand.Float64()) < newPerFrame-float32(numNewParticles) {
 		numNewParticles++
 	}
 
@@ -144,7 +144,7 @@ func (g *Generator[T]) update(gg *gorge.Context, em emitter, dt float32) {
 				t := pp.Transform()
 				// This might be something to handle
 				if ec.Camera != nil {
-					axisAngle := m32.QAxisAngle(forward, pc.Rotation)
+					axisAngle := gm.QAxisAngle(forward, pc.Rotation)
 					t.SetRotation(axisAngle.Mul(camQuat))
 					// t.SetRotation(camT.Mat4().Quat())
 				}
@@ -178,7 +178,7 @@ func (g *Generator[T]) update(gg *gorge.Context, em emitter, dt float32) {
 			t := p.Transform()
 			// This might be something to handle
 			if ec.Camera != nil {
-				axisAngle := m32.QAxisAngle(forward, pc.Rotation)
+				axisAngle := gm.QAxisAngle(forward, pc.Rotation)
 				t.SetRotation(axisAngle.Mul(camQuat))
 				// t.SetRotation(camT.Mat4().Quat())
 			}

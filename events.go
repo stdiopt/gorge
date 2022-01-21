@@ -1,6 +1,8 @@
 package gorge
 
-import "github.com/stdiopt/gorge/core/event"
+import (
+	"github.com/stdiopt/gorge/core/event"
+)
 
 type gorger interface {
 	Gorge() *Context

@@ -2,8 +2,8 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/m32/ray"
+	"github.com/stdiopt/gorge/math/gm"
+	"github.com/stdiopt/gorge/math/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -15,11 +15,11 @@ func Window(def string) Func {
 		)
 		var (
 			// fontScale      = b.Prop("fontScale", 2)
-			winColor       = b.Prop("background", m32.Color(0, .3))
-			bodyColor      = b.Prop("body.color", m32.Color())
+			winColor       = b.Prop("background", gm.Color(0, .3))
+			bodyColor      = b.Prop("body.color", gm.Color())
 			titleFontScale = b.Prop("title.fontScale", 1.5)
-			titleColor     = b.Prop("title.color", m32.Color(0, 0, .3, .3))
-			titleTextColor = b.Prop("title.textcolor", m32.Color(1))
+			titleColor     = b.Prop("title.color", gm.Color(0, 0, .3, .3))
+			titleTextColor = b.Prop("title.textcolor", gm.Color(1))
 			titleText      = b.Prop("title.text", def)
 		)
 
@@ -41,7 +41,7 @@ func Window(def string) Func {
 			event.Handle(title, func(e gorgeui.EventDrag) {
 				ui := gorgeui.RootUI(root)
 				wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
-				wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, m32.Vec2{}).GetPoint(1))
+				wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, gm.Vec2{}).GetPoint(1))
 				root.Translate(wp[0], -wp[1], 0)
 			})
 
@@ -76,8 +76,8 @@ func Window(def string) Func {
 		event.Handle(resizer, func(e gorgeui.EventDrag) {
 			ui := gorgeui.RootUI(root)
 			wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
-			wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, m32.Vec2{}).GetPoint(1))
-			root.Dim = root.Dim.Add(m32.Vec2{wp[0], -wp[1]})
+			wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, gm.Vec2{}).GetPoint(1))
+			root.Dim = root.Dim.Add(gm.Vec2{wp[0], -wp[1]})
 		})
 	}
 }

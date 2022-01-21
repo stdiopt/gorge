@@ -36,7 +36,7 @@ It was first created with wasm in mind, others were added later
 
 ## Copyrights
 
-- m32 contains code inspired or copied from https://github.com/go-gl/mathgl
+- gm contains code inspired or copied from https://github.com/go-gl/mathgl
   authors
   Copyright ©2013 The go-gl Authors. All rights reserved.
 - Shaders based on https://github.com/KhronosGroup/glTF-Sample-Viewer

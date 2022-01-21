@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // ShaderResourcer is the interface to return a shader resource.
@@ -177,9 +177,9 @@ func (s *shaderProps) SetFloat32(name string, v float32) {
 }
 
 func (s *shaderProps) SetVec3(name string, v1, v2, v3 float32) {
-	s.Set(name, m32.Vec3{v1, v2, v3})
+	s.Set(name, gm.Vec3{v1, v2, v3})
 }
 
 func (s *shaderProps) SetVec4(name string, v1, v2, v3, v4 float32) {
-	s.Set(name, m32.Vec4{v1, v2, v3, v4})
+	s.Set(name, gm.Vec4{v1, v2, v3, v4})
 }

@@ -7,7 +7,7 @@ package render
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/setlist"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/render/bufutil"
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
@@ -77,7 +77,7 @@ func newRenderer(g *gorge.Context) *Render {
 		buffers:        bm,
 		renderInfo: Step{
 			CameraUBO: cameraUBO,
-			Viewport:  m32.Vec4{},
+			Viewport:  gm.Vec4{},
 			Queues:    map[int]*Queue{},
 			Ubos:      map[string]gl.Buffer{},
 			Props:     map[string]any{},

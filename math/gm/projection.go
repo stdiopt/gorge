@@ -1,4 +1,4 @@
-package m32
+package gm
 
 import (
 	"math"
@@ -6,10 +6,10 @@ import (
 
 // Perspective generates a Perspective Matrix.
 //
-func Perspective(fovy, aspect, near, far float32) Mat4 {
+func Perspective(fovy, aspect, near, far Float) Mat4 {
 	fovy = (fovy * math.Pi) / 180.0 // convert from degrees to radians
 	// fovy = (fovy * math.Pi) / 180.0 // convert from degrees to radians
-	nmf, f := near-far, float32(1./math.Tan(float64(fovy)/2.0))
+	nmf, f := near-far, Float(1./math.Tan(float64(fovy)/2.0))
 
 	return Mat4{
 		f / aspect, 0, 0, 0,
@@ -21,7 +21,7 @@ func Perspective(fovy, aspect, near, far float32) Mat4 {
 
 // Ortho creates an orthographic matrix
 // https://stackoverflow.com/questions/31839119/projection-and-orthographic-matrices-for-opengl
-func Ortho(left, right, bottom, top, near, far float32) Mat4 {
+func Ortho(left, right, bottom, top, near, far Float) Mat4 {
 	rml, tmb, fmn := (right - left), (top - bottom), (far - near)
 
 	return Mat4{

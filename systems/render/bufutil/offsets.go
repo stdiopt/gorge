@@ -3,7 +3,7 @@ package bufutil
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // OffsetSpec specification for buffer
@@ -37,9 +37,9 @@ func (b *NamedOffset) WriteOffset(name string, v any) {
 	// var blen int
 	var data []byte
 	switch v := v.(type) {
-	case m32.Mat4:
+	case gm.Mat4:
 		data = AsBytes(v[:]) // []float32
-	case m32.Vec3:
+	case gm.Vec3:
 		data = AsBytes(v[:]) // []float32
 	case bool:
 		if !v {

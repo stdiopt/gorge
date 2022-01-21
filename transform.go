@@ -1,7 +1,7 @@
 package gorge
 
 import (
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // TransformBuilds tracks the numbers of transforms for performance purposes
@@ -17,21 +17,21 @@ type (
 	ParentSetter interface{ SetParent(Matrixer) }
 	// Transformer interface for the transform component implementer.
 	Transformer interface {
-		Mat4() m32.Mat4
+		Mat4() gm.Mat4
 		Transform() *TransformComponent
 	}
 	// Matrixer interface to mat4
 	Matrixer interface {
-		Mat4() m32.Mat4
+		Mat4() gm.Mat4
 	}
 )
 
 // TransformComponent component
 
 type affine struct {
-	Position m32.Vec3
-	Rotation m32.Quat
-	Scale    m32.Vec3
+	Position gm.Vec3
+	Rotation gm.Quat
+	Scale    gm.Vec3
 }
 
 // TransformComponent Thing
@@ -40,7 +40,7 @@ type TransformComponent struct {
 	parent Matrixer
 
 	cached         affine
-	cachedWorldMat m32.Mat4
+	cachedWorldMat gm.Mat4
 
 	updates      int
 	parentUpdate int
@@ -50,8 +50,8 @@ type TransformComponent struct {
 func TransformIdent() TransformComponent {
 	return TransformComponent{
 		affine: affine{
-			Rotation: m32.QIdent(),
-			Scale:    m32.Vec3{1, 1, 1},
+			Rotation: gm.QIdent(),
+			Scale:    gm.Vec3{1, 1, 1},
 		},
 	}
 }
@@ -60,8 +60,8 @@ func TransformIdent() TransformComponent {
 func NewTransformComponent() *TransformComponent {
 	return &TransformComponent{
 		affine: affine{
-			Rotation: m32.QIdent(),
-			Scale:    m32.Vec3{1, 1, 1},
+			Rotation: gm.QIdent(),
+			Scale:    gm.Vec3{1, 1, 1},
 		},
 	}
 }
@@ -103,10 +103,10 @@ func (c *TransformComponent) Parent() Matrixer {
 	return c.parent
 }
 
-// Mat4 returns the World m32.Mat4 from the transformations
-func (c *TransformComponent) Mat4() m32.Mat4 {
+// Mat4 returns the World gm.Mat4 from the transformations
+func (c *TransformComponent) Mat4() gm.Mat4 {
 	if c == nil {
-		return m32.M4Ident()
+		return gm.M4Ident()
 	}
 	if !c.Updated() {
 		TransformBuildSave++
@@ -117,9 +117,9 @@ func (c *TransformComponent) Mat4() m32.Mat4 {
 
 	// TODO: {lpf} Could have a local matrix cache as well instead of recalculating
 
-	c.cachedWorldMat = m32.Translate3D(c.Position[0], c.Position[1], c.Position[2])
+	c.cachedWorldMat = gm.Translate3D(c.Position[0], c.Position[1], c.Position[2])
 	c.cachedWorldMat = c.cachedWorldMat.Mul(c.Rotation.Mat4())
-	c.cachedWorldMat = c.cachedWorldMat.Mul(m32.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
+	c.cachedWorldMat = c.cachedWorldMat.Mul(gm.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
 	if c.parent != nil {
 		// t := c.parent.Transform()
 		c.cachedWorldMat = c.parent.Mat4().Mul(c.cachedWorldMat)
@@ -135,11 +135,11 @@ func (c *TransformComponent) Mat4() m32.Mat4 {
 
 // SetMat4Decompose decomposes a 4x4 into position, rotation and scale.
 // https://answers.unity.com/questions/402280/how-to-decompose-a-trs-matrix.html
-func (c *TransformComponent) SetMat4Decompose(m m32.Mat4) {
+func (c *TransformComponent) SetMat4Decompose(m gm.Mat4) {
 	c.Position = m.Col(3).Vec3()
 	c.Rotation = m.Quat()
 	// Scale might not work if it has negative scales they say?
-	c.Scale = m32.Vec3{
+	c.Scale = gm.Vec3{
 		m.Col(0).Len(),
 		m.Col(1).Len(),
 		m.Col(2).Len(),
@@ -152,38 +152,38 @@ func (c *TransformComponent) SetParent(p Matrixer) {
 }
 
 // Set full transform
-func (c *TransformComponent) Set(position m32.Vec3, euler m32.Vec3, scale m32.Vec3) {
+func (c *TransformComponent) Set(position gm.Vec3, euler gm.Vec3, scale gm.Vec3) {
 	c.SetPositionv(position)
 	c.SetEulerv(euler)
 	c.SetScalev(scale)
 }
 
 // SetPositionv sets the current position on the world with a vector
-func (c *TransformComponent) SetPositionv(pos m32.Vec3) {
+func (c *TransformComponent) SetPositionv(pos gm.Vec3) {
 	c.Position = pos
 }
 
 // SetEulerv sets the euler angles as a vector
-func (c *TransformComponent) SetEulerv(angles m32.Vec3) {
-	c.Rotation = m32.QFromAngles(
+func (c *TransformComponent) SetEulerv(angles gm.Vec3) {
+	c.Rotation = gm.QFromAngles(
 		angles[2], angles[1], angles[0],
-		m32.ZYX,
+		gm.ZYX,
 	)
 }
 
 // SetPosition sets the current position on the world
 func (c *TransformComponent) SetPosition(x, y, z float32) {
-	c.SetPositionv(m32.Vec3{x, y, z})
+	c.SetPositionv(gm.Vec3{x, y, z})
 }
 
 // SetRotation set a quaternion
-func (c *TransformComponent) SetRotation(v m32.Quat) {
+func (c *TransformComponent) SetRotation(v gm.Quat) {
 	c.Rotation = v
 }
 
 // SetEuler convenient func
 func (c *TransformComponent) SetEuler(x, y, z float32) {
-	c.SetEulerv(m32.Vec3{x, y, z})
+	c.SetEulerv(gm.Vec3{x, y, z})
 }
 
 // SetScale will set scale
@@ -202,42 +202,42 @@ func (c *TransformComponent) SetScale(sz ...float32) {
 }
 
 // SetScalev just sets the scale
-func (c *TransformComponent) SetScalev(scale m32.Vec3) {
+func (c *TransformComponent) SetScalev(scale gm.Vec3) {
 	c.Scale = scale
 }
 
 // LookAt resets the local rotation to lookAt
-// if 1 param is used, we will Use default m32.Up() +Y vector
-func (c *TransformComponent) LookAt(target Matrixer, v ...m32.Vec3) {
-	up := m32.Vec3{0, 1, 0}
+// if 1 param is used, we will Use default gm.Up() +Y vector
+func (c *TransformComponent) LookAt(target Matrixer, v ...gm.Vec3) {
+	up := gm.Vec3{0, 1, 0}
 	if len(v) > 1 {
 		up = v[0]
 	}
 	pos := target.Mat4().Col(3)
 
 	dir := c.Position.Sub(pos.Vec3()).Normalize()
-	c.SetRotation(m32.QLookAt(dir, up))
+	c.SetRotation(gm.QLookAt(dir, up))
 }
 
 // LookAtPosition resets the local rotation to lookAt
-// if 1 param is used, we will Use default m32.Up() +Y vector
-func (c *TransformComponent) LookAtPosition(target m32.Vec3, v ...m32.Vec3) {
-	up := m32.Vec3{0, 1, 0}
+// if 1 param is used, we will Use default gm.Up() +Y vector
+func (c *TransformComponent) LookAtPosition(target gm.Vec3, v ...gm.Vec3) {
+	up := gm.Vec3{0, 1, 0}
 	if len(v) > 1 {
 		up = v[0]
 	}
 
 	dir := c.Position.Sub(target).Normalize()
-	c.SetRotation(m32.QLookAt(dir, up))
+	c.SetRotation(gm.QLookAt(dir, up))
 }
 
 // LookDir looks at direction
-func (c *TransformComponent) LookDir(dir m32.Vec3, v ...m32.Vec3) {
-	up := m32.Vec3{0, 1, 0}
+func (c *TransformComponent) LookDir(dir gm.Vec3, v ...gm.Vec3) {
+	up := gm.Vec3{0, 1, 0}
 	if len(v) > 1 {
 		up = v[0]
 	}
-	c.SetRotation(m32.QLookAt(dir, up))
+	c.SetRotation(gm.QLookAt(dir, up))
 }
 
 // //////////////////////////
@@ -245,71 +245,71 @@ func (c *TransformComponent) LookDir(dir m32.Vec3, v ...m32.Vec3) {
 
 // Translate the thing
 func (c *TransformComponent) Translate(x, y, z float32) {
-	c.Position = c.Position.Add(m32.Vec3{x, y, z})
+	c.Position = c.Position.Add(gm.Vec3{x, y, z})
 }
 
 // Translatev translate by vector
-func (c *TransformComponent) Translatev(axis m32.Vec3) {
+func (c *TransformComponent) Translatev(axis gm.Vec3) {
 	c.Position = c.Position.Add(axis)
 }
 
 // Rotate axis
 func (c *TransformComponent) Rotate(x, y, z float32) {
-	c.Rotation = c.Rotation.Mul(m32.QFromAngles(
+	c.Rotation = c.Rotation.Mul(gm.QFromAngles(
 		x, y, z,
-		m32.XYZ,
+		gm.XYZ,
 	))
 }
 
 // Rotatev axis by vector
-func (c *TransformComponent) Rotatev(angles m32.Vec3) {
-	c.Rotation = c.Rotation.Mul(m32.QFromAngles(
+func (c *TransformComponent) Rotatev(angles gm.Vec3) {
+	c.Rotation = c.Rotation.Mul(gm.QFromAngles(
 		angles[0], angles[1], angles[2],
-		m32.XYZ,
+		gm.XYZ,
 	))
 }
 
 // WorldPosition returns world position
-func (c *TransformComponent) WorldPosition() m32.Vec3 {
+func (c *TransformComponent) WorldPosition() gm.Vec3 {
 	return c.Mat4().Col(3).Vec3()
 }
 
 // WorldRotation returns world rotation
-func (c *TransformComponent) WorldRotation() m32.Quat {
+func (c *TransformComponent) WorldRotation() gm.Quat {
 	return c.Mat4().Quat()
 }
 
 // Left returns World left of the transform
-func (c *TransformComponent) Left() m32.Vec3 {
-	return c.Mat4().MulV4(m32.Vec4{-1, 0, 0, 0}).Vec3()
+func (c *TransformComponent) Left() gm.Vec3 {
+	return c.Mat4().MulV4(gm.Vec4{-1, 0, 0, 0}).Vec3()
 }
 
 // Right returns World right of the transform
-func (c *TransformComponent) Right() m32.Vec3 {
-	return c.Mat4().MulV4(m32.Vec4{1, 0, 0, 0}).Vec3()
+func (c *TransformComponent) Right() gm.Vec3 {
+	return c.Mat4().MulV4(gm.Vec4{1, 0, 0, 0}).Vec3()
 }
 
 // Up returns World up of the transform
-func (c *TransformComponent) Up() m32.Vec3 {
-	return c.Mat4().MulV4(m32.Vec4{0, 1, 0, 0}).Vec3()
+func (c *TransformComponent) Up() gm.Vec3 {
+	return c.Mat4().MulV4(gm.Vec4{0, 1, 0, 0}).Vec3()
 }
 
 // Down returns World Fown of the transform
-func (c *TransformComponent) Down() m32.Vec3 {
-	return c.Mat4().MulV4(m32.Vec4{0, -1, 0, 0}).Vec3()
+func (c *TransformComponent) Down() gm.Vec3 {
+	return c.Mat4().MulV4(gm.Vec4{0, -1, 0, 0}).Vec3()
 }
 
 // Forward returns World Forward vector of the transform
-func (c *TransformComponent) Forward() m32.Vec3 {
-	return c.Mat4().MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+func (c *TransformComponent) Forward() gm.Vec3 {
+	return c.Mat4().MulV4(gm.Vec4{0, 0, -1, 0}).Vec3()
 }
 
 // Backward returns backward vector of the transform
-func (c *TransformComponent) Backward() m32.Vec3 {
-	return c.Mat4().MulV4(m32.Vec4{0, 0, 1, 0}).Vec3()
+func (c *TransformComponent) Backward() gm.Vec3 {
+	return c.Mat4().MulV4(gm.Vec4{0, 0, 1, 0}).Vec3()
 }
 
 // Inv return the inverse matrix of the transform
-func (c *TransformComponent) Inv() m32.Mat4 {
+func (c *TransformComponent) Inv() gm.Mat4 {
 	return c.Mat4().Inv()
 }

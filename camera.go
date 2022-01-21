@@ -3,7 +3,7 @@ package gorge
 import (
 	"math"
 
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // ProjectionType camera projection type.
@@ -68,8 +68,8 @@ type CameraComponent struct {
 	ClearFlag     ClearType
 	ClearMaterial *Material
 	Order         int
-	Viewport      m32.Vec4
-	ClearColor    m32.Vec3
+	Viewport      gm.Vec4
+	ClearColor    gm.Vec3
 
 	// Consider this to custom clear other buffers?!
 	// ClearDepth   float32
@@ -84,7 +84,7 @@ type CameraComponent struct {
 func NewCameraComponent(name string) *CameraComponent {
 	c := &CameraComponent{
 		Name:     name,
-		Viewport: m32.Vec4{0, 0, 1, 1},
+		Viewport: gm.Vec4{0, 0, 1, 1},
 	}
 	c.SetPerspective(math.Pi/4, .1, 1000)
 	return c
@@ -96,7 +96,7 @@ func (c *CameraComponent) Camera() *CameraComponent { return c }
 
 // Projection returns the projection matrix with default aspect ratio based
 // on registered size
-func (c CameraComponent) Projection(screenSize m32.Vec2) m32.Mat4 {
+func (c CameraComponent) Projection(screenSize gm.Vec2) gm.Mat4 {
 	aspectRatio := c.AspectRatio
 	if aspectRatio == 0 {
 		vp := c.CalcViewport(screenSize)
@@ -107,9 +107,9 @@ func (c CameraComponent) Projection(screenSize m32.Vec2) m32.Mat4 {
 }
 
 // ProjectionWithAspect Sets the projection matrices with given aspect ratio
-func (c CameraComponent) ProjectionWithAspect(aspect float32) m32.Mat4 {
+func (c CameraComponent) ProjectionWithAspect(aspect float32) gm.Mat4 {
 	if c.ProjectionType == ProjectionPerspective {
-		return m32.Perspective(c.Fov, aspect, c.Near, c.Far)
+		return gm.Perspective(c.Fov, aspect, c.Near, c.Far)
 	}
 
 	halfH := c.OrthoSize * aspect * .5
@@ -122,7 +122,7 @@ func (c CameraComponent) ProjectionWithAspect(aspect float32) m32.Mat4 {
 	right := halfH
 
 	// Ortho
-	return m32.Ortho(left, right, bottom, top, c.Near, c.Far)
+	return gm.Ortho(left, right, bottom, top, c.Near, c.Far)
 }
 
 // SetPerspective resets projection matrix to perspective
@@ -153,7 +153,7 @@ func (c *CameraComponent) SetClearFlag(clr ClearType) {
 
 // SetClearColor for the camera.
 func (c *CameraComponent) SetClearColor(r, g, b float32) {
-	c.ClearColor = m32.Vec3{r, g, b}
+	c.ClearColor = gm.Vec3{r, g, b}
 }
 
 // SetCullMask for camera, only specific renderables that masks this cullmask
@@ -169,13 +169,13 @@ func (c *CameraComponent) SetOrder(n int) {
 
 // SetViewport sets the viewport for camera, viewport is relative to screensize.
 func (c *CameraComponent) SetViewport(x, y, w, h float32) {
-	c.Viewport = m32.Vec4{x, y, w, h}
+	c.Viewport = gm.Vec4{x, y, w, h}
 }
 
 // CalcViewport gives the viewport in screen dimensions
 // TODO: consider `ScreenViewport` name
-func (c *CameraComponent) CalcViewport(screenSize m32.Vec2) m32.Vec4 {
-	return m32.Vec4{
+func (c *CameraComponent) CalcViewport(screenSize gm.Vec2) gm.Vec4 {
+	return gm.Vec4{
 		c.Viewport[0] * screenSize[0],
 		c.Viewport[1] * screenSize[1],
 		c.Viewport[2] * screenSize[0],

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/render"
 	"github.com/stdiopt/gorge/systems/render/bufutil"
@@ -163,7 +163,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 			l := light.Light()
 			// t := light.Transform()
 			mat4 := light.Mat4()
-			dir := mat4.MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+			dir := mat4.MulV4(gm.Vec4{0, 0, -1, 0}).Vec3()
 			pos := mat4.Col(3).Vec3()
 
 			switch l.Type {
@@ -212,17 +212,17 @@ func (s *lights) processDepthCube(ri *render.Step, light render.Light, di int) {
 	// Check cached light and render if needed
 	pos := light.Mat4().Col(3).Vec3()
 	farPlane := light.Light().Range
-	lightMat := []m32.Mat4{
-		m32.LookAt(pos, pos.Add(m32.Vec3{1, 0, 0}), m32.Vec3{0, -1, 0}),
-		m32.LookAt(pos, pos.Add(m32.Vec3{-1, 0, 0}), m32.Vec3{0, -1, 0}),
+	lightMat := []gm.Mat4{
+		gm.LookAt(pos, pos.Add(gm.Vec3{1, 0, 0}), gm.Vec3{0, -1, 0}),
+		gm.LookAt(pos, pos.Add(gm.Vec3{-1, 0, 0}), gm.Vec3{0, -1, 0}),
 
-		m32.LookAt(pos, pos.Add(m32.Vec3{0, 1, 0}), m32.Vec3{0, 0, 1}),
-		m32.LookAt(pos, pos.Add(m32.Vec3{0, -1, 0}), m32.Vec3{0, 0, -1}),
+		gm.LookAt(pos, pos.Add(gm.Vec3{0, 1, 0}), gm.Vec3{0, 0, 1}),
+		gm.LookAt(pos, pos.Add(gm.Vec3{0, -1, 0}), gm.Vec3{0, 0, -1}),
 
-		m32.LookAt(pos, pos.Add(m32.Vec3{0, 0, 1}), m32.Vec3{0, -1, 0}),
-		m32.LookAt(pos, pos.Add(m32.Vec3{0, 0, -1}), m32.Vec3{0, -1, 0}),
+		gm.LookAt(pos, pos.Add(gm.Vec3{0, 0, 1}), gm.Vec3{0, -1, 0}),
+		gm.LookAt(pos, pos.Add(gm.Vec3{0, 0, -1}), gm.Vec3{0, -1, 0}),
 	}
-	lproj := m32.Perspective(90, 1, pointNearPlane, farPlane)
+	lproj := gm.Perspective(90, 1, pointNearPlane, farPlane)
 
 	// 1 - RENDER DEPTH TO FBO
 	gl.Disable(gl.CULL_FACE)
@@ -261,18 +261,18 @@ func (s *lights) processDepthCube(ri *render.Step, light render.Light, di int) {
 }
 
 // Returns the mat4 used to render stuff
-func (s *lights) processDepth2D(ri *render.Step, light render.Light, di int) m32.Mat4 {
+func (s *lights) processDepth2D(ri *render.Step, light render.Light, di int) gm.Mat4 {
 	m4 := ri.Camera.Mat4()
 	camPos := m4.Col(3).Vec3()
-	camForward := m4.MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
-	dir := light.Mat4().MulV4(m32.Vec4{0, 0, -1, 0}).Vec3()
+	camForward := m4.MulV4(gm.Vec4{0, 0, -1, 0}).Vec3()
+	dir := light.Mat4().MulV4(gm.Vec4{0, 0, -1, 0}).Vec3()
 
 	trans := gorge.TransformIdent()
-	trans.LookDir(dir, m32.Up())
+	trans.LookDir(dir, gm.Up())
 	trans.SetPositionv(camPos.Add(camForward).Mul(3))
 
 	// Depends on light
-	proj := m32.Ortho(-dirSz, dirSz, -dirSz, dirSz, dirNearPlane, dirFarPlane)
+	proj := gm.Ortho(-dirSz, dirSz, -dirSz, dirSz, dirNearPlane, dirFarPlane)
 
 	lightMatrix := proj.Mul(trans.Inv())
 

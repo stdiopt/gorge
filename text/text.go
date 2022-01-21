@@ -6,7 +6,7 @@ import (
 	"unicode"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 )
 
@@ -84,7 +84,7 @@ type Mesh struct {
 
 	Text string
 	// Boundary counting from starting Point
-	Boundary m32.Vec2
+	Boundary gm.Vec2
 	// Wrap just naive string wrap, should have better options
 	Alignment Align
 	Overflow  Overflow
@@ -95,7 +95,7 @@ type Mesh struct {
 	Font *Font
 
 	// TODO: {lpf} Calculated values should be private and functions added
-	Min, Max m32.Vec2
+	Min, Max gm.Vec2
 	Lines    int
 
 	// Allow this to be swapped?
@@ -143,7 +143,7 @@ func (m *Mesh) SetText(a ...any) {
 
 // SetBoundary set text boundary, and updates mesh.
 func (m *Mesh) SetBoundary(w, h float32) {
-	m.Boundary = m32.Vec2{w, h}
+	m.Boundary = gm.Vec2{w, h}
 	m.Update()
 }
 
@@ -207,8 +207,8 @@ func (m *Mesh) Update() {
 func (m *Mesh) updateRaw() {
 	text := []rune(m.Text)
 	size := m.getSize()
-	m.Min = m32.Vec2{}
-	m.Max = m32.Vec2{}
+	m.Min = gm.Vec2{}
+	m.Max = gm.Vec2{}
 	m.Lines = 1
 	m.meshData.Vertices = m.meshData.Vertices[:0]
 	m.meshData.Updates++
@@ -262,15 +262,15 @@ func (m *Mesh) updateRaw() {
 			x1, y1, 0, g.Uv1[0], g.Uv1[1], // A
 		)
 		if y == 0 && isFirstChar {
-			m.Min = m32.Vec2{x1, y2}
-			m.Max = m32.Vec2{x2, y1}
+			m.Min = gm.Vec2{x1, y2}
+			m.Max = gm.Vec2{x2, y1}
 			isFirstChar = false
 		} else {
 			// update min max could be done getting mesh bounds too
-			m.Min[0] = m32.Min(m.Min[0], x1)
-			m.Max[0] = m32.Max(m.Max[0], x2)
-			m.Min[1] = m32.Min(m.Min[1], y2)
-			m.Max[1] = m32.Max(m.Max[1], y1)
+			m.Min[0] = gm.Min(m.Min[0], x1)
+			m.Max[0] = gm.Max(m.Max[0], x2)
+			m.Min[1] = gm.Min(m.Min[1], y2)
+			m.Max[1] = gm.Max(m.Max[1], y1)
 		}
 		x += g.Advance + kern
 	}
@@ -279,8 +279,8 @@ func (m *Mesh) updateRaw() {
 func (m *Mesh) updateFlow() {
 	text := []rune(m.Text)
 	size := m.getSize()
-	m.Min = m32.Vec2{}
-	m.Max = m32.Vec2{}
+	m.Min = gm.Vec2{}
+	m.Max = gm.Vec2{}
 	m.Lines = 0
 	m.meshData.Vertices = m.meshData.Vertices[:0]
 	m.meshData.Updates++
@@ -388,15 +388,15 @@ func (m *Mesh) updateFlow() {
 				x1, y1, 0, g.Uv1[0], g.Uv1[1], // A
 			)
 			if y == 0 && isFirstChar {
-				m.Min = m32.Vec2{x1, y2}
-				m.Max = m32.Vec2{x2, y1}
+				m.Min = gm.Vec2{x1, y2}
+				m.Max = gm.Vec2{x2, y1}
 				isFirstChar = false
 			} else {
 				// update min max could be done getting mesh bounds too
-				m.Min[0] = m32.Min(m.Min[0], x1)
-				m.Max[0] = m32.Max(m.Max[0], x2)
-				m.Min[1] = m32.Min(m.Min[1], y2)
-				m.Max[1] = m32.Max(m.Max[1], y1)
+				m.Min[0] = gm.Min(m.Min[0], x1)
+				m.Max[0] = gm.Max(m.Max[0], x2)
+				m.Min[1] = gm.Min(m.Min[1], y2)
+				m.Max[1] = gm.Max(m.Max[1], y1)
 			}
 			x += g.Advance + kern
 		}
@@ -444,6 +444,6 @@ type MeshFunc func(t *Mesh)
 // Boundary returns a func that applies a boundary to mesh.
 func Boundary(w, h float32) MeshFunc {
 	return func(t *Mesh) {
-		t.Boundary = m32.Vec2{w, h}
+		t.Boundary = gm.Vec2{w, h}
 	}
 }

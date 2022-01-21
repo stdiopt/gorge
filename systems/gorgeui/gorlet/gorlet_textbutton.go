@@ -1,13 +1,13 @@
 package gorlet
 
-import "github.com/stdiopt/gorge/m32"
+import "github.com/stdiopt/gorge/math/gm"
 
 func TextButton(t string, clickfn func()) Func {
 	return func(b *Builder) {
 		var (
 			text         = b.Prop("text", t)
 			fontScale    = b.Prop("fontScale", 2)
-			textColor    = b.Prop("textColor", m32.Color(0))
+			textColor    = b.Prop("textColor", gm.Color(0))
 			textOverflow = b.Prop("textOverflow")
 		)
 

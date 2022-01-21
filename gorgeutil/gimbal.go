@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/static"
 )
@@ -46,12 +46,12 @@ func NewGimbal() *Gimbal {
 	rot90 := float32(math.Pi / 2)
 
 	objs := []struct {
-		axis m32.Vec3
-		rot  m32.Vec3
+		axis gm.Vec3
+		rot  gm.Vec3
 	}{
-		{axis: m32.Vec3{0, 0, 1}, rot: m32.Vec3{}},
-		{axis: m32.Vec3{0, 1, 0}, rot: m32.Vec3{-rot90, 0, 0}},
-		{axis: m32.Vec3{1, 0, 0}, rot: m32.Vec3{0, rot90, 0}},
+		{axis: gm.Vec3{0, 0, 1}, rot: gm.Vec3{}},
+		{axis: gm.Vec3{0, 1, 0}, rot: gm.Vec3{-rot90, 0, 0}},
+		{axis: gm.Vec3{1, 0, 0}, rot: gm.Vec3{0, rot90, 0}},
 	}
 
 	gm := &Gimbal{

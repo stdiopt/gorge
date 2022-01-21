@@ -3,25 +3,25 @@ package ray
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // Result for a ray test
 type Result struct {
 	Hit      bool
-	Position m32.Vec3
-	UV       m32.Vec2
+	Position gm.Vec3
+	UV       gm.Vec2
 	// Normal
 }
 
 // Ray to be used on ray intersection testing.
 type Ray struct {
-	Position  m32.Vec3
-	Direction m32.Vec3
+	Position  gm.Vec3
+	Direction gm.Vec3
 }
 
 // GetPoint on distance d on ray
-func (r Ray) GetPoint(d float32) m32.Vec3 {
+func (r Ray) GetPoint(d float32) gm.Vec3 {
 	return r.Position.Add(r.Direction.Mul(d))
 }
 
@@ -31,33 +31,36 @@ type cameraEntity interface {
 	Camera() *gorge.CameraComponent
 }
 
-// FromScreen returns a ray from screen position through Camera camEnt.
-func FromScreen(screenSize m32.Vec2, camEnt cameraEntity, pos m32.Vec2) Ray {
+// https://antongerdelan.net/opengl/raycasting.html
+func FromScreen(screenSize gm.Vec2, camEnt cameraEntity, pos gm.Vec2) Ray {
 	cam := camEnt.Camera()
-	t := camEnt.Mat4()
 
 	vp := cam.CalcViewport(screenSize)
 	width, height := vp[2], vp[3]
 	pos = pos.Sub(vp.Vec2())
-	ndc := m32.Vec4{
-		2*pos[0]/width - 1,
-		1 - 2*pos[1]/height,
-		1, 1,
+
+	proj := cam.Projection(screenSize)
+	cm := camEnt.Mat4()
+
+	nds := gm.Vec3{
+		(2*pos[0])/width - 1,
+		1 - (2*pos[1])/height,
+		1,
 	}
 
-	m := cam.Projection(screenSize)
-	m = m.Mul(t.Inv()).Inv()
-	dir := m.MulV4(ndc).Vec3()
+	clip := gm.Vec4{nds[0], nds[1], -1, 1}
+	eye := proj.Inv().MulV4(clip).Vec2().Vec4(-1, 0)
+	dir := cm.MulV4(eye).Vec3()
 
 	if cam.ProjectionType == gorge.ProjectionOrtho {
 		return Ray{
 			Position:  dir,
-			Direction: t.MulV4(m32.Forward().Vec4(0)).Vec3(),
+			Direction: cm.MulV4(gm.Forward().Vec4(0)).Vec3(),
 		}
 	}
 	// Ray from camera Entity func somewhere
 	return Ray{
-		Position:  t.Col(3).Vec3(),
-		Direction: dir,
+		Position:  cm.Col(3).Vec3(),
+		Direction: dir.Normalize(),
 	}
 }

@@ -2,7 +2,7 @@ package gorgeui
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // Unity
@@ -15,28 +15,28 @@ import (
 type RectComponent struct {
 	parent gorge.Matrixer
 
-	Rotation m32.Quat
-	Position m32.Vec3
-	Scale    m32.Vec3
+	Rotation gm.Quat
+	Position gm.Vec3
+	Scale    gm.Vec3
 
-	Dim m32.Vec2
+	Dim gm.Vec2
 	// New
-	Margin m32.Vec4
+	Margin gm.Vec4
 
-	Anchor m32.Vec4 // left, bottom, right, top
-	Pivot  m32.Vec2
+	Anchor gm.Vec4 // left, bottom, right, top
+	Pivot  gm.Vec2
 }
 
 // RectIdent returns a identity rect transform.
 func RectIdent() RectComponent {
 	// to be able to work with anchors.
 	rc := RectComponent{
-		Rotation: m32.QIdent(),
-		Scale:    m32.Vec3{1, 1, 1},
+		Rotation: gm.QIdent(),
+		Scale:    gm.Vec3{1, 1, 1},
 
-		Anchor: m32.Vec4{0, 0, 1, 1},
-		Dim:    m32.Vec2{0, 0},
-		Pivot:  m32.Vec2{.5, .5},
+		Anchor: gm.Vec4{0, 0, 1, 1},
+		Dim:    gm.Vec2{0, 0},
+		Pivot:  gm.Vec2{.5, .5},
 	}
 	return rc
 }
@@ -61,29 +61,29 @@ func (c *RectComponent) Parent() gorge.Matrixer {
 }
 
 // Mat4 returns 4x4 transform matrix.
-func (c *RectComponent) Mat4() m32.Mat4 {
+func (c *RectComponent) Mat4() gm.Mat4 {
 	rect := c.parentRect() // Parent Dim
-	anchor := m32.Vec2{
+	anchor := gm.Vec2{
 		rect[0] + (rect[2]-rect[0])*c.Anchor[0],
 		rect[1] + (rect[3]-rect[1])*c.Anchor[1],
 	}
-	pivot := m32.Vec2{}
-	if m32.FloatEqual(c.Anchor[0], c.Anchor[2]) {
+	pivot := gm.Vec2{}
+	if gm.FloatEqual(c.Anchor[0], c.Anchor[2]) {
 		pivot[0] = -c.Dim[0] * c.Pivot[0]
 	}
-	if m32.FloatEqual(c.Anchor[1], c.Anchor[3]) {
+	if gm.FloatEqual(c.Anchor[1], c.Anchor[3]) {
 		pivot[1] = -c.Dim[1] * c.Pivot[1]
 	}
 
 	pos := c.Position.
 		Add(anchor.Vec3(0)).
-		Add(m32.Vec3{c.Margin[0], c.Margin[1], 0})
-	m := m32.Translate3D(pos[0], pos[1], pos[2])
+		Add(gm.Vec3{c.Margin[0], c.Margin[1], 0})
+	m := gm.Translate3D(pos[0], pos[1], pos[2])
 
 	m = m.Mul(c.Rotation.Mat4())
-	m = m.Mul(m32.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
+	m = m.Mul(gm.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
 
-	m = m.Mul(m32.Translate3D(pivot[0], pivot[1], 0))
+	m = m.Mul(gm.Translate3D(pivot[0], pivot[1], 0))
 
 	if c.parent != nil {
 		return c.parent.Mat4().Mul(m)
@@ -92,7 +92,7 @@ func (c *RectComponent) Mat4() m32.Mat4 {
 }
 
 // WorldPosition returns the world position.
-func (c *RectComponent) WorldPosition() m32.Vec3 {
+func (c *RectComponent) WorldPosition() gm.Vec3 {
 	return c.Mat4().Col(3).Vec3()
 }
 
@@ -126,20 +126,20 @@ func (c *RectComponent) SetHeight(w float32) {
 
 // SetSize sets the rect dimentions.
 func (c *RectComponent) SetSize(v ...float32) {
-	c.Dim = m32.V2(v...)
+	c.Dim = gm.V2(v...)
 }
 
 // SetAnchor sets anchor.
 func (c *RectComponent) SetAnchor(v ...float32) {
 	switch len(v) {
 	case 1:
-		c.Anchor = m32.Vec4{v[0], v[0], v[0], v[0]}
+		c.Anchor = gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:
-		c.Anchor = m32.Vec4{v[0], v[1], v[0], v[1]}
+		c.Anchor = gm.Vec4{v[0], v[1], v[0], v[1]}
 	case 3:
-		c.Anchor = m32.Vec4{v[0], v[1], v[2], v[1]}
+		c.Anchor = gm.Vec4{v[0], v[1], v[2], v[1]}
 	case 4:
-		c.Anchor = m32.Vec4(*(*[4]float32)(v))
+		c.Anchor = gm.Vec4(*(*[4]float32)(v))
 	default:
 		panic("wrong number of params")
 
@@ -165,34 +165,34 @@ func (c *RectComponent) SetScale(sz ...float32) {
 
 // SetPosition sets the position.
 func (c *RectComponent) SetPosition(x, y, z float32) {
-	c.Position = m32.Vec3{x, y, z}
+	c.Position = gm.Vec3{x, y, z}
 }
 
 // SetRotation sets the rotation.
-func (c *RectComponent) SetRotation(q m32.Quat) {
+func (c *RectComponent) SetRotation(q gm.Quat) {
 	c.Rotation = q
 }
 
 // Rotate axis
 func (c *RectComponent) Rotate(x, y, z float32) {
-	c.Rotation = c.Rotation.Mul(m32.QFromAngles(
+	c.Rotation = c.Rotation.Mul(gm.QFromAngles(
 		x, y, z,
-		m32.XYZ,
+		gm.XYZ,
 	))
 }
 
 // Translate translates the entity.
 func (c *RectComponent) Translate(x, y, z float32) {
-	c.Position = c.Position.Add(m32.Vec3{x, y, z})
+	c.Position = c.Position.Add(gm.Vec3{x, y, z})
 }
 
 // This should be called Dim which are the dimentions, lefttop will always be 0,0
 
-func (c *RectComponent) CalcSize() m32.Vec2 {
+func (c *RectComponent) CalcSize() gm.Vec2 {
 	return c.RelativeSize(c.parentSize())
 }
 
-func (c *RectComponent) RelativeSize(parentDim m32.Vec2) m32.Vec2 {
+func (c *RectComponent) RelativeSize(parentDim gm.Vec2) gm.Vec2 {
 	var right, bottom float32
 	// We might discard rect
 	right = c.Dim[0]
@@ -209,28 +209,28 @@ func (c *RectComponent) RelativeSize(parentDim m32.Vec2) m32.Vec2 {
 		h -= h*(1-c.Anchor[3]) + h*(c.Anchor[1])
 		bottom = h - c.Dim[1] - c.Position[1]
 	}
-	return m32.Vec2{
+	return gm.Vec2{
 		right - c.Margin[2] - c.Margin[0],
 		bottom - c.Margin[1] - c.Margin[3],
 	}
 }
 
-func (c *RectComponent) parentSize() m32.Vec2 {
-	if p, ok := c.parent.(interface{ CalcSize() m32.Vec2 }); ok {
+func (c *RectComponent) parentSize() gm.Vec2 {
+	if p, ok := c.parent.(interface{ CalcSize() gm.Vec2 }); ok {
 		return p.CalcSize()
 	}
-	return m32.Vec2{}
+	return gm.Vec2{}
 }
 
 // TODO: this will be deprecated
 
 // Rect calculate and returns the rect.
-func (c *RectComponent) Rect() m32.Vec4 {
+func (c *RectComponent) Rect() gm.Vec4 {
 	return c.RelativeRect(c.parentRect())
 }
 
 // RelativeRect calculate rect based on other.
-func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
+func (c *RectComponent) RelativeRect(parentRect gm.Vec4) gm.Vec4 {
 	var left, top, right, bottom float32
 	// We might discard rect
 	left = 0 // parentRect[0] //+ c.Anchor[0]*parentW
@@ -252,7 +252,7 @@ func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
 		// reduce rect by the relative anchor from both sides
 		bottom = h - c.Dim[1] - c.Position[1]
 	}
-	return m32.Vec4{
+	return gm.Vec4{
 		left,
 		top,
 		right - c.Margin[2] - c.Margin[0],
@@ -261,9 +261,9 @@ func (c *RectComponent) RelativeRect(parentRect m32.Vec4) m32.Vec4 {
 	}
 }
 
-func (c *RectComponent) parentRect() m32.Vec4 {
-	if p, ok := c.parent.(interface{ Rect() m32.Vec4 }); ok {
+func (c *RectComponent) parentRect() gm.Vec4 {
+	if p, ok := c.parent.(interface{ Rect() gm.Vec4 }); ok {
 		return p.Rect()
 	}
-	return m32.Vec4{}
+	return gm.Vec4{}
 }

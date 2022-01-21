@@ -5,7 +5,7 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/text"
 )
@@ -15,9 +15,9 @@ func Spinner(lbl string, fn func(float32)) Func {
 	return func(b *Builder) {
 		var (
 			fontScale      = b.Prop("fontScale", 2)
-			labelColor     = b.Prop("labelColor", m32.Color(1))
-			labelTextColor = b.Prop("labelTextColor", m32.Color(1))
-			textColor      = b.Prop("textColor", m32.Color(1))
+			labelColor     = b.Prop("labelColor", gm.Color(1))
+			labelTextColor = b.Prop("labelTextColor", gm.Color(1))
+			textColor      = b.Prop("textColor", gm.Color(1))
 			textOverflow   = b.Prop("textOverflow", text.OverflowOverlap)
 		)
 		var val float32 = -1

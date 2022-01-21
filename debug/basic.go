@@ -6,7 +6,7 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/input"
 )
@@ -27,7 +27,7 @@ type Basic struct {
 	CamRig     *gorgeutil.CameraRig
 
 	camRot float32
-	camVec m32.Vec3
+	camVec gm.Vec3
 
 	lightRoot *gorge.TransformComponent
 }
@@ -93,27 +93,27 @@ func (b *Basic) HandleEvent(v event.Event) {
 	// Ambient control
 	if b.input.KeyDown(input.KeyR) {
 		cam.ClearColor[0] =
-			m32.Min(cam.ClearColor[0]+step, 1)
+			gm.Min(cam.ClearColor[0]+step, 1)
 	}
 	if b.input.KeyDown(input.KeyF) {
 		cam.ClearColor[0] =
-			m32.Max(cam.ClearColor[0]-step, 0)
+			gm.Max(cam.ClearColor[0]-step, 0)
 	}
 	if b.input.KeyDown(input.KeyT) {
 		cam.ClearColor[1] =
-			m32.Min(cam.ClearColor[1]+step, 1)
+			gm.Min(cam.ClearColor[1]+step, 1)
 	}
 	if b.input.KeyDown(input.KeyG) {
 		cam.ClearColor[1] =
-			m32.Max(cam.ClearColor[1]-step, 0)
+			gm.Max(cam.ClearColor[1]-step, 0)
 	}
 	if b.input.KeyDown(input.KeyY) {
 		cam.ClearColor[2] =
-			m32.Min(cam.ClearColor[2]+step, 1)
+			gm.Min(cam.ClearColor[2]+step, 1)
 	}
 	if b.input.KeyDown(input.KeyH) {
 		cam.ClearColor[2] =
-			m32.Max(cam.ClearColor[2]-step, 0)
+			gm.Max(cam.ClearColor[2]-step, 0)
 	}
 }
 
@@ -146,7 +146,7 @@ func NewBasic(g *gorge.Context) *Basic {
 
 	dirLight := gorgeutil.NewDirectionalLight()
 	dirLight.SetPosition(10, 10, -5)
-	dirLight.LookAtPosition(m32.Vec3{0, 0, 0})
+	dirLight.LookAtPosition(gm.Vec3{0, 0, 0})
 
 	dirLightGimbal := gorgeutil.NewGimbal()
 	dirLightGimbal.SetParent(dirLight)

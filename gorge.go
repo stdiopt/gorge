@@ -7,7 +7,7 @@ import (
 
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/internal/logger"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // ErrAlreadyStarted is returned when Start is called more than once
@@ -29,7 +29,7 @@ type Gorge struct {
 	// tcore
 	// screenSize since this is shared between places
 	// Maybe create Device/Display so we can even use multiple displays
-	screenSize m32.Vec2
+	screenSize gm.Vec2
 	inits      []InitFunc
 
 	fnch chan syncFunc
@@ -46,12 +46,12 @@ func New(inits ...InitFunc) *Gorge {
 
 // SetScreenSize used by the gorgeapp to set the current screensize
 // Might be changed in the future if we use multiple Display devices.
-func (g *Gorge) SetScreenSize(s m32.Vec2) {
+func (g *Gorge) SetScreenSize(s gm.Vec2) {
 	g.screenSize = s
 }
 
 // ScreenSize returns the previously set screensize
-func (g *Gorge) ScreenSize() m32.Vec2 {
+func (g *Gorge) ScreenSize() gm.Vec2 {
 	return g.screenSize
 }
 

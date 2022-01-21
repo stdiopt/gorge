@@ -6,8 +6,8 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/m32/ray"
+	"github.com/stdiopt/gorge/math/gm"
+	"github.com/stdiopt/gorge/math/ray"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/text"
 )
@@ -26,12 +26,12 @@ type system struct {
 	// meaning mouse button[0-5], touch{1...}
 	pointOver    Entity
 	pointDown    Entity
-	pointDownPos m32.Vec2
+	pointDownPos gm.Vec2
 
 	dragging Entity
 
-	curMouse   m32.Vec2
-	deltaMouse m32.Vec2
+	curMouse   gm.Vec2
+	deltaMouse gm.Vec2
 	dbg        *debugLines
 }
 
@@ -126,13 +126,6 @@ func (s *system) handlePointer(e input.EventPointer) {
 
 	if e.Type == input.MouseWheel {
 		if hit != nil {
-			/*p := &PointerData{
-				RayResult: r,
-				Delta:     s.deltaMouse,
-				Position:  s.curMouse,
-				Wheel:     e.Pointers[0].ScrollDelta,
-				Target:    hit,
-			}*/
 			EachParent(hit, func(e Entity) bool {
 				triggerOn(e, EventPointerWheel{pd})
 				return !pd.stopPropagation
@@ -144,40 +137,22 @@ func (s *system) handlePointer(e input.EventPointer) {
 		s.pointDown = hit
 		s.pointDownPos = s.curMouse
 		if hit != nil {
-			p := &PointerData{
-				RayResult: r,
-				Delta:     s.deltaMouse,
-				Position:  s.curMouse,
-				Target:    hit,
-			}
 			EachParent(hit, func(e Entity) bool {
-				triggerOn(e, EventPointerDown{p})
-				return !p.stopPropagation
+				triggerOn(e, EventPointerDown{pd})
+				return !pd.stopPropagation
 			})
 		}
 	}
 	if e.Type == input.MouseUp && e.Button == 0 {
 		if s.pointDown != nil {
-			p := &PointerData{
-				RayResult: r,
-				Delta:     s.deltaMouse,
-				Position:  s.curMouse,
-				Target:    hit,
-			}
 			EachParent(s.pointDown, func(e Entity) bool {
-				triggerOn(e, EventPointerUp{p})
-				return !p.stopPropagation
+				triggerOn(e, EventPointerUp{pd})
+				return !pd.stopPropagation
 			})
 			s.pointDown = nil
 		}
 		if s.dragging != nil {
-			p := &PointerData{
-				RayResult: r,
-				Delta:     s.deltaMouse,
-				Position:  s.curMouse,
-				Target:    hit,
-			}
-			triggerOn(s.dragging, EventDragEnd{p})
+			triggerOn(s.dragging, EventDragEnd{pd})
 			s.dragging = nil
 		}
 	}
@@ -185,12 +160,6 @@ func (s *system) handlePointer(e input.EventPointer) {
 	// Drag detection
 	// I mouse is still down and not nil and pointerDown is still and dragging is nil
 	if s.pointDown != nil && curDown == s.pointDown && s.dragging == nil {
-		p := &PointerData{
-			RayResult: r,
-			Delta:     s.deltaMouse,
-			Position:  s.curMouse,
-			Target:    hit,
-		}
 		ui := RootUI(s.pointDown)
 		d := s.curMouse.Sub(s.pointDownPos).Abs()
 		if d[0] > ui.DragThreshold || d[1] > ui.DragThreshold {
@@ -207,7 +176,7 @@ func (s *system) handlePointer(e input.EventPointer) {
 					return true
 				}
 				s.dragging = e
-				triggerOn(s.dragging, EventDragBegin{p})
+				triggerOn(s.dragging, EventDragBegin{pd})
 				return false
 			})
 
@@ -221,17 +190,11 @@ func (s *system) handlePointer(e input.EventPointer) {
 			*/
 		}
 	} else if s.dragging != nil {
-		p := &PointerData{
-			RayResult: r, // R should be done on dragged?
-			Delta:     s.deltaMouse,
-			Position:  s.curMouse,
-			Target:    hit,
-		}
-		triggerOn(s.dragging, EventDrag{p})
+		triggerOn(s.dragging, EventDrag{pd})
 	}
 }
 
-func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
+func (s *system) rayPick(pointerPos gm.Vec2) (Entity, ray.Result) {
 	uiMap := map[*UI][]Entity{}
 	uis := []*UI{}
 	// Heavy'ish?
@@ -268,7 +231,7 @@ func (s *system) rayPick(pointerPos m32.Vec2) (Entity, ray.Result) {
 // if the pick is the same to the pointOver it will return
 // if not it will trigger Pointer leave on the existing pointOver
 // and PointerEnter on the new pick
-func (s *system) rayTest(pointerPos m32.Vec2) (Entity, ray.Result) {
+func (s *system) rayTest(pointerPos gm.Vec2) (Entity, ray.Result) {
 	hit, r := s.rayPick(pointerPos)
 	// debug
 	if s.Debug&DebugRays != 0 {
@@ -334,9 +297,9 @@ func (s *system) debugRects() {
 
 		// Get Rect after Transform
 		m := t.Mat4()
-		v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3() // left bottom
-		v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
-		v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
+		v0 := m.MulV4(gm.Vec4{rect[0], rect[1], 0, 1}).Vec3() // left bottom
+		v1 := m.MulV4(gm.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
+		v2 := m.MulV4(gm.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
 
 		// Clockwise
 		L0 := v2.Sub(v0)
@@ -349,11 +312,15 @@ func (s *system) debugRects() {
 		s.dbg.SetColor(1, 0, 0, 1)
 		s.dbg.AddLine(planePos, planePos.Add(planeNorm))
 
-		s.dbg.SetColor(.5+rs.Float32()*.5, rs.Float32(), rs.Float32(), 1)
-		v3 := m.MulV4(m32.Vec4{rect[2], rect[3], 0, 1}).Vec3()
+		s.dbg.SetColor(
+			.5+float32(rs.Float64())*.5,
+			float32(rs.Float32()),
+			float32(rs.Float32()), 1,
+		)
+		v3 := m.MulV4(gm.Vec4{rect[2], rect[3], 0, 1}).Vec3()
 		s.dbg.AddRect(v0, v1, v3, v2)
 
-		dot := m32.Vec4{
+		dot := gm.Vec4{
 			rect[0] + (t.Dim[0])*t.Pivot[0],
 			rect[1] + (t.Dim[1])*t.Pivot[1],
 			0,
@@ -363,7 +330,7 @@ func (s *system) debugRects() {
 	}
 }
 
-func (s *system) debugRayIntersection(pointerPos m32.Vec2) {
+func (s *system) debugRayIntersection(pointerPos gm.Vec2) {
 	uiMap := map[*UI][]Entity{}
 	uis := []*UI{}
 	// Heavy'ish?
@@ -383,7 +350,7 @@ func (s *system) debugRayIntersection(pointerPos m32.Vec2) {
 		elems := uiMap[u]
 		cam := u.Camera.Camera()
 
-		vp := m32.Vec4{
+		vp := gm.Vec4{
 			cam.Viewport[0] * screenSize[0],
 			cam.Viewport[1] * screenSize[1],
 			cam.Viewport[2] * screenSize[0],
@@ -391,7 +358,7 @@ func (s *system) debugRayIntersection(pointerPos m32.Vec2) {
 		}
 		width := vp[2] - vp[0]
 		height := vp[3] - vp[1]
-		ndc := m32.Vec4{
+		ndc := gm.Vec4{
 			2*pointerPos[0]/width - 1,
 			1 - 2*pointerPos[1]/height,
 			1, 1,
@@ -429,9 +396,9 @@ func (s *system) debugRayIntersection(pointerPos m32.Vec2) {
 			rect := t.Rect() // left bottom right top
 
 			m := t.Mat4()
-			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3()
-			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
-			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
+			v0 := m.MulV4(gm.Vec4{rect[0], rect[1], 0, 1}).Vec3()
+			v1 := m.MulV4(gm.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
+			v2 := m.MulV4(gm.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
 			// Clock wise
 			L0 := v2.Sub(v0)
 			L1 := v1.Sub(v0)

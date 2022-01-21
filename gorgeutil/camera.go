@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // Camera basic camera entity.
@@ -32,8 +32,8 @@ func NewCamera() *Camera {
 			Fov:        90,
 			Near:       0.1,
 			Far:        1000,
-			ClearColor: m32.Vec3{0.4, 0.4, 0.4},
-			Viewport:   m32.Vec4{0, 0, 1, 1},
+			ClearColor: gm.Vec3{0.4, 0.4, 0.4},
+			Viewport:   gm.Vec4{0, 0, 1, 1},
 		},
 	}
 }
@@ -47,8 +47,8 @@ func NewOrthoCamera(size, near, far float32) *Camera {
 			OrthoSize:      size,
 			Near:           near,
 			Far:            far,
-			ClearColor:     m32.Vec3{0.4, 0.4, 0.4},
-			Viewport:       m32.Vec4{0, 0, 1, 1},
+			ClearColor:     gm.Vec3{0.4, 0.4, 0.4},
+			Viewport:       gm.Vec4{0, 0, 1, 1},
 		},
 	}
 }
@@ -62,8 +62,8 @@ func NewPerspectiveCamera(fov, near, far float32) *Camera {
 			Fov:            fov,
 			Near:           near,
 			Far:            far,
-			ClearColor:     m32.Vec3{0.4, 0.4, 0.4},
-			Viewport:       m32.Vec4{0, 0, 1, 1},
+			ClearColor:     gm.Vec3{0.4, 0.4, 0.4},
+			Viewport:       gm.Vec4{0, 0, 1, 1},
 		},
 	}
 }
@@ -78,7 +78,7 @@ func NewUICamera() *Camera {
 			Near:           -100,
 			Far:            100,
 			ClearFlag:      gorge.ClearDepthOnly,
-			Viewport:       m32.Vec4{0, 0, 1, 1},
+			Viewport:       gm.Vec4{0, 0, 1, 1},
 			Order:          100,
 			CullMask:       gorge.CullMaskUI,
 		},

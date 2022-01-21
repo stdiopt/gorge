@@ -1,11 +1,11 @@
-package m32
+package gm
 
 import (
 	"math"
 )
 
-// Vec3 an float32 array of size 3 with methods for vector operations.
-type Vec3 [3]float32
+// Vec3 an Float array of size 3 with methods for vector operations.
+type Vec3 [3]Float
 
 // Add returns a new Vec3 based on the sum of the param.
 func (v Vec3) Add(v2 Vec3) Vec3 {
@@ -18,7 +18,7 @@ func (v Vec3) Sub(v2 Vec3) Vec3 {
 }
 
 // Mul returns a new vec3 based on the multiplication of vec3*scalar.
-func (v Vec3) Mul(c float32) Vec3 {
+func (v Vec3) Mul(c Float) Vec3 {
 	return Vec3{v[0] * c, v[1] * c, v[2] * c}
 }
 
@@ -28,8 +28,8 @@ func (v Vec3) MulVec3(v2 Vec3) Vec3 {
 }
 
 // Len returns the vec3 len.
-func (v Vec3) Len() float32 {
-	return float32(math.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])))
+func (v Vec3) Len() Float {
+	return Float(math.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])))
 }
 
 // Normalize returns a new normalized vec3.
@@ -44,7 +44,7 @@ func (v Vec3) Cross(v2 Vec3) Vec3 {
 }
 
 // Dot returns the dot product of v with v2
-func (v Vec3) Dot(v2 Vec3) float32 {
+func (v Vec3) Dot(v2 Vec3) Float {
 	return v[0]*v2[0] + v[1]*v2[1] + v[2]*v2[2]
 }
 
@@ -59,7 +59,7 @@ func (v Vec3) Vec2() Vec2 {
 }
 
 // Vec4 returns a vec4 with the new element w.
-func (v Vec3) Vec4(w float32) Vec4 {
+func (v Vec3) Vec4(w Float) Vec4 {
 	return Vec4{v[0], v[1], v[2], w}
 }
 
@@ -73,7 +73,7 @@ func (v Vec3) Clamp(min, max Vec3) Vec3 {
 }
 
 // Lerp Linear interpolation between 2 vecs
-func (v Vec3) Lerp(b Vec3, t float32) Vec3 {
+func (v Vec3) Lerp(b Vec3, t Float) Vec3 {
 	return Vec3{
 		v[0] + t*(b[0]-v[0]),
 		v[1] + t*(b[1]-v[1]),

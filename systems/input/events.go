@@ -1,11 +1,11 @@
 package input
 
-import "github.com/stdiopt/gorge/m32"
+import "github.com/stdiopt/gorge/math/gm"
 
 // PointerData common
 type PointerData struct {
-	ScrollDelta m32.Vec2 // for Wheel
-	Pos         m32.Vec2
+	ScrollDelta gm.Vec2 // for Wheel
+	Pos         gm.Vec2
 }
 
 // EventPointer on canvas

@@ -1,18 +1,18 @@
-package m32
+package gm
 
 import (
 	"math"
 )
 
 type (
-	// Vec4 float32 array of size 4 with vector operation methods.
-	Vec4 [4]float32
+	// Vec4 Float array of size 4 with vector operation methods.
+	Vec4 [4]Float
 	// Color alias of vec4
 )
 
 // Len returns the length of the vec4.
-func (v Vec4) Len() float32 {
-	return float32(math.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + v[3]*v[3])))
+func (v Vec4) Len() Float {
+	return Float(math.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + v[3]*v[3])))
 }
 
 // Add returns the addition of each element with v2 in a new vec4.
@@ -32,12 +32,12 @@ func (v Vec4) Normalize() Vec4 {
 }
 
 // Dot returns the dot product of v and v2.
-func (v Vec4) Dot(v2 Vec4) float32 {
+func (v Vec4) Dot(v2 Vec4) Float {
 	return v[0]*v2[0] + v[1]*v2[1] + v[2]*v2[2] + v[3]*v2[3]
 }
 
 // Mul returns a new vec4 with the elements multiplied by c.
-func (v Vec4) Mul(c float32) Vec4 {
+func (v Vec4) Mul(c Float) Vec4 {
 	return Vec4{v[0] * c, v[1] * c, v[2] * c, v[3] * c}
 }
 
@@ -65,7 +65,7 @@ func (v Vec4) Equal(v2 Vec4) bool {
 }
 
 // Lerp Linear interpolation between 2 vecs
-func (v Vec4) Lerp(b Vec4, t float32) Vec4 {
+func (v Vec4) Lerp(b Vec4, t Float) Vec4 {
 	return Vec4{
 		v[0] + t*(b[0]-v[0]),
 		v[1] + t*(b[1]-v[1]),

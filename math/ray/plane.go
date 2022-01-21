@@ -1,11 +1,11 @@
 package ray
 
 import (
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // IntersectPlane and returns where it was intersected
-func IntersectPlane(r Ray, planeNormal, planePoint m32.Vec3) Result {
+func IntersectPlane(r Ray, planeNormal, planePoint gm.Vec3) Result {
 	if nl := planeNormal.Len(); nl != nl {
 		return Result{}
 	}
@@ -19,7 +19,7 @@ func IntersectPlane(r Ray, planeNormal, planePoint m32.Vec3) Result {
 }
 
 // CalcNormal returns a normal from 3 points
-func CalcNormal(a, b, c m32.Vec3) m32.Vec3 {
+func CalcNormal(a, b, c gm.Vec3) gm.Vec3 {
 	v1 := b.Sub(a)
 	v2 := c.Sub(a)
 	return v1.Cross(v2).Normalize()

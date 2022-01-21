@@ -1,11 +1,13 @@
-// Package m32 math and gl math for floats32
+// Package gm math and gl math for floats32
 // Contains code from github.com/go-gl/mathgl/mgl32
 // BSD-3 Copyright ©2013 The go-gl Authors. All rights reserved.
-package m32
+package gm
 
 import (
 	"math"
 )
+
+type Float = float32
 
 // Epsilon float error stuff.
 const (
@@ -18,9 +20,9 @@ const (
 
 // values from math
 var (
-	InfPos = float32(math.Inf(1))
-	InfNeg = float32(math.Inf(-1))
-	NaN    = float32(math.NaN())
+	InfPos = Float(math.Inf(1))
+	InfNeg = Float(math.Inf(-1))
+	NaN    = Float(math.NaN())
 )
 
 // FloatEqualThreshold is a utility function to compare floats.
@@ -31,7 +33,7 @@ var (
 // This differs from FloatEqual in that it lets you pass in your comparison
 // threshold, so that you can adjust the comparison value to your specific
 // needs
-func FloatEqualThreshold(a, b, epsilon float32) bool {
+func FloatEqualThreshold(a, b, epsilon Float) bool {
 	// Handles the case of inf or shortcuts the loop when no significant
 	// error has accumulated
 	if a == b {
@@ -51,43 +53,43 @@ func FloatEqualThreshold(a, b, epsilon float32) bool {
 // It's Taken from http://floating-point-gui.de/errors/comparison/
 //
 // It is slightly altered to not call Abs when not needed.
-func FloatEqual(a, b float32) bool {
+func FloatEqual(a, b Float) bool {
 	return FloatEqualThreshold(a, b, Epsilon)
 }
 
 // Mod returns the floating-point remainder of x/y.
 // The magnitude of the result is less than y and its
 // sign agrees with that of x.
-func Mod(x, y float32) float32 {
-	return float32(math.Mod(float64(x), float64(y)))
+func Mod(x, y Float) Float {
+	return Float(math.Mod(float64(x), float64(y)))
 }
 
 // Cos casts values to float64 and uses native math.Cos
 // to return the cosine of the radian argument x.
-func Cos(x float32) float32 {
-	return float32(math.Cos(float64(x)))
+func Cos(x Float) Float {
+	return Float(math.Cos(float64(x)))
 }
 
 // Sin to return the sine of the radian argument x.
-func Sin(x float32) float32 {
-	return float32(math.Sin(float64(x)))
+func Sin(x Float) Float {
+	return Float(math.Sin(float64(x)))
 }
 
 // Sincos returns Sin(x), Cos(x).
-func Sincos(x float32) (float32, float32) {
+func Sincos(x Float) (Float, Float) {
 	s, c := math.Sincos(float64(x))
-	return float32(s), float32(c)
+	return Float(s), Float(c)
 }
 
 // Hypot returns Sqrt(p*p + q*q), taking care to avoid unnecessary overflow and underflow.
-func Hypot(x, y float32) float32 {
-	return float32(math.Hypot(float64(x), float64(y)))
+func Hypot(x, y Float) Float {
+	return Float(math.Hypot(float64(x), float64(y)))
 }
 
 // Atan2 returns the arc tangent of y/x, using the signs of the two to determine
 // the quadrant of the return value.
-func Atan2(y, x float32) float32 {
-	return float32(math.Atan2(float64(y), float64(x)))
+func Atan2(y, x Float) Float {
+	return Float(math.Atan2(float64(y), float64(x)))
 }
 
 // Asin returns the arcsine, in radians, of x.
@@ -95,40 +97,40 @@ func Atan2(y, x float32) float32 {
 // Special cases are:
 //	Asin(±0) = ±0
 //	Asin(x) = NaN if x < -1 or x > 1
-func Asin(x float32) float32 {
-	return float32(math.Asin(float64(x)))
+func Asin(x Float) Float {
+	return Float(math.Asin(float64(x)))
 }
 
 // Acos returns the arccosine, in radians, of x.
 //
 // Special case is:
 //	Acos(x) = NaN if x < -1 or x > 1
-func Acos(x float32) float32 {
-	return float32(math.Acos(float64(x)))
+func Acos(x Float) Float {
+	return Float(math.Acos(float64(x)))
 }
 
 // Tan returns the tangent of the radian argument x.
-func Tan(x float32) float32 {
-	return float32(math.Tan(float64(x)))
+func Tan(x Float) Float {
+	return Float(math.Tan(float64(x)))
 }
 
 // Sqrt returns the square root of x.
-func Sqrt(x float32) float32 {
-	return float32(math.Sqrt(float64(x)))
+func Sqrt(x Float) Float {
+	return Float(math.Sqrt(float64(x)))
 }
 
 // Abs returns the absolute value of x.
-func Abs(x float32) float32 {
-	return float32(math.Abs(float64(x)))
+func Abs(x Float) Float {
+	return Float(math.Abs(float64(x)))
 }
 
 // Copysign returns a value with the magnitude of x and the sign of y.
-func Copysign(x, y float32) float32 {
-	return float32(math.Copysign(float64(x), float64(y)))
+func Copysign(x, y Float) Float {
+	return Float(math.Copysign(float64(x), float64(y)))
 }
 
 // Max returns the greatest value between a or b
-func Max(a, b float32) float32 {
+func Max(a, b Float) Float {
 	if a > b {
 		return a
 	}
@@ -136,7 +138,7 @@ func Max(a, b float32) float32 {
 }
 
 // Min returns the lowest value between a or b
-func Min(a, b float32) float32 {
+func Min(a, b Float) Float {
 	if a < b {
 		return a
 	}
@@ -144,12 +146,12 @@ func Min(a, b float32) float32 {
 }
 
 // Ceil returns the .. ceil
-func Ceil(x float32) float32 {
-	return float32(math.Ceil(float64(x)))
+func Ceil(x Float) Float {
+	return Float(math.Ceil(float64(x)))
 }
 
 // Clamp v
-func Clamp(v, min, max float32) float32 {
+func Clamp(v, min, max Float) Float {
 	if v < min {
 		return min
 	}
@@ -160,11 +162,11 @@ func Clamp(v, min, max float32) float32 {
 }
 
 // Cbrt returns the cube root of x.
-func Cbrt(x float32) float32 {
-	return float32(math.Cbrt(float64(x)))
+func Cbrt(x Float) Float {
+	return Float(math.Cbrt(float64(x)))
 }
 
 // Lerp Linear interpolation between 2 scalar
-func Lerp(v0, v1, t float32) float32 {
+func Lerp(v0, v1, t Float) Float {
 	return v0 + t*(v1-v0)
 }

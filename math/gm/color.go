@@ -1,4 +1,4 @@
-package m32
+package gm
 
 // Color utils
 
@@ -9,7 +9,7 @@ package m32
 // 2 - returns a Vec4 with all 3 elements set to param 0 and alpha to param 1
 // 3 - returns a Vec4 with all 3 elements set to params and alpha 1
 // 4 - returns a Vec4 with all 4 elements set to params.
-func Color(v ...float32) Vec4 {
+func Color(v ...Float) Vec4 {
 	switch len(v) {
 	case 0:
 		return Vec4{}
@@ -26,13 +26,13 @@ func Color(v ...float32) Vec4 {
 
 // HSV2RGB Hue Saturation Value to RGB
 // values are in the range 0-1 and will be clamped to that range.
-func HSV2RGB(h, s, v float32) Vec3 {
+func HSV2RGB(h, s, v Float) Vec3 {
 	h = Mod(h, 1)
 	s = Clamp(s, 0, 1)
 	v = Clamp(v, 0, 1)
 
 	i := int(h * 6)
-	f := h*6 - float32(i)
+	f := h*6 - Float(i)
 	p := v * (1 - s)
 	q := v * (1 - f*s)
 	t := v * (1 - (1-f)*s)

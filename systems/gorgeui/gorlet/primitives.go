@@ -3,7 +3,7 @@ package gorlet
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -79,7 +79,7 @@ func rectElement(ent graphicer) Func {
 			t.Scale[1] = r[3] - r[1]
 		})
 		// Defaults
-		root.Set("color", m32.Color(0, 0, 0, .2))
+		root.Set("color", gm.Color(0, 0, 0, .2))
 	}
 }
 

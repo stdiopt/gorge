@@ -2,7 +2,7 @@ package gorgeui
 
 import (
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 type gorger interface {
@@ -64,12 +64,12 @@ func (w *UI) SetDragThreshold(v float32) {
 
 // Rect return the rect for UI if camera is Ortho it will use camera as parent
 // rect.
-func (w *UI) Rect() m32.Vec4 {
+func (w *UI) Rect() gm.Vec4 {
 	// The ui must have a base rect or use the camera one
 	// so it should be probably positioned from 0,0 of the screen
 	cam := w.Camera.Camera()
 	if cam.ProjectionType != gorge.ProjectionOrtho {
-		return m32.Vec4{0, 0, w.Dim[0], w.Dim[1]}
+		return gm.Vec4{0, 0, w.Dim[0], w.Dim[1]}
 	}
 	// ScreenSize
 	vp := cam.CalcViewport(w.ScreenSize())
@@ -80,13 +80,13 @@ func (w *UI) Rect() m32.Vec4 {
 	}
 	halfH := cam.OrthoSize * aspectRatio / 2
 	halfV := cam.OrthoSize / 2
-	return m32.Vec4{
+	return gm.Vec4{
 		-halfH + w.Position[0], -halfV + w.Position[1],
 		halfH + w.Dim[0], halfV + w.Dim[1],
 	}
 }
 
-func (w *UI) CalcSize() m32.Vec2 {
+func (w *UI) CalcSize() gm.Vec2 {
 	cam := w.Camera.Camera()
 	if cam.ProjectionType != gorge.ProjectionOrtho {
 		return w.Dim
@@ -98,14 +98,14 @@ func (w *UI) CalcSize() m32.Vec2 {
 		// ss := gorge.ScreenSize()
 		aspectRatio = vp[2] / vp[3]
 	}
-	return m32.Vec2{
+	return gm.Vec2{
 		cam.OrthoSize * aspectRatio / 2,
 		cam.OrthoSize,
 	}
 }
 
 // ScreenSize returns the screensize.
-func (w *UI) ScreenSize() m32.Vec2 { return w.gorge.ScreenSize() }
+func (w *UI) ScreenSize() gm.Vec2 { return w.gorge.ScreenSize() }
 
 func (w *UI) GetEntities() []gorge.Entity {
 	return w.entities

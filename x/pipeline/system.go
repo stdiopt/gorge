@@ -23,7 +23,7 @@ func System(r *render.Context, res *resource.Context) error {
 	))
 
 	r.SetRenderStage(renderpl.Pipeline(r,
-		// p.RenderCube("envMap", m32.Vec4{0, 0, 1, 1}), // Draw a cube with irradiance
+		// p.RenderCube("envMap", gm.Vec4{0, 0, 1, 1}), // Draw a cube with irradiance
 		// render.ProceduralSkyboxStage,
 		// After procedural
 		renderpl.EachCamera(
@@ -32,11 +32,11 @@ func System(r *render.Context, res *resource.Context) error {
 			renderpl.ClearCamera,   // Clear camera with skybox if any
 			renderpl.Render,        // render Stage thing
 		),
-		// p.RenderCube("envMap", m32.Vec4{0, 0, .2, .2}),
-		// p.RenderCube("irradianceMap", m32.Vec4{.2, 0, .2, .2}),
-		// p.RenderCube("prefilterMap", m32.Vec4{.4, 0, .2, .2}),
-		// p.RenderQuad("brdfLUT", m32.Vec4{.6, 0, .2, .2}),
-		// p.RenderCube("depthCube[0].depthMap", m32.Vec4{.8, 0, .2, .2}),
+		// p.RenderCube("envMap", gm.Vec4{0, 0, .2, .2}),
+		// p.RenderCube("irradianceMap", gm.Vec4{.2, 0, .2, .2}),
+		// p.RenderCube("prefilterMap", gm.Vec4{.4, 0, .2, .2}),
+		// p.RenderQuad("brdfLUT", gm.Vec4{.6, 0, .2, .2}),
+		// p.RenderCube("depthCube[0].depthMap", gm.Vec4{.8, 0, .2, .2}),
 	))
 	return nil
 }

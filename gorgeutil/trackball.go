@@ -3,7 +3,7 @@ package gorgeutil
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/input"
 )
@@ -14,7 +14,7 @@ type CameraRig struct {
 	Vert   *gorge.TransformComponent
 	Camera cameraEntity
 
-	lastP *m32.Vec2
+	lastP *gm.Vec2
 
 	dragging      bool
 	disableEvents bool
@@ -38,7 +38,7 @@ func (r *CameraRig) HandleEvent(e event.Event) {
 		}
 
 		if r.lastP == nil {
-			r.lastP = &m32.Vec2{}
+			r.lastP = &gm.Vec2{}
 			*r.lastP = e.Pointers[0].Pos
 			return
 		}
@@ -65,7 +65,7 @@ func (r *CameraRig) HandleEvent(e event.Event) {
 		if r.dragging || e.Type == input.PointerMove {
 			if len(e.Pointers) == 1 {
 				scale := float32(0.005)
-				v := m32.Vec2{delta[1], -delta[0]}.Mul(scale)
+				v := gm.Vec2{delta[1], -delta[0]}.Mul(scale)
 				r.Vert.Rotate(-v[0], 0, 0)
 				r.Transform().Rotate(0, v[1], 0)
 			}
@@ -75,7 +75,7 @@ func (r *CameraRig) HandleEvent(e event.Event) {
 
 type cameraEntity interface {
 	Transform() *gorge.TransformComponent
-	Mat4() m32.Mat4
+	Mat4() gm.Mat4
 	Camera() *gorge.CameraComponent
 }
 

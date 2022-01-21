@@ -1,8 +1,6 @@
 package gorlet
 
-import (
-	"github.com/stdiopt/gorge/m32"
-)
+import "github.com/stdiopt/gorge/math/gm"
 
 // GridLayout creates a grid layouter that organizes children in a grid
 type GridLayout struct {
@@ -19,8 +17,8 @@ func (l *GridLayout) Layout(e *Entity) {
 		cw := float32(i%l.Cols) / float32(l.Cols)
 		ch := float32(i/l.Cols) / float32(l.Rows)
 		e.SetAnchor(cw, ch, cw+sw, ch+sh)
-		// s := m32.Vec4{l.Spacing / 2, l.Spacing / 2, l.Spacing / 2, l.Spacing / 2}
-		s := m32.Vec4{0, 0, l.Spacing / 2, l.Spacing / 2}
+		// s := gm.Vec4{l.Spacing / 2, l.Spacing / 2, l.Spacing / 2, l.Spacing / 2}
+		s := gm.Vec4{0, 0, l.Spacing / 2, l.Spacing / 2}
 		if cw == 0 {
 			s[0] = 0
 		} else if cw+sw == 1 {

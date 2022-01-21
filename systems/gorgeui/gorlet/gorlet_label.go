@@ -3,7 +3,7 @@ package gorlet
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/text"
 )
@@ -35,7 +35,7 @@ func Label(t string) Func {
 		// Use this instead or some common way to GET UI
 		ent.Material.SetTexture("albedoMap", gorgeui.DefaultFont.Texture)
 		ent.SetScale(1, -1, 1) // UI is inverted
-		ent.Color = m32.Color(1)
+		ent.Color = gm.Color(1)
 
 		Alignment := [2]text.Align{text.AlignCenter, text.AlignCenter}
 
@@ -68,7 +68,7 @@ func Label(t string) Func {
 				}
 			}
 
-			bounds := m32.Vec2{r[2] - r[0], r[3] - r[1]}
+			bounds := gm.Vec2{r[2] - r[0], r[3] - r[1]}
 			if mesh.Boundary != bounds {
 				mesh.SetBoundary(bounds[0], bounds[1])
 			}
@@ -87,7 +87,7 @@ func Label(t string) Func {
 
 		b.Observe("autoSize", ObsFunc(func(v bool) { autoSize = v }))
 		b.Observe("text", ObsFunc(func(s string) { mesh.SetText(s) }))
-		b.Observe("textColor", ObsFunc(func(c m32.Vec4) { ent.SetColorv(c) }))
+		b.Observe("textColor", ObsFunc(func(c gm.Vec4) { ent.SetColorv(c) }))
 		b.Observe("fontScale", ObsFunc(func(v float32) { mesh.SetSize(v) }))
 		b.Observe("textAlign", ObsFunc(func(a [2]text.Align) {
 			Alignment = a

@@ -3,7 +3,7 @@ package gorlet
 import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
@@ -11,9 +11,9 @@ import (
 func Button(clickfn func()) Func {
 	return func(b *Builder) {
 		var (
-			normal     = m32.Color(.7, .9)
-			highlight  = m32.Color(.8, .9, .8)
-			down       = m32.Color(.4)
+			normal     = gm.Color(.7, .9)
+			highlight  = gm.Color(.8, .9, .8)
+			down       = gm.Color(.4)
 			fadeFactor = float32(10)
 		)
 		b.Observe("color", Ptr(&normal))

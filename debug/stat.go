@@ -11,7 +11,7 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/gorgeutil"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/input"
@@ -108,7 +108,7 @@ func Stat(g *gorge.Context) error {
 	s.txt = text.New(font)
 	s.txt.SetMaterial(texMat)
 	s.txt.SetText(s.Update())
-	s.txt.Color = m32.Vec4{1, 1, 1, 1}
+	s.txt.Color = gm.Vec4{1, 1, 1, 1}
 	s.txt.SetScale(.02)
 	s.txt.SetPosition(-0.75, 0, 5)
 	// s.txt.Position[2] = 5
@@ -117,7 +117,7 @@ func Stat(g *gorge.Context) error {
 
 	plane := gorgeutil.NewPlane(primitive.PlaneDirY)
 	plane.SetMaterial(planeMat)
-	plane.Color = m32.Vec4{0, 0, 0, 0.8}
+	plane.Color = gm.Vec4{0, 0, 0, 0.8}
 	plane.Blend = gorge.BlendOneOneMinusSrcAlpha
 	plane.SetParent(s.txt)
 	plane.SetEuler(math.Pi/2, 0, 0)

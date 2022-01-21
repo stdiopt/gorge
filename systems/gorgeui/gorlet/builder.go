@@ -387,8 +387,8 @@ func ObsFunc(fn any) ObserverFunc {
 		return func(v any) { fn(v.(float64)) }
 	case func(int):
 		return func(v any) { fn(v.(int)) }
-	case func(m32.Vec4):
-		return func(v any) { fn(v.(m32.Vec4)) }
+	case func(gm.Vec4):
+		return func(v any) { fn(v.(gm.Vec4)) }
 	case func(bool):
 		return func(v any) { fn(v.(bool)) }
 	case func([]text.Align):

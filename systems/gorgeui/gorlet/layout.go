@@ -1,8 +1,6 @@
 package gorlet
 
-import (
-	"github.com/stdiopt/gorge/m32"
-)
+import "github.com/stdiopt/gorge/math/gm"
 
 // Direction for certain types of layouts
 type Direction int
@@ -42,14 +40,14 @@ func AutoHeight(spacing float32) LayoutFunc {
 		ent.Anchor[3] = ent.Anchor[1]
 		children := ent.Children()
 
-		dim := m32.Vec2{}
+		dim := gm.Vec2{}
 		for _, c := range children {
 			rect := c.Rect()
 			h := rect[3] - rect[1] + (c.Margin[1] + c.Margin[3])
 
 			top := c.Position[1]
 			bottom := top + h
-			dim[1] = m32.Max(bottom+spacing, dim[1])
+			dim[1] = gm.Max(bottom+spacing, dim[1])
 
 		}
 		rt := ent.RectTransform()
@@ -59,7 +57,7 @@ func AutoHeight(spacing float32) LayoutFunc {
 
 func ContentSize() LayoutFunc {
 	return func(ent *Entity) {
-		ent.Dim = m32.Vec2{}
+		ent.Dim = gm.Vec2{}
 		ent.Anchor[2] = ent.Anchor[0]
 		ent.Anchor[3] = ent.Anchor[1]
 
@@ -73,8 +71,8 @@ func ContentSize() LayoutFunc {
 // Placement
 
 // Vertical placement
-/*func Vertical(spacing m32.Vec4, dim m32.Vec2) PlacementFunc {
-	var pos m32.Vec2
+/*func Vertical(spacing gm.Vec4, dim gm.Vec2) PlacementFunc {
+	var pos gm.Vec2
 	return func(w *Entity) {
 		w.SetAnchor(0, 0, 1, 0)
 		w.SetRect(spacing[0], spacing[1]+pos[1], spacing[2], dim[1])

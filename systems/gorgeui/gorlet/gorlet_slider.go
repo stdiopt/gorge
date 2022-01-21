@@ -5,8 +5,8 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
-	"github.com/stdiopt/gorge/m32/ray"
+	"github.com/stdiopt/gorge/math/gm"
+	"github.com/stdiopt/gorge/math/ray"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/text"
 )
@@ -26,7 +26,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 	return func(b *Builder) {
 		var (
 			fontScale        = b.Prop("fontScale")
-			backgroundColor  = b.Prop("backgroundColor", m32.Color(.4, .2))
+			backgroundColor  = b.Prop("backgroundColor", gm.Color(.4, .2))
 			handlerTextColor = b.Prop("textColor")
 			handlerColor     = b.Prop("handlerColor")
 		)
@@ -65,7 +65,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}
 		b.EndContainer()
 
-		b.Observe("handlerColor", ObsFunc(func(c m32.Vec4) {
+		b.Observe("handlerColor", ObsFunc(func(c gm.Vec4) {
 			handler.Set("color", c)
 		}))
 		b.Observe("handler", ObsFunc(func(e *Entity) {
@@ -81,7 +81,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}))
 		b.Observe("value", ObsFunc(func(v float32) {
 			v = norm(v)
-			v = m32.Clamp(v, 0, 1)
+			v = gm.Clamp(v, 0, 1)
 			if val == v {
 				return
 			}
@@ -110,9 +110,9 @@ func Slider(min, max float32, fn func(float32)) Func {
 
 			// We ray trace on track
 			m := root.Mat4()
-			v0 := m.MulV4(m32.Vec4{rect[0], rect[1], 0, 1}).Vec3() // 0
-			v1 := m.MulV4(m32.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
-			v2 := m.MulV4(m32.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
+			v0 := m.MulV4(gm.Vec4{rect[0], rect[1], 0, 1}).Vec3() // 0
+			v1 := m.MulV4(gm.Vec4{rect[2], rect[1], 0, 1}).Vec3() // right
+			v2 := m.MulV4(gm.Vec4{rect[0], rect[3], 0, 1}).Vec3() // up)
 
 			ui := gorgeui.RootUI(root)
 			r := ray.FromScreen(ui.ScreenSize(), ui.Camera, pd.Position)
@@ -123,7 +123,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			v := res.UV[0]
 
 			v -= handlerSize / rect[2] / 2
-			v = m32.Clamp(v, 0, 1)
+			v = gm.Clamp(v, 0, 1)
 			root.Set("value", real(v))
 			// log.Println("Res:", res.Position[0])
 		}

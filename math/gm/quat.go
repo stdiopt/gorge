@@ -1,4 +1,4 @@
-package m32
+package gm
 
 import (
 	"math"
@@ -28,11 +28,11 @@ const (
 // Quat short for quaternion:
 // 	https://answers.unity.com/questions/467614/what-is-the-source-code-of-quaternionlookrotation.html
 // W is [3]
-type Quat [4]float32
+type Quat [4]Float
 
 // Len computes quaternion length.
-func (q Quat) Len() float32 {
-	return float32(math.Sqrt(float64(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3])))
+func (q Quat) Len() Float {
+	return Float(math.Sqrt(float64(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3])))
 }
 
 // Normalize returns a normalized copy of the quaternion.
@@ -45,7 +45,7 @@ func (q Quat) Normalize() Quat {
 	if length == 0 {
 		return QIdent()
 	}
-	if length == float32(math.Inf(1)) {
+	if length == Float(math.Inf(1)) {
 		length = MaxValue
 	}
 
@@ -59,7 +59,7 @@ func (q Quat) Normalize() Quat {
 }
 
 // W returns the W part of the quaternion.
-func (q Quat) W() float32 {
+func (q Quat) W() Float {
 	return q[3]
 }
 
@@ -131,7 +131,7 @@ func (q Quat) Mat4() Mat4 {
 
 // Slerp spherical linear interpolation between two quat
 // https://github.com/toji/gl-matrix/blob/6c0268c89f30090b17bcadade9e7feb7205b85c5/src/quat.js#L296
-func (q Quat) Slerp(b Quat, t float32) Quat {
+func (q Quat) Slerp(b Quat, t Float) Quat {
 	ax := q[0]
 	ay := q[1]
 	az := q[2]
@@ -142,7 +142,7 @@ func (q Quat) Slerp(b Quat, t float32) Quat {
 	bz := b[2]
 	bw := b[3]
 
-	var omega, cosom, sinom, scale0, scale1 float32
+	var omega, cosom, sinom, scale0, scale1 Float
 
 	cosom = ax*bx + ay*by + az*bz + aw*bw
 	if cosom < 0.0 {
@@ -171,7 +171,7 @@ func (q Quat) Slerp(b Quat, t float32) Quat {
 }
 
 // QFromAngles returns a rotation quaternion based on the angles.
-func QFromAngles(a1, a2, a3 float32, order RotationOrder) Quat {
+func QFromAngles(a1, a2, a3 Float, order RotationOrder) Quat {
 	var s [3]float64
 	var c [3]float64
 
@@ -182,87 +182,87 @@ func QFromAngles(a1, a2, a3 float32, order RotationOrder) Quat {
 	switch order {
 	case ZYX:
 		return Quat{
-			float32(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
-			float32(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
-			float32(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
+			Float(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
 		}
 	case ZYZ:
 		return Quat{
-			float32(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
-			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
-			float32(s[0]*c[1]*c[2] + c[0]*c[1]*s[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(s[0]*c[1]*c[2] + c[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
 		}
 	case ZXY:
 		return Quat{
-			float32(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
-			float32(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
-			float32(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
+			Float(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
+			Float(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
 		}
 	case ZXZ:
 		return Quat{
-			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
-			float32(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
 		}
 	case YXZ:
 		return Quat{
-			float32(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
-			float32(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
-			float32(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
+			Float(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
+			Float(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
 		}
 	case YXY:
 		return Quat{
-			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
-			float32(s[0]*c[1]*c[2] + c[0]*c[1]*s[2]),
-			float32(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(s[0]*c[1]*c[2] + c[0]*c[1]*s[2]),
+			Float(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
 		}
 	case YZX:
 		return Quat{
-			float32(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
-			float32(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
+			Float(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
 		}
 	case YZY:
 		return Quat{
-			float32(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
 		}
 	case XYZ:
 		return Quat{
-			float32(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
-			float32(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
+			Float(c[0]*s[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*s[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*s[1]*c[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*s[1]*s[2]),
 		}
 	case XYX:
 		return Quat{
-			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
-			float32(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(s[0]*s[1]*c[2] - c[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
 		}
 	case XZY:
 		return Quat{
-			float32(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
-			float32(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
-			float32(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(s[0]*c[1]*c[2] - c[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*s[2] - s[0]*s[1]*c[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*c[2] + s[0]*s[1]*s[2]),
 		}
 	case XZX:
 		return Quat{
-			float32(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
-			float32(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
-			float32(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
-			float32(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
+			Float(c[0]*c[1]*s[2] + s[0]*c[1]*c[2]),
+			Float(c[0]*s[1]*s[2] - s[0]*s[1]*c[2]),
+			Float(c[0]*s[1]*c[2] + s[0]*s[1]*s[2]),
+			Float(c[0]*c[1]*c[2] - s[0]*c[1]*s[2]),
 		}
 	default:
 		panic("Unsupported rotation order")
@@ -333,7 +333,7 @@ func QIdent() Quat {
 
 // QEuler returns a quaternion based on those euler angles
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-func QEuler(x, y, z float32) Quat {
+func QEuler(x, y, z Float) Quat {
 	cy, sy := Sincos(z * 0.5)
 	cp, sp := Sincos(y * 0.5)
 	cr, sr := Sincos(x * 0.5)
@@ -347,7 +347,7 @@ func QEuler(x, y, z float32) Quat {
 }
 
 // QAxisAngle returns a axis angle quaternion.
-func QAxisAngle(v3 Vec3, rad float32) Quat {
+func QAxisAngle(v3 Vec3, rad Float) Quat {
 	s, c := Sincos(rad * 0.5)
 
 	return Quat{

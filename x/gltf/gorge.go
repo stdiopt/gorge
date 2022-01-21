@@ -8,7 +8,7 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/anim"
 	"github.com/stdiopt/gorge/gorgeutil"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/static"
 	"github.com/stdiopt/gorge/systems/resource"
 )
@@ -111,13 +111,13 @@ func defMaterial() *gorge.Material {
 	mat.Define("USE_HDR", "USE_IBL")
 
 	mat.Set("u_MipCount", 5)
-	mat.Set("u_EmissiveFactor", m32.Vec3{0, 0, 0})
+	mat.Set("u_EmissiveFactor", gm.Vec3{0, 0, 0})
 	mat.Set("u_AlphaCutoff", float32(0.5))
 	mat.Set("u_Exposure", float32(1))
 
 	// This is relative to MATERIAL_METALLICROUGHNESS probably shouldn't be here?
 	// Maybe add some flag upthere
-	mat.Set("u_BaseColorFactor", m32.Vec4{1, 1, 1, 1})
+	mat.Set("u_BaseColorFactor", gm.Vec4{1, 1, 1, 1})
 	mat.Set("u_MetallicFactor", float32(1))
 	mat.Set("u_RoughnessFactor", float32(1))
 
@@ -143,7 +143,7 @@ func (c *gltfCreator) getMaterial(tfMat *Material) *gorge.Material {
 		mat.SetFloat32("u_AlphaCutoff", *v)
 	}
 	if v := tfMat.EmissiveFactor; v != nil {
-		mat.Set("u_EmissiveFactor", m32.Vec3(*v))
+		mat.Set("u_EmissiveFactor", gm.Vec3(*v))
 	}
 
 	if tfMat.DoubleSided != nil {
@@ -155,7 +155,7 @@ func (c *gltfCreator) getMaterial(tfMat *Material) *gorge.Material {
 		mat.Define("MATERIAL_METALLICROUGHNESS")
 
 		if v := pbr.BaseColorFactor; v != nil {
-			mat.Set("u_BaseColorFactor", m32.Vec4(*v))
+			mat.Set("u_BaseColorFactor", gm.Vec4(*v))
 		}
 		if t := pbr.BaseColorTexture; t != nil {
 			tex := c.Textures[t.Index]
@@ -294,7 +294,7 @@ func (c *gltfCreator) processMeshes() {
 func (c *gltfCreator) processSkins() {
 	skins := []*GSkin{}
 	for _, s := range c.doc.Skins {
-		var matrices []m32.Mat4
+		var matrices []gm.Mat4
 		if s.InverseBindMatrices != nil {
 			matrices = bufMat4Slice(acBuf(c.doc.AccessorBuffer(*s.InverseBindMatrices)))
 		}
@@ -352,20 +352,20 @@ func (c *gltfCreator) processNodes() {
 
 		if n.Matrix != nil {
 			// https://answers.unity.com/questions/402280/how-to-decompose-a-trs-matrix.html
-			node.Transform().SetMat4Decompose(m32.Mat4(*n.Matrix))
+			node.Transform().SetMat4Decompose(gm.Mat4(*n.Matrix))
 		}
 
 		if n.Rotation != nil {
 			r := *n.Rotation
-			node.Transform().Rotation = m32.Quat(r)
+			node.Transform().Rotation = gm.Quat(r)
 		}
 
 		if n.Translation != nil {
-			node.Transform().Position = m32.Vec3(*n.Translation)
+			node.Transform().Position = gm.Vec3(*n.Translation)
 		}
 
 		if n.Scale != nil {
-			node.Transform().Scale = m32.Vec3(*n.Scale)
+			node.Transform().Scale = gm.Vec3(*n.Scale)
 		}
 
 		nodes = append(nodes, node)
@@ -423,7 +423,7 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 			ds = 3
 		}
 
-		// var track *anim.Channel[m32.Vec3]
+		// var track *anim.Channel[gm.Vec3]
 		// var val []any
 		// We have to manually add node as we don't have it in gorge stuff
 		// Track translation for now
@@ -443,7 +443,7 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 			ch := anim.AddChannel(gAnim, anim.Quat)
 			ch.On(anim.Ptr(&targetNode.Rotation))
 			for i, k := range keys {
-				kk := ch.SetKey(k, m32.Quat(data[i*ds+off]))
+				kk := ch.SetKey(k, gm.Quat(data[i*ds+off]))
 				kk.SetEase(animEase(s.Interpolation))
 			}
 		case "scale":
@@ -469,7 +469,7 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 
 			ch := anim.AddChannel(gAnim, anim.InterpolatorFunc[[]float32](func(a, b []float32, dt float32) []float32 {
 				for i := range a {
-					v := m32.Lerp(a[i], b[i], dt) // Might be different according to interpolator
+					v := gm.Lerp(a[i], b[i], dt) // Might be different according to interpolator
 					// Set in every entity?
 					for _, e := range targetNode.entities {
 						p := e.(*gorgeutil.Entity)
@@ -663,7 +663,7 @@ func (c *gltfCreator) getGTexture(tex *Texture) *gorge.Texture {
 
 // GSkin skin information.
 type GSkin struct {
-	Matrices []m32.Mat4
+	Matrices []gm.Mat4
 	Joints   []int
 }
 
@@ -746,19 +746,19 @@ func bufF32Slice(buf []byte) []float32 {
 	return (*(*[^uint32(0)]float32)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
 }
 
-func bufVec3Slice(buf []byte) []m32.Vec3 {
+func bufVec3Slice(buf []byte) []gm.Vec3 {
 	bufLen := len(buf) / (4 * 3) // 4 bytes per float32
-	return (*(*[^uint32(0)]m32.Vec3)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
+	return (*(*[^uint32(0)]gm.Vec3)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
 }
 
-func bufVec4Slice(buf []byte) []m32.Vec4 {
+func bufVec4Slice(buf []byte) []gm.Vec4 {
 	bufLen := len(buf) / (4 * 4) // 4 bytes per float32
-	return (*(*[^uint32(0)]m32.Vec4)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
+	return (*(*[^uint32(0)]gm.Vec4)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
 }
 
-func bufMat4Slice(buf []byte) []m32.Mat4 {
+func bufMat4Slice(buf []byte) []gm.Mat4 {
 	bufLen := len(buf) / (4 * 16)
-	return (*(*[^uint32(0)]m32.Mat4)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
+	return (*(*[^uint32(0)]gm.Mat4)(unsafe.Pointer(&buf[0])))[:bufLen:bufLen]
 }
 
 func gorgeSamplerFilter(f SamplerFilter) gorge.TextureFilter {

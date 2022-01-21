@@ -151,7 +151,12 @@ func ClearCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 			// Based on camera material
 			skyBox(s)
 		case gorge.ClearColor:
-			gl.ClearColor(cam.ClearColor[0], cam.ClearColor[1], cam.ClearColor[2], 1)
+			gl.ClearColor(
+				float32(cam.ClearColor[0]),
+				float32(cam.ClearColor[1]),
+				float32(cam.ClearColor[2]),
+				1,
+			)
 			gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		case gorge.ClearDepthOnly:
 			gl.Clear(gl.DEPTH_BUFFER_BIT)

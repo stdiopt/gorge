@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/stdiopt/gorge"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 // http://songho.ca/opengl/gl_sphere.html
@@ -25,14 +25,14 @@ func SphereMeshData(sectorCount, stackCount int) *gorge.MeshData {
 
 	for i := 0; i <= stackCount; i++ {
 		stackAngle := math.Pi/2 - float32(i)*stackStep
-		xz := radius * m32.Cos(stackAngle)
-		y := radius * m32.Sin(stackAngle)
+		xz := radius * gm.Cos(stackAngle)
+		y := radius * gm.Sin(stackAngle)
 
 		for j := 0; j <= sectorCount; j++ {
 			sectorAngle := float32(j) * sectorStep
 
-			x := xz * m32.Cos(sectorAngle)
-			z := xz * m32.Sin(sectorAngle)
+			x := xz * gm.Cos(sectorAngle)
+			z := xz * gm.Sin(sectorAngle)
 
 			verts = append(verts, x, y, z)
 

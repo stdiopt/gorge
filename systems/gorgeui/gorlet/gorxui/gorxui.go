@@ -11,7 +11,7 @@ import (
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/m32"
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/gorgeui/gorlet"
 	"github.com/stdiopt/gorge/text"
@@ -251,7 +251,7 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		if err != nil {
 			return err
 		}
-		e.Set(a.Name.Local, m32.Color(p...))
+		e.Set(a.Name.Local, gm.Color(p...))
 	default:
 		e.Set(a.Name.Local, a.Value)
 	}
