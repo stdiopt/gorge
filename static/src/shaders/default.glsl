@@ -351,7 +351,8 @@ layout(std140) uniform Camera {
 		vec3 F0 = vec3(0.04);
 		F0 = mix(F0, albedo, metallic);
 
-		vec3 Lo = vec3(0.0);
+		//vec3 Lo = vec3(0.0);
+		vec3 Lo = ambient;
 
 		int cnlights = min(u_nLights, LIGHT_COUNT);
 		for(int i = 0; i < cnlights; ++i) {
