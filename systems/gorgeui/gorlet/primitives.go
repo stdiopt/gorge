@@ -19,6 +19,7 @@ func newEntity(mesh gorge.Mesher) *gEntity {
 	mat := gorge.NewShaderMaterial(static.Shaders.UI)
 	mat.Queue = 3000
 	mat.Depth = gorge.DepthRead
+	mat.DisableShadow = true
 	return &gEntity{
 		TransformComponent:  *gorge.NewTransformComponent(),
 		ColorableComponent:  *gorge.NewColorableComponent(1, 1, 1, 1),
