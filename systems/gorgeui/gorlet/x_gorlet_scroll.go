@@ -31,7 +31,8 @@ func Scroll() Func {
 			b.UseRect(0, 0, scroll[1].size, scroll[0].size)
 			scrollable = b.BeginMask()
 			{
-				b.UseAnchor(0, 0, 1, 1)
+				// b.UseAnchor(0, 0, 1, 1)
+				b.UseAnchor(0)
 				container = b.BeginContainer()
 				b.ClientArea()
 				b.EndContainer()

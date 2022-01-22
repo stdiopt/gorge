@@ -1,6 +1,7 @@
 package gorlet
 
 import (
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/text"
 )
 
@@ -11,6 +12,7 @@ func Labeled(lbl string) Func {
 			fontScale = b.Prop("fontScale", 2)
 			textAlign = TextAlign(text.AlignEnd, text.AlignCenter)
 			text      = b.Prop("text", lbl)
+			textColor = b.Prop("textColor", gm.Color(1))
 		)
 
 		b.PushProps(Props{
@@ -21,8 +23,11 @@ func Labeled(lbl string) Func {
 		b.BeginContainer(LayoutFlexHorizontal(1, 3))
 		{
 
-			b.Use("textAlign", textAlign)
-			b.Use("text", text)
+			b.UseProps(Props{
+				"textAlign": textAlign,
+				"text":      text,
+				"textColor": textColor,
+			})
 			b.UseRect(.3)
 			b.Label("")
 
