@@ -44,7 +44,7 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 
 		b.EndPanel()
 
-		b.Observe("value", ObsFunc(func(v gm.Vec3) {
+		b.Observe("value", func(v gm.Vec3) {
 			if val == v {
 				return
 			}
@@ -54,7 +54,7 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 			z.Set("value", v[2])
 			fn(val)
 			gorge.Trigger(root, EventValueChanged{Value: val})
-		}))
+		})
 	}
 }
 

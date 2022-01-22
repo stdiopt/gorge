@@ -65,10 +65,10 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}
 		b.EndContainer()
 
-		b.Observe("handlerColor", ObsFunc(func(c gm.Vec4) {
+		b.Observe("handlerColor", func(c gm.Vec4) {
 			handler.Set("color", c)
-		}))
-		b.Observe("handler", ObsFunc(func(e *Entity) {
+		})
+		b.Observe("handler", func(e *Entity) {
 			// Need to remove Element first :/
 			// should remove observers from handler?
 			track.Remove(handler)
@@ -78,8 +78,8 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handler.SetPivot(.5)
 			handler.SetRect(0, 0, handlerSize, 0)
 			handler.SetAnchor(val, 0, val, 1)
-		}))
-		b.Observe("value", ObsFunc(func(v float32) {
+		})
+		b.Observe("value", func(v float32) {
 			v = norm(v)
 			v = gm.Clamp(v, 0, 1)
 			if val == v {
@@ -93,16 +93,16 @@ func Slider(min, max float32, fn func(float32)) Func {
 				fn(rval)
 			}
 			gorge.Trigger(root, EventValueChanged{val})
-		}))
-		b.Observe("handlerSize", ObsFunc(func(f float32) {
+		})
+		b.Observe("handlerSize", func(f float32) {
 			handlerSize = f
 			handler.SetRect(0, 0, handlerSize/2, 0)
 			track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
-		}))
-		b.Observe("textFormat", ObsFunc(func(s string) {
+		})
+		b.Observe("textFormat", func(s string) {
 			valFmt = s
 			handler.Set("text", fmt.Sprintf(valFmt, real(val)))
-		}))
+		})
 
 		var dragging bool
 		dodrag := func(pd *gorgeui.PointerData) {

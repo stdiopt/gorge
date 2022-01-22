@@ -117,7 +117,7 @@ func notifyWidget(e EventNotify) gorlet.Func {
 		// stuff internally before showing in the screen
 		b.EndPanel()
 
-		b.Observe("opacity", gorlet.ObsFunc(func(v float32) {
+		b.Observe("opacity", func(v float32) {
 			p.Set("color", gm.Color(
 				color[0],
 				color[1],
@@ -125,6 +125,6 @@ func notifyWidget(e EventNotify) gorlet.Func {
 				v*.3,
 			))
 			l.Set("textColor", gm.Color(1, v))
-		}))
+		})
 	}
 }

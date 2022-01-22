@@ -25,9 +25,9 @@ func List() Func {
 		b.ClientArea()
 		b.EndContainer()
 
-		b.Observe("spacing", ObsFunc(func(v float32) {
+		b.Observe("spacing", func(v float32) {
 			l.Spacing = v
-		}))
+		})
 	}
 }
 

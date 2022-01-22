@@ -61,14 +61,14 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 
 		b.EndPanel()
 
-		b.Observe("spacing", ObsFunc(func(v float32) {
+		b.Observe("spacing", func(v float32) {
 			outColor.SetRect(0, 0, v, 0)
-		}))
-		b.Observe("color", ObsFunc(func(v gm.Vec4) {
+		})
+		b.Observe("color", func(v gm.Vec4) {
 			val = v
 			outColor.Set("color", v)
 			fn(v)
-		}))
+		})
 		pickColor := func(pd *gorgeui.PointerData) {
 			rect := picker.Rect()
 			m := picker.Mat4()

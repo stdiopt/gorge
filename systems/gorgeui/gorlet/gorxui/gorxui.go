@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -17,50 +18,47 @@ import (
 	"github.com/stdiopt/gorge/text"
 )
 
-type buildFunc = gorlet.Func
-
-var registry = map[string]func() buildFunc{
-	"container":  func() buildFunc { return gorlet.Container() },
-	"scrollarea": func() buildFunc { return gorlet.Scroll() },
-	"panel":      func() buildFunc { return gorlet.Panel() }, // nolint: gocritic
-	"label":      func() buildFunc { return gorlet.Label("") },
-	"textbutton": func() buildFunc { return gorlet.TextButton("", nil) },
-	"spinner":    func() buildFunc { return gorlet.Spinner("", nil) },
-	"slider":     func() buildFunc { return gorlet.Slider(0, 1, nil) },
-	// containers
-	"window":  func() buildFunc { return gorlet.Window("") },
-	"labeled": func() buildFunc { return gorlet.Labeled("") },
+type XUI struct {
+	registry Registry
 }
 
-// Register a Tag func.
-func Register(k string, fn func() buildFunc) {
-	registry[k] = fn
+func New() *XUI {
+	return &XUI{}
+}
+
+func (x *XUI) Define(k string, fn buildFunc) {
+	if x.registry == nil {
+		x.registry = make(Registry)
+	}
+	x.registry[k] = fn
 }
 
 // FromString parses a xml string into a gorlet.Entity.
-func FromString(s string) (gorlet.Func, error) {
-	return read(strings.NewReader(s))
+func (x *XUI) FromString(s string) (gorlet.Func, error) {
+	return x.read(strings.NewReader(s))
 }
 
 // MustFromString parses xml and panic if error.
-func MustFromString(s string) gorlet.Func {
-	fn, err := read(strings.NewReader(s))
+func (x *XUI) MustFromString(s string) gorlet.Func {
+	fn, err := x.read(strings.NewReader(s))
 	if err != nil {
 		panic(err)
 	}
 	return fn
 }
 
-func read(r io.Reader) (gorlet.Func, error) {
+func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 	fns := []func(*gorlet.Builder){}
 
 	push := func(fn func(*gorlet.Builder)) {
 		fns = append(fns, fn)
 	}
 
-	x := xml.NewDecoder(r)
+	rr := registry.merge(x.registry)
+
+	xm := xml.NewDecoder(rd)
 	for {
-		tok, err := x.Token()
+		tok, err := xm.Token()
 		if err == io.EOF {
 			break
 		}
@@ -88,9 +86,9 @@ func read(r io.Reader) (gorlet.Func, error) {
 
 		case xml.StartElement:
 			var e *gorlet.Entity
-			fn, ok := registry[strings.ToLower(tok.Name.Local)]
+			fn, ok := rr[strings.ToLower(tok.Name.Local)]
 			if !ok {
-				fn = func() buildFunc { return gorlet.Container() }
+				fn = func() gorlet.Func { return gorlet.Container() }
 			}
 			// log.Println("Start:", tok)
 			// b.UseLayout(gorlet.LayoutList(.5))
@@ -112,51 +110,6 @@ func read(r io.Reader) (gorlet.Func, error) {
 		}
 	}
 	return bf, nil
-}
-
-func parseFloat32Slice(str string) ([]float32, error) {
-	var ret []float32
-	sp := strings.Split(str, ",")
-	for _, s := range sp {
-		f, err := strconv.ParseFloat(strings.TrimSpace(s), 32)
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, float32(f))
-	}
-	return ret, nil
-}
-
-// Property parser? what if json?
-func flexProp(param string) (*gorlet.FlexLayout, error) {
-	props := strings.Split(param, ";")
-
-	flex := gorlet.FlexLayout{}
-	for _, p := range props {
-		kv := strings.Split(p, ":")
-		switch kv[0] {
-		case "spacing":
-			sz, err := parseFloat32Slice(kv[1])
-			if err != nil {
-				return nil, err
-			}
-			flex.Spacing = sz[0]
-		case "sizes":
-			sz, err := parseFloat32Slice(kv[1])
-			if err != nil {
-				return nil, err
-			}
-			flex.SetSizes(sz...)
-		case "dir":
-			switch kv[1] {
-			case "v":
-				flex.Direction = gorlet.DirectionVertical
-			case "h":
-				flex.Direction = gorlet.DirectionHorizontal
-			}
-		}
-	}
-	return &flex, nil
 }
 
 // EventAction action triggered on stuff.
@@ -184,6 +137,11 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		}
 		return nil
 	}
+	if a.Name.Space == "p" {
+		log.Printf("Observing %v in %v", a.Value, a.Name.Local)
+		root.Observe(a.Value, e.PropSetter(a.Name.Local))
+		return nil
+	}
 	switch a.Name.Local {
 	case "layout":
 		parts := strings.SplitN(a.Value, " ", 2)
@@ -199,7 +157,7 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 			}
 			e.SetLayout(gorlet.LayoutList(spacing))
 		case "flex":
-			f, err := flexProp(parts[1])
+			f, err := parseFlexProp(parts[1])
 			if err != nil {
 				return err
 			}
@@ -261,7 +219,13 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		}
 		e.Set(a.Name.Local, gm.Color(p...))
 	default:
-		e.Set(a.Name.Local, a.Value)
+		fn := e.PropSetter(a.Name.Local)
+		typ := reflect.TypeOf(fn).In(0)
+		v, err := parseTyp(typ, a.Value)
+		if err != nil {
+			return err
+		}
+		e.Set(a.Name.Local, v)
 	}
 	return nil
 }

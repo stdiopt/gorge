@@ -43,7 +43,7 @@ func Spinner(lbl string, fn func(float32)) Func {
 		l := b.Label("")
 		b.EndPanel()
 
-		b.Observe("value", ObsFunc(func(v float32) {
+		b.Observe("value", func(v float32) {
 			if val == v {
 				return
 			}
@@ -53,7 +53,7 @@ func Spinner(lbl string, fn func(float32)) Func {
 				fn(val)
 			}
 			gorge.Trigger(root, EventValueChanged{val})
-		}))
+		})
 
 		// root.SetDragEvents(true)
 		event.Handle(root, func(e gorgeui.EventDrag) {

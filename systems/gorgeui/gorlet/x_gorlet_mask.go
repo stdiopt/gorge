@@ -27,9 +27,9 @@ func Mask() Func {
 		root.AddElement(maskOff)
 
 		depthMask := 0
-		b.Observe("_maskDepth", ObsFunc(func(n int) {
+		b.Observe("_maskDepth", func(n int) {
 			depthMask = n
-		}))
+		})
 
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			maskOn.Set("stencil", calcMaskOn(depthMask))

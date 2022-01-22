@@ -25,7 +25,6 @@ type (
 	EntityFunc func(w *Entity) // OnAdd in the Entity
 	// ObserverFunc is the type of the function function that will be
 	// called when the named property is set.
-	ObserverFunc = func(any)
 )
 
 // Debug prints reference debug
@@ -293,7 +292,7 @@ func (e *Entity) PropSetter(name string) func(v any) {
 }
 
 // Observe adds a named observer setting nil will delete all observers.
-func (e *Entity) Observe(k string, fn ObserverFunc) {
+func (e *Entity) Observe(k string, fn any) {
 	if e.observers == nil {
 		e.observers = map[string][]ObserverFunc{}
 	}
@@ -301,7 +300,7 @@ func (e *Entity) Observe(k string, fn ObserverFunc) {
 		delete(e.observers, k)
 		return
 	}
-	e.observers[k] = append(e.observers[k], fn)
+	e.observers[k] = append(e.observers[k], makeObserver(fn))
 }
 
 // FillParent will reset anchor to 0,0 1,1 and Rect to 0,0,0,0.

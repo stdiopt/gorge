@@ -1,10 +1,5 @@
 package gorlet
 
-import (
-	"fmt"
-	"reflect"
-)
-
 // ForwardProp to be used to forward properties.
 type ForwardProp struct {
 	prop string
@@ -23,13 +18,6 @@ type Func func(b *Builder)
 type nextData struct {
 	// Placement will be set on
 	// placement EntityFunc
-
-	layout     Layouter
-	margin     []float32
-	rect       []float32
-	anchor     []float32
-	pivot      []float32
-	dragEvents *bool
 
 	apply []func(e *Entity)
 
@@ -79,59 +67,75 @@ func (b *Builder) UseLayout(fns ...Layouter) {
 	if len(fns) == 0 {
 		return
 	}
-	b.next.layout = MultiLayout(fns...)
+	b.next.add(func(e *Entity) {
+		e.SetLayout(MultiLayout(fns...))
+	})
 }
 
 // UseDimRect uses dimension rect sets anchor to 0
 func (b *Builder) UseDimRect(v ...float32) {
-	b.UseAnchor(0)
-	b.UsePivot(0)
-	b.UseRect(v...)
+	b.next.add(func(e *Entity) {
+		e.SetAnchor(0)
+		e.SetPivot(0)
+		e.SetRect(v...)
+	})
 }
 
 // UseRelRect uses relative from parent rect.
 func (b *Builder) UseRelRect(v ...float32) {
-	b.UseAnchor(0, 0, 1, 1)
-	b.UsePivot(0)
-	b.UseRect(v...)
+	b.next.add(func(e *Entity) {
+		e.SetAnchor(0, 0, 1, 1)
+		e.SetPivot(0)
+		e.SetRect(v...)
+	})
 }
 
 // UseRect sets next Entity Rect.
 func (b *Builder) UseRect(v ...float32) {
-	b.next.rect = v
+	b.next.add(func(e *Entity) {
+		e.SetRect(v...)
+	})
 }
 
 // UseWidth sets the next entity width.
 func (b *Builder) UseWidth(v float32) {
-	b.next.apply = append(b.next.apply, func(e *Entity) {
+	b.next.add(func(e *Entity) {
 		e.SetWidth(v)
 	})
 }
 
 // UseWidth sets the next entity Height.
 func (b *Builder) UseHeight(v float32) {
-	b.next.apply = append(b.next.apply, func(e *Entity) {
+	b.next.add(func(e *Entity) {
 		e.SetHeight(v)
 	})
 }
 
 // UseMargin sets the next entity padding.
 func (b *Builder) UseMargin(v ...float32) {
-	b.next.margin = v
+	b.next.add(func(e *Entity) {
+		e.SetMargin(v...)
+	})
 }
 
 // UseAnchor sets next Entity Anchor.
 func (b *Builder) UseAnchor(v ...float32) {
-	b.next.anchor = v
+	b.next.add(func(e *Entity) {
+		e.SetAnchor(v...)
+	})
 }
 
 // UsePivot sets next Entity Pivot.
 func (b *Builder) UsePivot(v ...float32) {
-	b.next.pivot = v
+	b.next.add(func(e *Entity) {
+		e.SetPivot(v...)
+	})
 }
 
 func (b *Builder) UseDragEvents(v bool) {
-	b.next.dragEvents = &v
+	b.next.add(func(e *Entity) {
+		e.SetDragEvents(v)
+	})
 }
 
 // Use a property for the next widget.
@@ -176,7 +180,7 @@ func (b *Builder) ForwardProps(pre string, e *Entity) {
 }
 
 // Observe adds a function to observe a property in the root Entity.
-func (b Builder) Observe(k string, fn ObserverFunc) {
+func (b Builder) Observe(k string, fn any) {
 	b.root.entity.Observe(k, fn)
 }
 
@@ -208,31 +212,12 @@ func (b *Builder) Restore() {
 func (b *Builder) Create(fn Func) *Entity {
 	e := Create(fn)
 
+	// Should be on All in this container
 	if pfn := b.cur().placement; pfn != nil {
 		pfn(e)
 	}
-	// Different thing
-	// e.OnAdd(b.next.placement)
 
-	if b.next.dragEvents != nil {
-		e.SetDragEvents(*b.next.dragEvents)
-	}
-	if b.next.margin != nil {
-		e.SetMargin(b.next.margin...)
-	}
-	if b.next.layout != nil {
-		e.SetLayout(b.next.layout)
-	}
-	if b.next.rect != nil {
-		e.SetRect(b.next.rect...)
-	}
-	if b.next.anchor != nil {
-		e.SetAnchor(b.next.anchor...)
-	}
-	if b.next.pivot != nil {
-		e.SetPivot(b.next.pivot...)
-	}
-
+	// On next one
 	for _, fn := range b.next.apply {
 		fn(e)
 	}
@@ -335,92 +320,3 @@ func (b *Builder) cur() *curEntity {
 	}
 	return b.stack[len(b.stack)-1]
 }
-
-// ObsFunc generics way
-/*func ObsFunc[T any](fn func(T)) func(any) {
-	return func(vv any) {
-		v, ok := vv.(T)
-		if !ok {
-			var z T
-			panic(fmt.Sprintf("Can't convert prop %T(%v) to func(%T)", vv, v, z))
-		}
-		fn(v)
-	}
-}
-
-func Ptr[T any](p *T) func(any) {
-	return func(vv any) {
-		v, ok := vv.(T)
-		if !ok {
-			var z T
-			panic(fmt.Sprintf("Can't convert prop %T(%v) to %T", vv, v, z))
-		}
-		*p = v
-	}
-}*/
-
-// ObsFunc creates a typed observer func from reflection.
-func ObsFunc(fn any) ObserverFunc {
-	if fn, ok := fn.(ObserverFunc); ok {
-		return fn
-	}
-	fnVal := reflect.ValueOf(fn)
-	inTyp := fnVal.Type().In(0)
-
-	return func(v any) {
-		arg := reflect.ValueOf(v)
-		if aTyp := arg.Type(); aTyp != inTyp {
-			if !arg.CanConvert(inTyp) {
-				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, inTyp))
-			}
-			arg = arg.Convert(inTyp)
-		}
-		// Type check somewhere
-		fnVal.Call([]reflect.Value{arg})
-	}
-}
-
-func Ptr(p any) ObserverFunc {
-	typ := reflect.TypeOf(p).Elem()
-	return func(v any) {
-		arg := reflect.ValueOf(v)
-		if aTyp := arg.Type(); aTyp != typ {
-			if !arg.CanConvert(typ) {
-				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, typ))
-			}
-			arg = arg.Convert(typ)
-		}
-		reflect.ValueOf(p).Elem().Set(arg)
-	}
-}
-
-/*
-// ObsFunc creates a typed observer func from type switch it works on tinygo since
-// tiny go doesn't support reflection NumIn.
-func ObsFunc(fn any) ObserverFunc {
-	switch fn := fn.(type) {
-	case func(any):
-		return fn
-	case func(string):
-		return func(v any) {
-			fn(v.(string))
-		}
-	case func(float32):
-		return func(v any) { fn(v.(float32)) }
-	case func(float64):
-		return func(v any) { fn(v.(float64)) }
-	case func(int):
-		return func(v any) { fn(v.(int)) }
-	case func(gm.Vec4):
-		return func(v any) { fn(v.(gm.Vec4)) }
-	case func(bool):
-		return func(v any) { fn(v.(bool)) }
-	case func([]text.Align):
-		return func(v any) { fn(v.([]text.Align)) }
-	case func(text.Overflow):
-		return func(v any) { fn(v.(text.Overflow)) }
-	default:
-		panic(fmt.Sprintf("unsupported observer: %T", fn))
-	}
-}
-*/

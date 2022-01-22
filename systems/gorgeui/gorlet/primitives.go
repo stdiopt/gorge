@@ -48,20 +48,18 @@ func rectElement(ent graphicer) Func {
 		root := b.Root()
 		root.AddElement(ent)
 		// Defaults renderable, use it on label too
-		b.Observe("color", ObsFunc(ent.Colorable().SetColorv))
-		b.Observe("material", ObsFunc(ent.Renderable().SetMaterial))
-		b.Observe("texture", ObsFunc(func(tex gorge.Texturer) {
+		b.Observe("color", ent.Colorable().SetColorv)
+		b.Observe("material", ent.Renderable().SetMaterial)
+		b.Observe("texture", func(tex gorge.Texturer) {
 			ent.Renderable().Material.SetTexture("albedoMap", tex)
-		}))
-		b.Observe("stencil", ObsFunc(func(s *gorge.Stencil) {
-			ent.Renderable().Stencil = s
-		}))
-		b.Observe("colorMask", ObsFunc(func(b *[4]bool) {
+		})
+		b.Observe("stencil", ent.Renderable().SetStencil)
+		b.Observe("colorMask", func(b *[4]bool) {
 			ent.Renderable().ColorMask = b
-		}))
+		})
 		// Forget order here
-		b.Observe("order", ObsFunc(ent.Renderable().SetOrder))
-		b.Observe("_maskDepth", ObsFunc(func(n int) {
+		b.Observe("order", ent.Renderable().SetOrder)
+		b.Observe("_maskDepth", func(n int) {
 			s := calcMaskOn(n)
 			s.WriteMask = 0
 			s.Fail = gorge.StencilOpKeep
@@ -72,7 +70,7 @@ func rectElement(ent graphicer) Func {
 			for _, c := range root.Children() {
 				c.Set("_maskDepth", n)
 			}
-		}))
+		})
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			r := root.Rect()
 			t := ent.Transform()

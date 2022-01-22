@@ -42,13 +42,3 @@ func calcMaskOff(l int) *gorge.Stencil {
 		Fail: gorge.StencilOpKeep, ZFail: gorge.StencilOpReplace, ZPass: gorge.StencilOpReplace,
 	}
 }
-
-type observer interface {
-	Observe(string, func(interface{}))
-}
-
-func Observe[T any](o observer, name string, fn func(T)) {
-	// ObsFunc because we still use reflection to avoid int to float conversions
-	// which panic on interface{} until we find something better
-	o.Observe(name, ObsFunc(fn))
-}

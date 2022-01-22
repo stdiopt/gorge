@@ -98,21 +98,21 @@ func Scroll() Func {
 			scroll[0].entity.SetRect(0, -sz[0], sz[1], sz[0])
 			scroll[1].entity.SetRect(-sz[1], 0, sz[1], sz[0])
 		}
-		Observe(b, "hscroll", func(b bool) {
+		b.Observe("hscroll", func(b bool) {
 			scroll[0].disabled = !b
 		})
-		Observe(b, "vscroll", func(b bool) {
+		b.Observe("vscroll", func(b bool) {
 			scroll[1].disabled = !b
 		})
-		Observe(b, "hscrollSize", func(v float32) {
+		b.Observe("hscrollSize", func(v float32) {
 			scroll[0].size = v
 			updateScrolls()
 		})
-		Observe(b, "vscrollSize", func(v float32) {
+		b.Observe("vscrollSize", func(v float32) {
 			scroll[1].size = v
 			updateScrolls()
 		})
-		Observe(b, "scrollSize", func(v float32) {
+		b.Observe("scrollSize", func(v float32) {
 			scroll[0].size, scroll[1].size = v, v
 			updateScrolls()
 		})
@@ -215,10 +215,10 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 		}
 		b.EndPanel()
 
-		Observe(b, "handlerColor", func(c gm.Vec4) {
+		b.Observe("handlerColor", func(c gm.Vec4) {
 			handler.Set("color", c)
 		})
-		Observe(b, "value", func(v float32) {
+		b.Observe("value", func(v float32) {
 			v = gm.Clamp(v, 0, 1)
 			if val == v {
 				return
@@ -233,7 +233,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 				fn(val)
 			}
 		})
-		Observe(b, "handlerSize", func(f float32) {
+		b.Observe("handlerSize", func(f float32) {
 			handlerSize = f
 			if dir == DirectionHorizontal {
 				handler.SetRect(0, 0, handlerSize, 0)
