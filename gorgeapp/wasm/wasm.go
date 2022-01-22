@@ -8,6 +8,7 @@ import (
 	"syscall/js"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/input"
 	"github.com/stdiopt/gorge/systems/render/gl"
@@ -42,6 +43,7 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	ctxOpt := map[string]any{
 		"preserveDrawingBuffer": true,
 		"antialias":             true,
+		"stencil":               true,
 	}
 	webgl := canvas.Call("getContext", "webgl2", ctxOpt)
 	js.Global().Get("console").Call("log", webgl.Call("getSupportedExtensions"))
@@ -190,7 +192,10 @@ func (s *wasmSystem) handleMouseEvents(t js.Value, args []js.Value) any {
 	switch etype {
 	case "wheel":
 		// Maybe grab X too but this is about mousewheel
-		s.input.SetScrollDelta(float32(evt.Get("deltaY").Float()))
+		s.input.SetScrollDelta(gm.Vec2{
+			float32(evt.Get("deltaX").Float()),
+			float32(evt.Get("deltaY").Float()),
+		})
 	case "mousemove":
 		s.input.SetCursorPosition(
 			gm.Vec2{
