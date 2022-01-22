@@ -184,6 +184,9 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		}
 		return nil
 	}
+	if a.Name.Space == "p" {
+		root.Observe(a.Name.Local,
+	}
 	switch a.Name.Local {
 	case "layout":
 		parts := strings.SplitN(a.Value, " ", 2)

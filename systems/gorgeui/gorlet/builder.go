@@ -31,7 +31,13 @@ type nextData struct {
 	pivot      []float32
 	dragEvents *bool
 
+	apply []func(e *Entity)
+
 	props Props
+}
+
+func (n *nextData) add(fn func(e *Entity)) {
+	n.apply = append(n.apply, fn)
 }
 
 // Builder used to build a guilet.
@@ -90,14 +96,28 @@ func (b *Builder) UseRelRect(v ...float32) {
 	b.UseRect(v...)
 }
 
-// UseMargin sets the next entity padding.
-func (b *Builder) UseMargin(v ...float32) {
-	b.next.margin = v
-}
-
 // UseRect sets next Entity Rect.
 func (b *Builder) UseRect(v ...float32) {
 	b.next.rect = v
+}
+
+// UseWidth sets the next entity width.
+func (b *Builder) UseWidth(v float32) {
+	b.next.apply = append(b.next.apply, func(e *Entity) {
+		e.SetWidth(v)
+	})
+}
+
+// UseWidth sets the next entity Height.
+func (b *Builder) UseHeight(v float32) {
+	b.next.apply = append(b.next.apply, func(e *Entity) {
+		e.SetHeight(v)
+	})
+}
+
+// UseMargin sets the next entity padding.
+func (b *Builder) UseMargin(v ...float32) {
+	b.next.margin = v
 }
 
 // UseAnchor sets next Entity Anchor.
@@ -211,6 +231,10 @@ func (b *Builder) Create(fn Func) *Entity {
 	}
 	if b.next.pivot != nil {
 		e.SetPivot(b.next.pivot...)
+	}
+
+	for _, fn := range b.next.apply {
+		fn(e)
 	}
 
 	// Merge props
