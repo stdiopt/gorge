@@ -18,13 +18,14 @@ func (r Registry) merge(r2 Registry) Registry {
 }
 
 var registry = Registry{
-	"container":  func() gorlet.Func { return gorlet.Container() },
-	"scrollarea": func() gorlet.Func { return gorlet.Scroll() },
-	"panel":      func() gorlet.Func { return gorlet.Panel() }, // nolint: gocritic
-	"label":      func() gorlet.Func { return gorlet.Label("") },
-	"textbutton": func() gorlet.Func { return gorlet.TextButton("", nil) },
-	"spinner":    func() gorlet.Func { return gorlet.Spinner("", nil) },
-	"slider":     func() gorlet.Func { return gorlet.Slider(0, 1, nil) },
+	"container":   func() gorlet.Func { return gorlet.Container() },
+	"scrollarea":  func() gorlet.Func { return gorlet.Scroll() },
+	"panel":       func() gorlet.Func { return gorlet.Panel() }, // nolint: gocritic
+	"label":       func() gorlet.Func { return gorlet.Label("") },
+	"textbutton":  func() gorlet.Func { return gorlet.TextButton("", nil) },
+	"spinner":     func() gorlet.Func { return gorlet.Spinner("", nil) },
+	"spinnervec3": func() gorlet.Func { return gorlet.SpinnerVec3(nil) },
+	"slider":      func() gorlet.Func { return gorlet.Slider(0, 1, nil) },
 	// containers
 	"window":  func() gorlet.Func { return gorlet.Window("") },
 	"labeled": func() gorlet.Func { return gorlet.Labeled("") },

@@ -42,6 +42,7 @@ type gcref struct{ n int }
 
 // Entity is a gui component
 type Entity struct {
+	observers
 	gcref *gcref
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
@@ -56,7 +57,7 @@ type Entity struct {
 	clientArea *Entity
 	layouter   Layouter
 
-	observers map[string][]ObserverFunc
+	// observers map[string][]ObserverFunc
 
 	// Temp solution for the thing
 	Masked bool
@@ -272,12 +273,10 @@ func (e *Entity) Attached(ent gorgeui.Entity) {
 //   - if entity has observers it will call them
 //   - if not it will be sent to children of the entity
 func (e *Entity) Set(name string, value any) {
-	if fns, ok := e.observers[name]; ok {
-		for _, fn := range fns {
-			fn(value)
-		}
+	if ok := e.set(name, value); ok {
 		return
 	}
+
 	// Extra case we pass this to all children.
 	if name == "_maskDepth" {
 		for _, c := range e.children {
@@ -292,15 +291,24 @@ func (e *Entity) PropSetter(name string) func(v any) {
 }
 
 // Observe adds a named observer setting nil will delete all observers.
-func (e *Entity) Observe(k string, fn any) {
-	if e.observers == nil {
-		e.observers = map[string][]ObserverFunc{}
-	}
-	if fn == nil {
-		delete(e.observers, k)
+func (e *Entity) Observe(k string, ifn any) {
+	e.observe(k, ifn)
+}
+
+// Link observs k1 in entity and sets k2 on e2 entity
+// if there ar eno listeners on e2 it won't be added
+// TODO: maybe it should be added for the late observers.
+// or disable observing in entity completely (allow only in builder)
+func (e *Entity) ObserveTo(k1 string, e2 *Entity, k2 string) {
+	o := e2.observer(k2)
+	if o == nil {
 		return
 	}
-	e.observers[k] = append(e.observers[k], makeObserver(fn))
+	e.observeWithType(k1, o.Type, o.Call)
+}
+
+func (e *Entity) Observer(k string) *Observer {
+	return e.observer(k)
 }
 
 // FillParent will reset anchor to 0,0 1,1 and Rect to 0,0,0,0.

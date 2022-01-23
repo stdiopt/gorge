@@ -56,6 +56,15 @@ func parseFlexProp(param string) (*gorlet.FlexLayout, error) {
 
 func parseTyp(typ reflect.Type, s string) (interface{}, error) {
 	switch typ.Kind() {
+	case reflect.Float32:
+		return strconv.ParseFloat(s, 32)
+	case reflect.Float64:
+		return strconv.ParseFloat(s, 32)
+	case reflect.Slice:
+		switch typ.Elem().Kind() {
+		case reflect.Float32:
+			return parseFloat32Slice(s)
+		}
 	case reflect.String:
 		return s, nil
 	case reflect.Bool:

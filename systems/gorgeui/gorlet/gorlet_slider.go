@@ -65,6 +65,8 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}
 		b.EndContainer()
 
+		b.Observe("min", func(v float32) { min = v })
+		b.Observe("max", func(v float32) { max = v })
 		b.Observe("handlerColor", func(c gm.Vec4) {
 			handler.Set("color", c)
 		})

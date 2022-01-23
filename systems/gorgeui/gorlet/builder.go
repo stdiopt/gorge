@@ -62,6 +62,11 @@ func (b *Builder) SetPlacement(fn EntityFunc) {
 	b.cur().placement = fn
 }
 
+// Next pushes a func to the next created entity.
+func (b *Builder) Next(fn func(e *Entity)) {
+	b.next.add(fn)
+}
+
 // UseLayout set next widget layout.
 func (b *Builder) UseLayout(fns ...Layouter) {
 	if len(fns) == 0 {
@@ -168,13 +173,13 @@ func (b *Builder) Prop(k string, v ...any) ForwardProp {
 // ForwardProps will forward any entity props in this builder to the entity
 // using a prefix
 func (b *Builder) ForwardProps(pre string, e *Entity) {
-	for k, v := range e.observers {
+	for k, v := range e.observers.observers {
 		key := k
 		if pre != "" {
 			key = pre + "." + k
 		}
-		for _, fn := range v {
-			b.Observe(key, fn)
+		for _, fn := range v.Funcs {
+			b.root.entity.observeWithType(key, v.Type, fn)
 		}
 	}
 }
@@ -252,7 +257,7 @@ func (b *Builder) SetRoot(fn Func) *Entity {
 	if len(b.stack) > 0 {
 		panic("Builder.Start() called while already in a container")
 	}
-	if len(b.root.entity.observers) > 0 {
+	if len(b.root.entity.observers.observers) > 0 {
 		panic("Builder.Start() called while root already has observers")
 	}
 	e := b.Create(fn)
@@ -282,10 +287,12 @@ func (b *Builder) End() {
 
 func (b *Builder) setupProps(e *Entity, props Props) {
 	for k, v := range props {
+		// shadow
 		k, v := k, v
 
 		// If we don't have the target observer, don't bother setting it.
-		if _, ok := e.observers[k]; !ok {
+		o := e.observer(k)
+		if o == nil {
 			continue
 		}
 
@@ -294,7 +301,8 @@ func (b *Builder) setupProps(e *Entity, props Props) {
 			e.Set(k, v)
 			continue
 		}
-		b.Observe(pk.prop, e.PropSetter(k))
+
+		b.root.entity.ObserveTo(pk.prop, e, k)
 		if pk.def != nil { // Set the default value
 			e.Set(k, pk.def)
 		}
