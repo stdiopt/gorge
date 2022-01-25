@@ -30,9 +30,9 @@ func (l FlexLayout) Layout(ent *Entity) {
 
 		end := start + sz/esum
 		switch l.Direction {
-		case DirectionHorizontal:
+		case Horizontal:
 			e.SetAnchor(start, 0, end, 1)
-		case DirectionVertical:
+		case Vertical:
 			e.SetAnchor(0, start, 1, end)
 		}
 		// Do we need to set rect here?
@@ -64,10 +64,10 @@ func layoutFlex(dir Direction, sizes ...float32) *FlexLayout {
 
 // LayoutFlexVertical automatically layout children vertically based on sizes.
 func LayoutFlexVertical(sizes ...float32) *FlexLayout {
-	return layoutFlex(DirectionVertical, sizes...)
+	return layoutFlex(Vertical, sizes...)
 }
 
 // LayoutFlexHorizontal automatically layout children horizontally based on sizes.
 func LayoutFlexHorizontal(sizes ...float32) *FlexLayout {
-	return layoutFlex(DirectionHorizontal, sizes...)
+	return layoutFlex(Horizontal, sizes...)
 }

@@ -1,7 +1,6 @@
 package gorlet
 
 import (
-	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -57,7 +56,7 @@ func Button(clickfn func()) Func {
 		})
 		event.Handle(root, func(gorgeui.EventPointerUp) {
 			state &= ^statePressed
-			gorge.Trigger(root, EventClick{})
+			event.Trigger(root, EventClick{})
 			if clickfn != nil {
 				clickfn()
 			}

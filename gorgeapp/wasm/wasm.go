@@ -267,7 +267,7 @@ func (s *wasmSystem) handleTouchEvents(t js.Value, args []js.Value) any {
 			},
 		}
 	}
-	gorge.Trigger(s.gorge, input.EventPointer{
+	event.Trigger(s.gorge, input.EventPointer{
 		Type:     gtyp,
 		Pointers: pts,
 	})

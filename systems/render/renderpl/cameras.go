@@ -29,6 +29,9 @@ func EachCamera(pipes ...PipelineFunc) PipelineFunc {
 // - append instance to render state
 // - prepare upload buffer
 // - upload transform and color attribs
+// TODO:
+// - frustrum culling
+// - render to texture
 func PrepareCamera(r *render.Context, next render.StepFunc) render.StepFunc {
 	return func(s *render.Step) {
 		cam := s.Camera.Camera()

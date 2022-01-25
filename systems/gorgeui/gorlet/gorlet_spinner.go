@@ -3,7 +3,6 @@ package gorlet
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -52,7 +51,7 @@ func Spinner(lbl string, fn func(float32)) Func {
 			if fn != nil {
 				fn(val)
 			}
-			gorge.Trigger(root, EventValueChanged{val})
+			event.Trigger(root, EventValueChanged{val})
 		})
 
 		// root.SetDragEvents(true)

@@ -2,6 +2,8 @@ package gorge
 
 import (
 	"fmt"
+
+	"github.com/stdiopt/gorge/core/event"
 )
 
 // Texturer used to fetch a texture from a texture controller.
@@ -73,7 +75,7 @@ func (t *Texture) ReleaseData(g *Context) {
 	if _, ok := curRes.(*TextureData); !ok {
 		return
 	}
-	Trigger(g, EventResourceUpdate{Resource: curRes})
+	event.Trigger(g, EventResourceUpdate{Resource: curRes})
 
 	gpuRef := &TextureRef{&GPU{}}
 	SetGPU(gpuRef, GetGPU(curRes))
@@ -159,7 +161,7 @@ func (d *TextureData) Resource() TextureResource { return d }
 // CreateRef creates a texture gpu reference.
 func (d *TextureData) CreateRef(g *Context) *TextureRef {
 	ref := &TextureRef{&GPU{}}
-	Trigger(g, EventResourceUpdate{Resource: d})
+	event.Trigger(g, EventResourceUpdate{Resource: d})
 	SetGPU(ref, GetGPU(d))
 	return ref
 }

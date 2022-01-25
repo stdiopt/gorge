@@ -1,5 +1,7 @@
 package event
 
+import "github.com/stdiopt/gorge/core/setlist"
+
 type Event any
 
 type Handler interface {
@@ -7,42 +9,32 @@ type Handler interface {
 }
 type HandlerFunc[T any] func(T)
 
+// catch all event
+type handleEvent struct {
+	// To make it hashable
+	fn HandlerFunc[Event]
+}
+
+func (h *handleEvent) HandleEvent(e Event) { (h.fn)(e) }
+
 type Buser interface {
 	bus() *Bus
 }
 
 type Bus struct {
-	listeners  []any // slices
-	handlers   []Handler
-	handlerSet map[Handler]struct{}
+	listeners []any // slices
+
+	handlers setlist.SetList[Handler]
 }
 
 func (b *Bus) bus() *Bus { return b }
 
 func (b *Bus) AddHandler(h Handler) {
-	if b.handlerSet == nil {
-		b.handlerSet = make(map[Handler]struct{})
-	}
-	if _, ok := b.handlerSet[h]; ok {
-		return
-	}
-	b.handlers = append(b.handlers, h)
-	b.handlerSet[h] = struct{}{}
+	b.handlers.Add(h)
 }
 
 func (b *Bus) Remove(h Handler) {
-	if b.handlerSet == nil {
-		return
-	}
-	delete(b.handlerSet, h)
-	for i, v := range b.handlers {
-		if v == h {
-			t := b.handlers
-			b.handlers = append(b.handlers[:i], b.handlers[i+1:]...)
-			t[len(t)-1] = nil
-			return
-		}
-	}
+	b.handlers.Remove(h)
 }
 
 func Trigger[T any](bb Buser, v T) {
@@ -57,19 +49,24 @@ func Trigger[T any](bb Buser, v T) {
 	for _, fn := range t {
 		fn(v)
 	}
-	for _, h := range b.handlers {
+	for _, h := range b.handlers.Items() {
 		h.HandleEvent(v)
 	}
 }
 
-func Handle[T any](bb Buser, h HandlerFunc[T]) {
+func Handle[T any](bb Buser, fn HandlerFunc[T]) {
 	b := bb.bus()
+
+	if fn, ok := any(fn).(HandlerFunc[Event]); ok {
+		b.handlers.Add(&handleEvent{fn: fn})
+		return
+	}
 
 	i, l := search[T](bb)
 	if i != -1 {
-		b.listeners[i] = append(l, h)
+		b.listeners[i] = append(l, fn)
 	}
-	b.listeners = append(b.listeners, []HandlerFunc[T]{h})
+	b.listeners = append(b.listeners, []HandlerFunc[T]{fn})
 }
 
 func search[T any](bb Buser) (int, []HandlerFunc[T]) {

@@ -71,8 +71,8 @@ func (g *Gorge) Start() error {
 		return err
 	}*/
 
-	Trigger(g, EventStart{})
-	Trigger(g, EventAfterStart{})
+	event.Trigger(g, EventStart{})
+	event.Trigger(g, EventAfterStart{})
 	return nil
 }
 
@@ -132,10 +132,10 @@ func (g *Gorge) Update(dt float32) {
 		close(sf.done)
 	default:
 	}
-	Trigger(g, EventPreUpdate(dt))
-	Trigger(g, EventUpdate(dt))
-	Trigger(g, EventPostUpdate(dt))
-	Trigger(g, EventRender(dt))
+	event.Trigger(g, EventPreUpdate(dt))
+	event.Trigger(g, EventUpdate(dt))
+	event.Trigger(g, EventPostUpdate(dt))
+	event.Trigger(g, EventRender(dt))
 }
 
 // Add adds an entity
@@ -143,7 +143,7 @@ func (g *Gorge) Update(dt float32) {
 func (g *Gorge) Add(ents ...Entity) {
 	for _, e := range ents {
 		EachEntity(e, func(e Entity) {
-			Trigger(g, EventAddEntity{e})
+			event.Trigger(g, EventAddEntity{e})
 		})
 	}
 }
@@ -153,7 +153,7 @@ func (g *Gorge) Add(ents ...Entity) {
 func (g *Gorge) Remove(ents ...Entity) {
 	for _, e := range ents {
 		EachEntity(e, func(e Entity) {
-			Trigger(g, EventRemoveEntity{e})
+			event.Trigger(g, EventRemoveEntity{e})
 		})
 	}
 }
@@ -170,7 +170,7 @@ func (g *Gorge) Remove(ents ...Entity) {
 // nolint: errcheck
 func (g *Gorge) Error(err error) {
 	log.Printf("[error] %v", err)
-	Trigger(g, EventError{err})
+	event.Trigger(g, EventError{err})
 }
 
 // Handlers helpers

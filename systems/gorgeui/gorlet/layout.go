@@ -7,8 +7,8 @@ type Direction int
 
 // Layout direction
 const (
-	DirectionHorizontal Direction = iota
-	DirectionVertical
+	Horizontal Direction = iota
+	Vertical
 )
 
 // Layouter interface for layouting entities.

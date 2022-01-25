@@ -43,7 +43,7 @@ type gcref struct{ n int }
 // Entity is a gui component
 type Entity struct {
 	observers
-	gcref *gcref
+	id string
 	gorgeui.ElementComponent
 	gorgeui.RectComponent
 
@@ -61,6 +61,8 @@ type Entity struct {
 
 	// Temp solution for the thing
 	Masked bool
+
+	gcref *gcref
 }
 
 // Create creates builds and prepares a guilet
@@ -267,6 +269,16 @@ func (e *Entity) Attached(ent gorgeui.Entity) {
 	entityUpdate(e)
 }
 
+// ID returns the entity ID.
+func (e *Entity) ID() string {
+	return e.id
+}
+
+// SetID set entity ID.
+func (e *Entity) SetID(name string) {
+	e.id = name
+}
+
 // Set invoke any observer attached to the named propery.
 // exceptional case:
 // _maskDepth:
@@ -358,6 +370,19 @@ func (e *Entity) IntersectFromScreen(pos gm.Vec2) ray.Result {
 	ui := gorgeui.RootUI(e)
 	r := ray.FromScreen(ui.ScreenSize(), ui.Camera, pos)
 	return ray.IntersectRect(r, v0, v1, v2)
+}
+
+// Find returns the first entity in the graph that matches the predicate.
+func (e *Entity) Find(id string) *Entity {
+	if e.id == id {
+		return e
+	}
+	for _, c := range e.children {
+		if r := c.Find(id); r != nil {
+			return r
+		}
+	}
+	return nil
 }
 
 func (e *Entity) indexOf(c *Entity) int {

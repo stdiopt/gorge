@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/core/layerfs"
 	"github.com/stdiopt/gorge/static"
 )
@@ -70,7 +71,7 @@ func (r *Resource) LoadString(name string) (string, error) {
 
 // Open opens a reousrce based on the configured sourcer.
 func (r *Resource) Open(name string) (io.ReadCloser, error) {
-	gorge.Trigger(r.gorge, EventOpen{Name: name})
+	event.Trigger(r.gorge, EventOpen{Name: name})
 	if strings.HasPrefix(name, gorgeStatic) {
 		data, err := static.Data(name[len(gorgeStatic):])
 		if err != nil {
@@ -83,14 +84,14 @@ func (r *Resource) Open(name string) (io.ReadCloser, error) {
 
 // Load stuff
 func (r *Resource) Load(v any, name string, opts ...any) error {
-	gorge.Trigger(r.gorge, EventLoadStart{
+	event.Trigger(r.gorge, EventLoadStart{
 		Name:     name,
 		Resource: v,
 	})
 
 	err := r.load(v, name, opts...)
 
-	gorge.Trigger(r.gorge, EventLoadComplete{
+	event.Trigger(r.gorge, EventLoadComplete{
 		Name:     name,
 		Resource: v,
 		Err:      err,

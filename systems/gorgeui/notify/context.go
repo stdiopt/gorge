@@ -17,7 +17,7 @@ type Context struct {
 
 // Info sends a info notification.
 func (c *Context) Info(s string) {
-	gorge.Trigger(c.gorge, EventNotify{
+	event.Trigger(c.gorge, EventNotify{
 		Message:  s,
 		Severity: SeverityInfo,
 	})
@@ -25,7 +25,7 @@ func (c *Context) Info(s string) {
 
 // Warn sends a warn notification.
 func (c *Context) Warn(s string) {
-	gorge.Trigger(c.gorge, EventNotify{
+	event.Trigger(c.gorge, EventNotify{
 		Message:  s,
 		Severity: SeverityWarn,
 	})
@@ -33,7 +33,7 @@ func (c *Context) Warn(s string) {
 
 // Error sends a error notification.
 func (c *Context) Error(s string) {
-	gorge.Trigger(c.gorge, EventNotify{
+	event.Trigger(c.gorge, EventNotify{
 		Message:  s,
 		Severity: SeverityError,
 	})

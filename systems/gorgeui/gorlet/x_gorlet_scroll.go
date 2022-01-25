@@ -162,11 +162,11 @@ func Scroll() Func {
 }
 
 func HScrollBar(fn func(float32)) Func {
-	return ScrollBar(DirectionHorizontal, fn)
+	return ScrollBar(Horizontal, fn)
 }
 
 func VScrollBar(fn func(float32)) Func {
-	return ScrollBar(DirectionVertical, fn)
+	return ScrollBar(Vertical, fn)
 }
 
 // ScrollBar creates a scroll bar
@@ -191,7 +191,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 		b.BeginPanel()
 		{
 			b.UseAnchor(0, 0, 1, 1)
-			if dir == DirectionHorizontal {
+			if dir == Horizontal {
 				b.UseRect(handlerSize/2, 0, handlerSize/2, 0)
 			} else {
 				b.UseRect(0, handlerSize/2, 0, handlerSize/2)
@@ -202,7 +202,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 				// this will be stuck forever :/
 				b.Use("color", handlerColor)
 				b.UsePivot(.5)
-				if dir == DirectionHorizontal {
+				if dir == Horizontal {
 					b.UseRect(0, 0, handlerSize, 0)
 					b.UseAnchor(val, 0, val, 1)
 				} else {
@@ -224,7 +224,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 				return
 			}
 			val = v
-			if dir == DirectionHorizontal {
+			if dir == Horizontal {
 				handler.SetAnchor(val, 0, val, 1)
 			} else {
 				handler.SetAnchor(0, val, 1, val)
@@ -235,7 +235,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 		})
 		b.Observe("handlerSize", func(f float32) {
 			handlerSize = f
-			if dir == DirectionHorizontal {
+			if dir == Horizontal {
 				handler.SetRect(0, 0, handlerSize, 0)
 				track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 			} else {
@@ -250,7 +250,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 			}
 			res := root.IntersectFromScreen(e.Position)
 			var v float32
-			if dir == DirectionHorizontal {
+			if dir == Horizontal {
 				v := res.UV[0]
 				v -= handlerSize / root.Rect()[2] / 2
 			} else {
@@ -272,7 +272,7 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 			delta := uv.Sub(*dragging)
 			dragging = &uv
 			var v float32
-			if dir == DirectionHorizontal {
+			if dir == Horizontal {
 				v = val + delta[0]
 			} else {
 				v = val + delta[1]
@@ -299,10 +299,10 @@ func (b *Builder) EndScroll() {
 
 // ScrollBar creates a scroll bar
 func (b *Builder) VScrollBar(fn func(float32)) *Entity {
-	return b.Add(ScrollBar(DirectionVertical, fn))
+	return b.Add(ScrollBar(Vertical, fn))
 }
 
 // ScrollBar creates a scroll bar
 func (b *Builder) HScrollBar(fn func(float32)) *Entity {
-	return b.Add(ScrollBar(DirectionHorizontal, fn))
+	return b.Add(ScrollBar(Horizontal, fn))
 }

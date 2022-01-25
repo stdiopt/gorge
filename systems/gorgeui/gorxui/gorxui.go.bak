@@ -170,7 +170,7 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		switch a.Name.Local {
 		case "click":
 			event.Handle(e, func(gorgeui.EventPointerUp) {
-				gorge.Trigger(root, EventAction{a.Value, e})
+				event.Trigger(root, EventAction{a.Value, e})
 			})
 		default:
 			event.Handle(e, func(evt EventAction) {
@@ -178,7 +178,7 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 					return
 				}
 
-				gorge.Trigger(root, EventAction{a.Value, e})
+				event.Trigger(root, EventAction{a.Value, e})
 			})
 			log.Println("Unknown action", a.Name.Local)
 		}

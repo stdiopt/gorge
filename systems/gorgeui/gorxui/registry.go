@@ -29,6 +29,9 @@ var registry = Registry{
 	// containers
 	"window":  func() gorlet.Func { return gorlet.Window("") },
 	"labeled": func() gorlet.Func { return gorlet.Labeled("") },
+	"list":    func() gorlet.Func { return gorlet.List() },
+	"flex":    func() gorlet.Func { return gorlet.Flex() },
+	"grid":    func() gorlet.Func { return gorlet.Grid() },
 }
 
 // Register a Tag func in global registry.

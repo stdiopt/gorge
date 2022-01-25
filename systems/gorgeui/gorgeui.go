@@ -91,6 +91,6 @@ func triggerOn[T any](e Entity, v T) bool {
 		// Direct on thing
 		h.HandleEvent(v)
 	}
-	gorge.Trigger(e.Element(), v)
+	event.Trigger(e.Element(), v)
 	return true
 }

@@ -1,7 +1,7 @@
 package gorlet
 
 import (
-	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 )
 
@@ -52,8 +52,10 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 			x.Set("value", v[0])
 			y.Set("value", v[1])
 			z.Set("value", v[2])
-			fn(val)
-			gorge.Trigger(root, EventValueChanged{Value: val})
+			if fn != nil {
+				fn(val)
+			}
+			event.Trigger(root, EventValueChanged{Value: val})
 		})
 	}
 }

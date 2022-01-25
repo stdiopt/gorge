@@ -1,6 +1,9 @@
 package input
 
-import "github.com/stdiopt/gorge"
+import (
+	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
+)
 
 type keyManager struct {
 	gorge    *gorge.Context
@@ -25,9 +28,9 @@ func (m *keyManager) SetKeyState(key Key, s ActionState) {
 	m.keyState[key] = s
 	switch s {
 	case ActionUp:
-		gorge.Trigger(m.gorge, EventKeyUp{key})
+		event.Trigger(m.gorge, EventKeyUp{key})
 	case ActionDown:
-		gorge.Trigger(m.gorge, EventKeyDown{key})
+		event.Trigger(m.gorge, EventKeyDown{key})
 	}
 }
 

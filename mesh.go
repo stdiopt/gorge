@@ -3,6 +3,7 @@ package gorge
 import (
 	"fmt"
 
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 )
 
@@ -60,7 +61,7 @@ func (m *Mesh) ReleaseData(g *Context) {
 	if _, ok := curRes.(*MeshData); !ok {
 		return
 	}
-	Trigger(g, EventResourceUpdate{Resource: curRes})
+	event.Trigger(g, EventResourceUpdate{Resource: curRes})
 
 	/*{ // free data arrays test
 		r := m.Resource.(*MeshData)

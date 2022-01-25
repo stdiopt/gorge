@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/core/layerfs"
 	"github.com/stdiopt/gorge/static"
 )
@@ -52,26 +53,30 @@ func (r *Context) Texture(name string, opts ...any) *gorge.Texture {
 
 	// Load into a new temporary resourcer and copy the gpu reference
 	go func() {
-		gorge.TriggerInMain(r.gorge, EventLoadStart{
-			Name:     name,
-			Resource: tex,
+		r.gorge.RunInMain(func() {
+			event.Trigger(r.gorge, EventLoadStart{
+				Name:     name,
+				Resource: tex,
+			})
 		})
 		tmp := &gorge.TextureData{}
 		if err := r.load(tmp, name, opts...); err != nil {
-			gorge.TriggerInMain(r.gorge, EventLoadComplete{
-				Name:     name,
-				Resource: tex,
-				Err:      err,
+			r.gorge.RunInMain(func() {
+				event.Trigger(r.gorge, EventLoadComplete{
+					Name:     name,
+					Resource: tex,
+					Err:      err,
+				})
 			})
 
 			r.Error(err)
 			return
 		}
 		r.gorge.RunInMain(func() {
-			gorge.Trigger(r.gorge, gorge.EventResourceUpdate{
+			event.Trigger(r.gorge, gorge.EventResourceUpdate{
 				Resource: tmp,
 			})
-			gorge.Trigger(r.gorge, EventLoadComplete{
+			event.Trigger(r.gorge, EventLoadComplete{
 				Name:     name,
 				Resource: tex,
 			})
@@ -96,26 +101,30 @@ func (r *Context) Mesh(name string, opts ...any) *gorge.Mesh {
 
 	// Load into a new temporary resourcer and copy the gpu reference
 	go func() {
-		gorge.TriggerInMain(r.gorge, EventLoadStart{
-			Name:     name,
-			Resource: mesh,
+		r.gorge.RunInMain(func() {
+			event.Trigger(r.gorge, EventLoadStart{
+				Name:     name,
+				Resource: mesh,
+			})
 		})
 		tmp := &gorge.MeshData{}
 		if err := r.load(tmp, name, opts...); err != nil {
-			gorge.TriggerInMain(r.gorge, EventLoadComplete{
-				Name:     name,
-				Resource: mesh,
-				Err:      err,
+			r.gorge.RunInMain(func() {
+				event.Trigger(r.gorge, EventLoadComplete{
+					Name:     name,
+					Resource: mesh,
+					Err:      err,
+				})
 			})
 
 			r.Error(err)
 			return
 		}
 		r.gorge.RunInMain(func() {
-			gorge.Trigger(r.gorge, gorge.EventResourceUpdate{
+			event.Trigger(r.gorge, gorge.EventResourceUpdate{
 				Resource: tmp,
 			})
-			gorge.Trigger(r.gorge, EventLoadComplete{
+			event.Trigger(r.gorge, EventLoadComplete{
 				Name:     name,
 				Resource: mesh,
 			})

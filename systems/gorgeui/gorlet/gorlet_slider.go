@@ -3,7 +3,6 @@ package gorlet
 import (
 	"fmt"
 
-	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/math/ray"
@@ -94,7 +93,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			if fn != nil {
 				fn(rval)
 			}
-			gorge.Trigger(root, EventValueChanged{val})
+			event.Trigger(root, EventValueChanged{rval})
 		})
 		b.Observe("handlerSize", func(f float32) {
 			handlerSize = f

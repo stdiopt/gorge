@@ -3,6 +3,7 @@ package input
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 )
 
@@ -40,7 +41,7 @@ func (m *mouseManager) SetScrollDelta(delta gm.Vec2) {
 			0: {ScrollDelta: delta, Pos: m.mpos},
 		},
 	}
-	gorge.Trigger(m.gorge, evt) // nolint: errcheck
+	event.Trigger(m.gorge, evt) // nolint: errcheck
 }
 
 func (m *mouseManager) SetCursorPosition(p gm.Vec2) {
@@ -54,7 +55,7 @@ func (m *mouseManager) SetCursorPosition(p gm.Vec2) {
 			0: {Pos: m.mpos},
 		},
 	}
-	gorge.Trigger(m.gorge, evt) // nolint: errcheck*/
+	event.Trigger(m.gorge, evt) // nolint: errcheck*/
 	// Trigger position event
 }
 
@@ -76,17 +77,17 @@ func (m *mouseManager) SetMouseButtonState(b MouseButton, s ActionState) {
 	m.buttonState[b] = s
 	switch s {
 	case ActionUp:
-		gorge.Trigger(m.gorge, EventMouseButtonUp{b, pd})
+		event.Trigger(m.gorge, EventMouseButtonUp{b, pd})
 		// legacy
-		gorge.Trigger(m.gorge, EventPointer{
+		event.Trigger(m.gorge, EventPointer{
 			Type: MouseUp,
 			Pointers: map[int]PointerData{
 				0: {Pos: m.mpos},
 			},
 		})
 	case ActionDown:
-		gorge.Trigger(m.gorge, EventMouseButtonDown{b, pd})
-		gorge.Trigger(m.gorge, EventPointer{
+		event.Trigger(m.gorge, EventMouseButtonDown{b, pd})
+		event.Trigger(m.gorge, EventPointer{
 			Type: MouseDown,
 			Pointers: map[int]PointerData{
 				0: {Pos: m.mpos},

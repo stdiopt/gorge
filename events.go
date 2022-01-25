@@ -10,13 +10,15 @@ type gorger interface {
 
 func TriggerInMain[T any](g gorger, e T) {
 	g.Gorge().RunInMain(func() {
-		Trigger(g.Gorge(), e)
+		event.Trigger(g.Gorge(), e)
 	})
 }
 
+/*
 func Trigger[T any](b event.Buser, v T) {
 	event.Trigger(b, v)
 }
+*/
 
 // EventPreUpdate type
 type EventPreUpdate float32

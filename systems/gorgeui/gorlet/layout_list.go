@@ -28,6 +28,6 @@ func (l *ListLayout) Layout(ent *Entity) {
 func LayoutList(spacing float32) *ListLayout {
 	return &ListLayout{
 		Spacing:   spacing,
-		Direction: DirectionVertical,
+		Direction: Vertical,
 	}
 }

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
@@ -51,6 +50,17 @@ func (x *XUI) Define(k string, c any) {
 	x.registry[strings.ToLower(k)] = fn
 }
 
+func (x *XUI) Get(k string) (buildFunc, bool) {
+	k = strings.ToLower(k)
+	if fn, ok := x.registry[k]; ok {
+		return fn, true
+	}
+	if fn, ok := registry[k]; ok {
+		return fn, true
+	}
+	return nil, false
+}
+
 // FromString parses a xml string into a gorlet.Entity.
 func (x *XUI) FromString(s string) (gorlet.Func, error) {
 	return x.read(strings.NewReader(s))
@@ -66,16 +76,20 @@ func (x *XUI) MustFromString(s string) gorlet.Func {
 }
 
 func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
-	fns := []func(*gorlet.Builder){}
+	var target string
+	defs := map[string][]gorlet.Func{}
+	// main
+	fns := []gorlet.Func{}
 
 	push := func(fn func(*gorlet.Builder)) {
-		fns = append(fns, fn)
+		if target == "" {
+			fns = append(fns, fn)
+			return
+		}
+		defs[target] = append(defs[target], fn)
 	}
 
-	rr := registry.merge(x.registry)
-
 	xm := xml.NewDecoder(rd)
-	isFirst := true
 	for {
 		tok, err := xm.Token()
 		if err == io.EOF {
@@ -105,29 +119,73 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 
 		case xml.StartElement:
 			// var e *gorlet.Entity
-			fn, ok := rr[strings.ToLower(tok.Name.Local)]
+			t := strings.ToLower(tok.Name.Local)
+			switch t {
+			case "clientarea":
+				push(func(b *gorlet.Builder) {
+					b.ClientArea()
+				})
+				continue
+			case "template":
+				if target != "" {
+					return nil, fmt.Errorf("gorxui: template can't be nested")
+				}
+				var name string
+				for _, a := range tok.Attr {
+					if a.Name.Local == "name" {
+						name = strings.ToLower(a.Value)
+						break
+					}
+				}
+				if name == "" {
+					return nil, fmt.Errorf("gorxui: template must have name attribute")
+				}
+				if _, ok := defs[name]; ok {
+					return nil, fmt.Errorf("gorxui: template %q already defined", name)
+				}
+				target = name
+				continue
+			default:
+			}
+			fn, ok := x.Get(tok.Name.Local)
 			if !ok {
 				fn = func() gorlet.Func { return gorlet.Container() }
 			}
-			if isFirst {
+
+			isFirst := len(fns) == 0
+			if target != "" {
+				isFirst = len(defs[target]) == 0
+			}
+			// This uses set root which might not be ideal for certain situations
+			if isFirst { // this uses SetRoot
 				push(func(b *gorlet.Builder) {
 					e := b.SetRoot(fn())
 					for _, a := range tok.Attr {
 						setProp(b.Root(), e, a) // errcheck
 					}
 				})
-				isFirst = false
-			} else {
-				// log.Println("Start:", tok)
-				// b.UseLayout(gorlet.LayoutList(.5))
-				push(func(b *gorlet.Builder) {
-					e := b.Begin(fn())
-					for _, a := range tok.Attr {
-						setProp(b.Root(), e, a) // errcheck
-					}
-				})
+				continue
 			}
+			// log.Println("Start:", tok)
+			// b.UseLayout(gorlet.LayoutList(.5))
+			push(func(b *gorlet.Builder) {
+				e := b.Begin(fn())
+				for _, a := range tok.Attr {
+					setProp(b.Root(), e, a) // errcheck
+				}
+			})
 		case xml.EndElement:
+			if tok.Name.Local == "template" {
+				fns := defs[target]
+				bf := func(b *gorlet.Builder) {
+					for _, fn := range fns {
+						fn(b)
+					}
+				}
+				x.Define(target, func() gorlet.Func { return bf })
+				target = ""
+				continue
+			}
 			push(func(b *gorlet.Builder) {
 				b.End()
 			})
@@ -144,66 +202,94 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 // EventAction action triggered on stuff.
 type EventAction struct {
 	Action string
+	Orig   event.Event
 	Entity *gorlet.Entity
 }
 
 func setProp(root, e *gorlet.Entity, a xml.Attr) error {
-	if a.Name.Space == "a" {
+	switch a.Name.Space {
+	case "a":
 		switch a.Name.Local {
 		case "click":
-			event.Handle(e, func(gorgeui.EventPointerUp) {
-				gorge.Trigger(root, EventAction{a.Value, e})
+			event.Handle(e, func(evt gorgeui.EventPointerUp) {
+				event.Trigger(root, EventAction{
+					a.Value,
+					evt,
+					e,
+				})
+			})
+		case "changed":
+			event.Handle(e, func(evt gorlet.EventValueChanged) {
+				event.Trigger(root, EventAction{
+					a.Value,
+					evt,
+					e,
+				})
 			})
 		default:
-			event.Handle(e, func(evt EventAction) {
-				if evt.Action != a.Name.Local {
-					return
-				}
-
-				gorge.Trigger(root, EventAction{a.Value, e})
-			})
-			log.Println("Unknown action", a.Name.Local)
 		}
+		event.Handle(e, func(evt EventAction) {
+			if evt.Action != a.Name.Local {
+				return
+			}
+			event.Trigger(root, EventAction{
+				a.Value,
+				evt.Orig,
+				e,
+			})
+		})
 		return nil
-	}
-	if a.Name.Space == "p" {
+	case "p":
 		root.ObserveTo(a.Value, e, a.Name.Local)
 		return nil
+	case "":
+		// Do nothing move next
+	default:
+		panic(fmt.Errorf("%v unknown namespace", a.Name.Space))
 	}
 	switch a.Name.Local {
+	case "id":
+		e.SetID(a.Value)
 	case "layout":
-		parts := strings.SplitN(a.Value, " ", 2)
-		switch parts[0] {
-		case "list", "vlist":
-			var spacing float32
-			if len(parts) > 1 {
-				s, err := strconv.ParseFloat(parts[1], 32)
-				if err != nil {
-					return err
-				}
-				spacing = float32(s)
-			}
-			log.Println("Setting vlist with spacing", spacing)
-			e.SetLayout(gorlet.LayoutList(spacing))
-		case "flex":
-			f, err := parseFlexProp(parts[1])
-			if err != nil {
-				return err
-			}
-			e.SetLayout(f)
-		case "autoHeight":
-			var spacing float32
-			if len(parts) > 1 {
-				s, err := strconv.ParseFloat(parts[1], 32)
-				if err != nil {
-					return err
-				}
-				spacing = float32(s)
-			}
-			e.SetLayout(gorlet.AutoHeight(spacing))
-		default:
-			return fmt.Errorf("layout %q not implemented", a.Value)
+		l, err := parseLayout(a.Value)
+		if err != nil {
+			return err
 		}
+		e.SetLayout(l)
+		/*
+			parts := strings.SplitN(a.Value, " ", 2)
+			switch parts[0] {
+			case "list", "vlist":
+				var spacing float32
+				if len(parts) > 1 {
+					s, err := strconv.ParseFloat(parts[1], 32)
+					if err != nil {
+						return err
+					}
+					spacing = float32(s)
+				}
+				log.Println("Setting vlist with spacing", spacing)
+				e.SetLayout(gorlet.LayoutList(spacing))
+			case "flex":
+				f, err := parseFlexProp(parts[1])
+				if err != nil {
+					return err
+				}
+				e.SetLayout(f)
+			case "autoHeight":
+				var spacing float32
+				if len(parts) > 1 {
+					s, err := strconv.ParseFloat(parts[1], 32)
+					if err != nil {
+						return err
+					}
+					spacing = float32(s)
+				}
+				e.SetLayout(gorlet.AutoHeight(spacing))
+			default:
+				return fmt.Errorf("layout %q not implemented", a.Value)
+			}
+		*/
 	case "margin":
 		p, err := parseFloat32Slice(a.Value)
 		if err != nil {
@@ -252,7 +338,6 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		if o == nil {
 			return nil
 		}
-		log.Printf("Registering type %v for %v", o.Type, a.Value)
 		v, err := parseTyp(o.Type, a.Value)
 		if err != nil {
 			return err
@@ -270,7 +355,7 @@ func useProp(b *gorlet.Builder, a xml.Attr) error {
 		case "click":
 			b.Next(func(e *gorlet.Entity) {
 				event.Handle(e, func(gorgeui.EventPointerUp) {
-					gorge.Trigger(root, EventAction{a.Value, e})
+					event.Trigger(root, EventAction{a.Value, e})
 				})
 			})
 		default:
@@ -280,7 +365,7 @@ func useProp(b *gorlet.Builder, a xml.Attr) error {
 						return
 					}
 
-					gorge.Trigger(root, EventAction{a.Value, e})
+					event.Trigger(root, EventAction{a.Value, e})
 				})
 			})
 			log.Println("Unknown action", a.Name.Local)
