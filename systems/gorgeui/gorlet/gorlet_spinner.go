@@ -42,7 +42,7 @@ func Spinner(lbl string, fn func(float32)) Func {
 		l := b.Label("")
 		b.EndPanel()
 
-		b.Observe("value", func(v float32) {
+		Observe(b, "value", func(v float32) {
 			if val == v {
 				return
 			}

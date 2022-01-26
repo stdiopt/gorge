@@ -92,6 +92,7 @@ func parseLayout(param string) (gorlet.Layouter, error) {
 var typDirection = reflect.TypeOf(gorlet.Direction(0))
 
 func parseTyp(typ reflect.Type, s string) (interface{}, error) {
+	typ = typ.In(0)
 	switch typ {
 	case typDirection:
 		switch s {
@@ -118,6 +119,6 @@ func parseTyp(typ reflect.Type, s string) (interface{}, error) {
 	case reflect.Bool:
 		return strconv.ParseBool(s)
 	}
-	panic(fmt.Sprintf("unsupported type %v", typ))
+	panic(fmt.Sprintf("unsupported type %v", typ.In(0)))
 	// return nil, fmt.Errorf("unsupported type %s", typ.Kind())
 }

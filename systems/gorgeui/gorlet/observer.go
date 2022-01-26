@@ -8,11 +8,11 @@ import (
 type ObserverFunc = func(any)
 
 type Observer struct {
-	Type  reflect.Type // First type
+	Type  reflect.Type // Func type
 	Funcs []ObserverFunc
 }
 
-func (o *Observer) Call(v interface{}) {
+func (o *Observer) Call(v any) {
 	for _, fn := range o.Funcs {
 		fn(v)
 	}
@@ -29,17 +29,6 @@ func (o *observers) set(k string, v any) bool {
 	}
 	oo.Call(v)
 	return true
-}
-
-func (o *observers) observe(k string, ifn any) {
-	if ifn == nil { // this will delete
-		o.observeWithType(k, nil, nil)
-		return
-	}
-
-	fn, typ := makeObserverFunc(ifn)
-
-	o.observeWithType(k, typ, fn)
 }
 
 func (o *observers) observeWithType(k string, typ reflect.Type, fn ObserverFunc) {
@@ -65,63 +54,19 @@ func (o *observers) observeWithType(k string, typ reflect.Type, fn ObserverFunc)
 		panic(fmt.Sprintf("type mismatch: %s != %s, observer already registered with different type", op.Type, typ))
 	}
 	op.Funcs = append(op.Funcs, fn)
-	if o.observers == nil {
-		o.observers = make(map[string]*Observer)
-	}
 }
 
 func (o *observers) observer(k string) *Observer {
 	return o.observers[k]
 }
 
-/*
-// ObsFunc creates a typed observer func from reflection.
-func ObsFunc(fn any) ObserverFunc {
-	if fn, ok := fn.(ObserverFunc); ok {
-		return fn
-	}
-	fnVal := reflect.ValueOf(fn)
-	inTyp := fnVal.Type().In(0)
-
-	return func(v any) {
-		arg := reflect.ValueOf(v)
-		if aTyp := arg.Type(); aTyp != inTyp {
-			if !arg.CanConvert(inTyp) {
-				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, inTyp))
-			}
-			arg = arg.Convert(inTyp)
-		}
-		// Type check somewhere
-		fnVal.Call([]reflect.Value{arg})
-	}
+type observer interface {
+	observeWithType(string, reflect.Type, ObserverFunc)
 }
-*/
-func makeObserverFunc(ifn any) (ObserverFunc, reflect.Type) {
-	fnVal := reflect.ValueOf(ifn)
-	fnTyp := fnVal.Type()
 
-	if fnTyp.Kind() != reflect.Func {
-		panic("not a function")
-	}
-	if fnTyp.NumIn() != 1 {
-		panic("function must have one input parameter")
-	}
-	if fnTyp.NumOut() != 0 {
-		panic("function must have no output parameters")
-	}
-	inTyp := fnTyp.In(0)
-
-	fn := func(v any) {
-		arg := reflect.ValueOf(v)
-		if aTyp := arg.Type(); aTyp != inTyp {
-			if !arg.CanConvert(inTyp) {
-				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, inTyp))
-			}
-			arg = arg.Convert(inTyp)
-		}
-		fnVal.Call([]reflect.Value{arg})
-	}
-	return fn, inTyp
+func Observe[T any](o observer, k string, tfn func(T)) {
+	fn, typ := makeObserverFuncGen(tfn)
+	o.observeWithType(k, typ, fn)
 }
 
 func Ptr[T any](p *T) func(T) {
@@ -130,55 +75,18 @@ func Ptr[T any](p *T) func(T) {
 	}
 }
 
-/*
-type ObserverFunc = func(any)
+func makeObserverFuncGen[T any](tfn func(T)) (func(any), reflect.Type) {
+	tTyp := reflect.TypeOf(*new(T))
 
-
-var (
-	typAny    = reflect.TypeOf((*any)(nil)).Elem()
-	typString = reflect.TypeOf("")
-)
-
-func makeObserver(fn any) ObserverFunc {
-	switch fn := fn.(type) {
-	case func(any):
-		return fn
-	}
-
-	fnVal := reflect.ValueOf(fn)
-	fnTyp := fnVal.Type()
-	if fnTyp.Kind() != reflect.Func {
-		panic("not a function")
-	}
-	if fnTyp.NumIn() != 1 {
-		panic("not a function with one argument")
-	}
-	if fnTyp.NumOut() != 0 {
-		panic("not a function with no return values")
-	}
-	inTyp := fnTyp.In(0)
-
-	return func(v any) {
-		arg := reflect.ValueOf(v)
-		if aTyp := arg.Type(); aTyp != inTyp {
-			if !arg.CanConvert(inTyp) {
-				panic(fmt.Sprintf("Can't convert prop %v(%v) to %v", aTyp, v, inTyp))
-			}
-			arg = arg.Convert(inTyp)
+	fn := func(v any) {
+		if v, ok := v.(T); ok {
+			tfn(v)
+			return
 		}
-		// Type check somewhere
-		fnVal.Call([]reflect.Value{arg})
+		if !reflect.TypeOf(v).ConvertibleTo(tTyp) {
+			panic(fmt.Sprintf("Can't convert prop %T(%v) to %v", v, v, tTyp))
+		}
+		tfn(reflect.ValueOf(v).Convert(tTyp).Interface().(T))
 	}
+	return fn, reflect.TypeOf(tfn)
 }
-
-/*
-type observer interface {
-	Observe(string, func(interface{}))
-}
-
-func Observe[T any](o observer, name string, fn func(T)) {
-	// ObsFunc because we still use reflection to avoid int to float conversions
-	// which panic on interface{} until we find something better
-	o.Observe(name, ObsFunc(fn))
-}
-*/

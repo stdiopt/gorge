@@ -27,7 +27,7 @@ func Mask() Func {
 		root.AddElement(maskOff)
 
 		depthMask := 0
-		b.Observe("_maskDepth", func(n int) {
+		Observe(b, "_maskDepth", func(n int) {
 			depthMask = n
 		})
 

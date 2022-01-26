@@ -1,5 +1,7 @@
 package gorlet
 
+import "reflect"
+
 // ForwardProp to be used to forward properties.
 type ForwardProp struct {
 	prop string
@@ -184,9 +186,8 @@ func (b *Builder) ForwardProps(pre string, e *Entity) {
 	}
 }
 
-// Observe adds a function to observe a property in the root Entity.
-func (b Builder) Observe(k string, fn any) {
-	b.root.entity.Observe(k, fn)
+func (b Builder) observeWithType(k string, t reflect.Type, fn ObserverFunc) {
+	b.root.entity.observeWithType(k, t, fn)
 }
 
 // Push will set the prop to any added entity.
@@ -257,9 +258,9 @@ func (b *Builder) SetRoot(fn Func) *Entity {
 	if len(b.stack) > 0 {
 		panic("Builder.Start() called while already in a container")
 	}
-	if len(b.root.entity.observers.observers) > 0 {
-		panic("Builder.Start() called while root already has observers")
-	}
+	//if len(b.root.entity.observers.observers) > 0 {
+	//	panic("Builder.Start() called while root already has observers")
+	//}
 	e := b.Create(fn)
 
 	b.root.entity = e

@@ -48,18 +48,18 @@ func rectElement(ent graphicer) Func {
 		root := b.Root()
 		root.AddElement(ent)
 		// Defaults renderable, use it on label too
-		b.Observe("color", ent.Colorable().SetColorv)
-		b.Observe("material", ent.Renderable().SetMaterial)
-		b.Observe("texture", func(tex gorge.Texturer) {
+		Observe(b, "color", ent.Colorable().SetColorv)
+		Observe(b, "material", ent.Renderable().SetMaterial)
+		Observe(b, "texture", func(tex gorge.Texturer) {
 			ent.Renderable().Material.SetTexture("albedoMap", tex)
 		})
-		b.Observe("stencil", ent.Renderable().SetStencil)
-		b.Observe("colorMask", func(b *[4]bool) {
+		Observe(b, "stencil", ent.Renderable().SetStencil)
+		Observe(b, "colorMask", func(b *[4]bool) {
 			ent.Renderable().ColorMask = b
 		})
 		// Forget order here
-		b.Observe("order", ent.Renderable().SetOrder)
-		b.Observe("_maskDepth", func(n int) {
+		Observe(b, "order", ent.Renderable().SetOrder)
+		Observe(b, "_maskDepth", func(n int) {
 			s := calcMaskOn(n)
 			s.WriteMask = 0
 			s.Fail = gorge.StencilOpKeep

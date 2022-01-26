@@ -92,6 +92,7 @@ func Create(fn Func) *Entity {
 		name:          ename,
 		RectComponent: *gorgeui.NewRectComponent(),
 	}
+	defaultObservers(defEntity)
 	// defEntity.SetLayout(gorgeui.AutoHeight(1))
 	// defEntity.SetAnchor(0)
 	// defEntity.SetRect(0, 0, 30, 5)
@@ -297,14 +298,11 @@ func (e *Entity) Set(name string, value any) {
 	}
 }
 
-// PropSetter returns a func that will set the named property when called.
-func (e *Entity) PropSetter(name string) func(v any) {
-	return func(v any) { e.Set(name, v) }
-}
-
-// Observe adds a named observer setting nil will delete all observers.
-func (e *Entity) Observe(k string, ifn any) {
-	e.observe(k, ifn)
+// SetProps batch set properties.
+func (e *Entity) SetProps(kv Props) {
+	for k, v := range kv {
+		e.Set(k, v)
+	}
 }
 
 // Link observs k1 in entity and sets k2 on e2 entity

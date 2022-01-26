@@ -27,6 +27,7 @@ func Window(def string) Func {
 
 		b.Use("color", winColor)
 		b.BeginPanel()
+
 		b.UseProps(Props{
 			"fontScale": titleFontScale,
 			"color":     titleColor,

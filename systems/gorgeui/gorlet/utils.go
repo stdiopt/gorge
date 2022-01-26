@@ -2,6 +2,7 @@ package gorlet
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/math/gm"
 )
 
 func calcMaskOn(l int) *gorge.Stencil {
@@ -41,4 +42,23 @@ func calcMaskOff(l int) *gorge.Stencil {
 		Func:      gorge.StencilFuncEqual, Ref: ref, ReadMask: rMask,
 		Fail: gorge.StencilOpKeep, ZFail: gorge.StencilOpReplace, ZPass: gorge.StencilOpReplace,
 	}
+}
+
+// defaultObservers experiment it will be attached on Create so every gorlet will have these.
+func defaultObservers(e *Entity) {
+	Observe(e, "anchor", func(v gm.Vec4) {
+		e.SetAnchor(v[:]...)
+	})
+	Observe(e, "rect", func(v gm.Vec4) {
+		e.SetRect(v[:]...)
+	})
+	Observe(e, "margin", func(v gm.Vec4) {
+		e.SetMargin(v[:]...)
+	})
+	Observe(e, "width", e.SetWidth)
+	Observe(e, "height", e.SetHeight)
+	Observe(e, "pivot", func(v gm.Vec2) {
+		e.SetPivot(v[:]...)
+	})
+	Observe(e, "layout", e.SetLayout)
 }

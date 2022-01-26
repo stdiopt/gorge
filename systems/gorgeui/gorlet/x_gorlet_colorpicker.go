@@ -61,10 +61,10 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 
 		b.EndPanel()
 
-		b.Observe("spacing", func(v float32) {
+		Observe(b, "spacing", func(v float32) {
 			outColor.SetRect(0, 0, v, 0)
 		})
-		b.Observe("color", func(v gm.Vec4) {
+		Observe(b, "color", func(v gm.Vec4) {
 			val = v
 			outColor.Set("color", v)
 			fn(v)

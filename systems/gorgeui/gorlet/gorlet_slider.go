@@ -64,12 +64,12 @@ func Slider(min, max float32, fn func(float32)) Func {
 		}
 		b.EndContainer()
 
-		b.Observe("min", func(v float32) { min = v })
-		b.Observe("max", func(v float32) { max = v })
-		b.Observe("handlerColor", func(c gm.Vec4) {
+		Observe(b, "min", func(v float32) { min = v })
+		Observe(b, "max", func(v float32) { max = v })
+		Observe(b, "handlerColor", func(c gm.Vec4) {
 			handler.Set("color", c)
 		})
-		b.Observe("handler", func(e *Entity) {
+		Observe(b, "handler", func(e *Entity) {
 			// Need to remove Element first :/
 			// should remove observers from handler?
 			track.Remove(handler)
@@ -80,7 +80,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handler.SetRect(0, 0, handlerSize, 0)
 			handler.SetAnchor(val, 0, val, 1)
 		})
-		b.Observe("value", func(v float32) {
+		Observe(b, "value", func(v float32) {
 			v = norm(v)
 			v = gm.Clamp(v, 0, 1)
 			if val == v {
@@ -95,12 +95,12 @@ func Slider(min, max float32, fn func(float32)) Func {
 			}
 			event.Trigger(root, EventValueChanged{rval})
 		})
-		b.Observe("handlerSize", func(f float32) {
+		Observe(b, "handlerSize", func(f float32) {
 			handlerSize = f
 			handler.SetRect(0, 0, handlerSize/2, 0)
 			track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 		})
-		b.Observe("textFormat", func(s string) {
+		Observe(b, "textFormat", func(s string) {
 			valFmt = s
 			handler.Set("text", fmt.Sprintf(valFmt, real(val)))
 		})

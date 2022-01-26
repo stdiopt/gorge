@@ -85,24 +85,24 @@ func Label(t string) Func {
 			}
 		})
 
-		b.Observe("autoSize", func(v bool) { autoSize = v })
-		b.Observe("text", func(s string) { mesh.SetText(s) })
-		b.Observe("textColor", func(c gm.Vec4) { ent.SetColorv(c) })
-		b.Observe("fontScale", func(v float32) { mesh.SetSize(v) })
-		b.Observe("textAlign", func(a [2]text.Align) {
+		Observe(b, "autoSize", func(v bool) { autoSize = v })
+		Observe(b, "text", func(s string) { mesh.SetText(s) })
+		Observe(b, "textColor", func(c gm.Vec4) { ent.SetColorv(c) })
+		Observe(b, "fontScale", func(v float32) { mesh.SetSize(v) })
+		Observe(b, "textAlign", func(a [2]text.Align) {
 			Alignment = a
 			mesh.SetAlignment(Alignment[0])
 		})
-		b.Observe("overflow", func(o text.Overflow) { mesh.SetOverflow(o) })
-		b.Observe("textOverflow", func(o text.Overflow) { mesh.SetOverflow(o) })
-		b.Observe("material", func(m gorge.Materialer) { ent.SetMaterial(m) })
-		b.Observe("order", func(o int) { ent.SetOrder(o) })
+		Observe(b, "overflow", func(o text.Overflow) { mesh.SetOverflow(o) })
+		Observe(b, "textOverflow", func(o text.Overflow) { mesh.SetOverflow(o) })
+		Observe(b, "material", func(m gorge.Materialer) { ent.SetMaterial(m) })
+		Observe(b, "order", func(o int) { ent.SetOrder(o) })
 
-		b.Observe("stencil", func(s *gorge.Stencil) {
+		Observe(b, "stencil", func(s *gorge.Stencil) {
 			// log.Println("Receiving stencil on label", s)
 			ent.Stencil = s
 		})
-		b.Observe("_maskDepth", func(d int) {
+		Observe(b, "_maskDepth", func(d int) {
 			s := calcMaskOn(d)
 			s.WriteMask = 0x00
 			s.Fail = gorge.StencilOpKeep

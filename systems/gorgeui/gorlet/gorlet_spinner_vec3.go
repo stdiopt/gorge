@@ -20,11 +20,9 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 		root := b.Root()
 		obsFn := func(i int) func(v float32) {
 			return func(v float32) {
-				val[i] = v
-				root.Set("value", val)
-				if fn != nil {
-					fn(val)
-				}
+				cp := val
+				cp[i] = v
+				root.Set("value", cp)
 			}
 		}
 
@@ -44,7 +42,7 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 
 		b.EndPanel()
 
-		b.Observe("value", func(v gm.Vec3) {
+		Observe(b, "value", func(v gm.Vec3) {
 			if val == v {
 				return
 			}

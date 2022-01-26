@@ -11,9 +11,9 @@ func Grid() Func {
 		var cols, rows int
 		var spacing float32
 
-		b.Observe("cols", func(v int) { cols = v })
-		b.Observe("rows", func(v int) { rows = v })
-		b.Observe("spacing", func(v float32) { spacing = v })
+		Observe(b, "cols", func(v int) { cols = v })
+		Observe(b, "rows", func(v int) { rows = v })
+		Observe(b, "spacing", func(v float32) { spacing = v })
 
 		root := b.Root()
 		event.Handle(root, func(gorgeui.EventUpdate) {

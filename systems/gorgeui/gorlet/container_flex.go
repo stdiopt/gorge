@@ -18,7 +18,7 @@ func Flex() Func {
 		)
 		root := b.Root()
 
-		b.Observe("sizes", func(v []float32) {
+		Observe(b, "sizes", func(v []float32) {
 			sizes = v
 			sum = 0
 			smaller = sizes[0]
@@ -28,10 +28,10 @@ func Flex() Func {
 
 			}
 		})
-		b.Observe("direction", func(v Direction) {
+		Observe(b, "direction", func(v Direction) {
 			dir = v
 		})
-		b.Observe("spacing", func(v float32) {
+		Observe(b, "spacing", func(v float32) {
 			spacing = v
 		})
 

@@ -11,12 +11,12 @@ func List() Func {
 	return func(b *Builder) {
 		var (
 			spacing float32
-			dir     Direction = Vertical
+			dir     = Vertical
 		)
 
 		root := b.Root()
-		b.Observe("spacing", func(v float32) { spacing = v })
-		b.Observe("direction", func(v Direction) { dir = v })
+		Observe(b, "spacing", func(v float32) { spacing = v })
+		Observe(b, "direction", func(v Direction) { dir = v })
 
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			cur := float32(0)

@@ -15,10 +15,10 @@ func Button(clickfn func()) Func {
 			down       = gm.Color(.4)
 			fadeFactor = float32(10)
 		)
-		b.Observe("color", Ptr(&normal))
-		b.Observe("highlight", Ptr(&highlight))
-		b.Observe("down", Ptr(&down))
-		b.Observe("fadeFactor", Ptr(&fadeFactor))
+		Observe(b, "color", Ptr(&normal))
+		Observe(b, "highlight", Ptr(&highlight))
+		Observe(b, "down", Ptr(&down))
+		Observe(b, "fadeFactor", Ptr(&fadeFactor))
 
 		root := b.Root()
 
@@ -56,10 +56,10 @@ func Button(clickfn func()) Func {
 		})
 		event.Handle(root, func(gorgeui.EventPointerUp) {
 			state &= ^statePressed
-			event.Trigger(root, EventClick{})
 			if clickfn != nil {
 				clickfn()
 			}
+			event.Trigger(root, EventClick{})
 		})
 		event.Handle(root, func(gorgeui.EventPointerEnter) {
 			state |= stateHover
