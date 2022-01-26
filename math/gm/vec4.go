@@ -10,6 +10,22 @@ type (
 	// Color alias of vec4
 )
 
+func V4(v ...Float) Vec4 {
+	switch len(v) {
+	case 0:
+		return Vec4{}
+	case 1:
+		return Vec4{v[0], v[0], v[0], v[0]}
+	case 2:
+		return Vec4{v[0], v[1], v[0], v[1]}
+	case 3:
+		return Vec4{v[0], v[1], v[2], v[2]}
+	default:
+		return Vec4{v[0], v[1], v[2], v[3]}
+
+	}
+}
+
 // Len returns the length of the vec4.
 func (v Vec4) Len() Float {
 	return Float(math.Sqrt(float64(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + v[3]*v[3])))

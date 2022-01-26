@@ -71,11 +71,22 @@ func rectElement(ent graphicer) Func {
 				c.Set("_maskDepth", n)
 			}
 		})
+
+		Observe(b, "border", func(v gm.Vec4) {
+			ent.Renderable().Material.Define("HAS_BORDER")
+			ent.Renderable().Material.Set("border", v)
+		})
+		Observe(b, "borderColor", func(v gm.Vec4) {
+			ent.Renderable().Material.Set("borderColor", v)
+		})
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			r := root.Rect()
 			t := ent.Transform()
-			t.Scale[0] = r[2] - r[0]
-			t.Scale[1] = r[3] - r[1]
+			w := r[2] - r[0]
+			h := r[3] - r[1]
+			t.Scale[0] = w
+			t.Scale[1] = h
+			ent.Renderable().Material.Set("rect", r)
 		})
 		// Defaults
 		root.Set("color", gm.Color(0, 0, 0, .2))

@@ -14,12 +14,6 @@ func TriggerInMain[T any](g gorger, e T) {
 	})
 }
 
-/*
-func Trigger[T any](b event.Buser, v T) {
-	event.Trigger(b, v)
-}
-*/
-
 // EventPreUpdate type
 type EventPreUpdate float32
 
@@ -71,15 +65,3 @@ type EventWarn string
 type EventResourceUpdate struct {
 	Resource any
 }
-
-/*func UpdateHandler(fn func(e EventUpdate)) event.HandlerFunc {
-	return func(v event.Event) {
-		if e, ok := v.(EventUpdate); ok {
-			fn(e)
-		}
-	}
-}*/
-
-/*func HandleUpdate(fn func(e EventUpdate)) {
-	HandleFunc(UpdateHandler(fn))
-}*/

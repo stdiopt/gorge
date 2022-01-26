@@ -11,11 +11,10 @@ type HandlerFunc[T any] func(T)
 
 // catch all event
 type handleEvent struct {
-	// To make it hashable
 	fn HandlerFunc[Event]
 }
 
-func (h *handleEvent) HandleEvent(e Event) { (h.fn)(e) }
+func (h *handleEvent) HandleEvent(e Event) { h.fn(e) }
 
 type Buser interface {
 	bus() *Bus

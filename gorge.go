@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/internal/logger"
+	"github.com/stdiopt/gorge/core/logger"
 	"github.com/stdiopt/gorge/math/gm"
 )
 

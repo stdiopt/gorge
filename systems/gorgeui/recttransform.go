@@ -22,6 +22,7 @@ type RectComponent struct {
 	Dim gm.Vec2
 	// New
 	Margin gm.Vec4
+	Border gm.Vec4
 
 	Anchor gm.Vec4 // left, bottom, right, top
 	Pivot  gm.Vec2
@@ -77,7 +78,8 @@ func (c *RectComponent) Mat4() gm.Mat4 {
 
 	pos := c.Position.
 		Add(anchor.Vec3(0)).
-		Add(gm.Vec3{c.Margin[0], c.Margin[1], 0})
+		Add(gm.Vec3{c.Margin[0], c.Margin[1], 0}).
+		Add(gm.Vec3{c.Border[0], c.Border[1], 0})
 	m := gm.Translate3D(pos[0], pos[1], pos[2])
 
 	m = m.Mul(c.Rotation.Mat4())
