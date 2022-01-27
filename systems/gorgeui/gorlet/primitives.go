@@ -72,10 +72,6 @@ func rectElement(ent graphicer) Func {
 			}
 		})
 
-		Observe(b, "border", func(v gm.Vec4) {
-			ent.Renderable().Material.Define("HAS_BORDER")
-			ent.Renderable().Material.Set("border", v)
-		})
 		Observe(b, "borderColor", func(v gm.Vec4) {
 			ent.Renderable().Material.Set("borderColor", v)
 		})
@@ -84,8 +80,14 @@ func rectElement(ent graphicer) Func {
 			t := ent.Transform()
 			w := r[2] - r[0]
 			h := r[3] - r[1]
-			t.Scale[0] = w
-			t.Scale[1] = h
+			t.Scale[0] = w + root.Border[2] + root.Border[0]
+			t.Scale[1] = h + root.Border[3] + root.Border[1]
+			t.Position[0] = -root.Border[0]
+			t.Position[1] = -root.Border[1]
+			if root.Border != (gm.Vec4{}) {
+				ent.Renderable().Material.Define("HAS_BORDER")
+				ent.Renderable().Material.Set("border", root.Border)
+			}
 			ent.Renderable().Material.Set("rect", r)
 		})
 		// Defaults

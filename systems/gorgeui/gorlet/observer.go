@@ -32,6 +32,9 @@ func (o *observers) set(k string, v any) bool {
 }
 
 func (o *observers) observeWithType(k string, typ reflect.Type, fn ObserverFunc) {
+	if typ.Kind() != reflect.Func {
+		panic(fmt.Sprintf("Can't observe %v", typ))
+	}
 	if fn == nil {
 		if o.observers == nil {
 			return

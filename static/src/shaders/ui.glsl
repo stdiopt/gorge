@@ -1,4 +1,9 @@
 #version 300 es
+#ifdef GL_ES
+// to have functions like fwidth for OpenGL ES or WebGL, the extension should
+// be explicitly enabled.
+#extension GL_OES_standard_derivatives : enable
+#endif
 
 // Based on unlit but with attempt to draw borders on shaders
 
@@ -27,17 +32,19 @@ out vec2 TexCoords;
 
 #ifdef HAS_BORDER
 out vec4 Border;
+
 uniform vec4 border;
 #endif
 
 void main() {
 
 #ifdef HAS_BORDER
+	//Border = border;
 	Border = vec4(
-			border[0]/rect[2], 
-			border[1]/rect[3], 
-			1.0-border[2]/rect[2], 
-			1.0-border[3]/rect[3]
+			border[0]/rect[2],
+			border[1]/rect[3],
+			border[2]/rect[2],
+			border[3]/rect[3]
 	);
 #endif
 	ColorV = a_InstanceColor;
@@ -49,6 +56,9 @@ void main() {
 #endif
 
 #ifdef FRAG_SRC
+
+#define linearstep(edge0, edge1, x) clamp((x - (edge0)) / (edge1 - (edge0)), 0.0, 1.0)
+
 out vec4 FragColor;
 
 in vec4 ColorV;
@@ -62,22 +72,28 @@ uniform sampler2D albedoMap;
 uniform vec4 borderColor;
 #endif
 
+// http://jeremt.github.io/pages/anti-aliased_shapes_in_glsl.html
+
 void main() {
+	vec4 color = texture(albedoMap, TexCoords);
+	color *= ColorV;
 #ifdef HAS_BORDER
-	if (TexCoords.x < Border[0] || TexCoords.x > Border[2]) {
-		FragColor = vec4(borderColor.rgb * borderColor.a, borderColor.a);
-		return;
-	}
-	if (TexCoords.y < Border[1] || TexCoords.y > Border[3]) {
-		FragColor = vec4(borderColor.rgb * borderColor.a, borderColor.a);
-		return;
-	}
+	//vec2 uvPixel  = fwidth(TexCoords);
+	float border = 0.0;
+	//vec2 bb = step(Border.xy, TexCoords) * step(Border.zw, vec2(1) - TexCoords);
+
+	//vec2 bb = linearstep(vec2(0), Border.xy, TexCoords) *
+	//	  linearstep(vec2(0), Border.zw, vec2(1) - TexCoords);
+	
+	vec2 bb = smoothstep(vec2(0), Border.xy, TexCoords) *
+		  smoothstep(vec2(0), Border.zw, vec2(1) - TexCoords);
+	border = bb.x * bb.y;
+
+	color = mix(borderColor, color, border);
 #endif
-	vec4 tex = texture(albedoMap, TexCoords);
-	if (tex.a <= 0.0) {
+	if (color.a <= 0.0) {
 		discard;
 	}
-	tex *= ColorV;
-	FragColor = vec4(tex.rgb * tex.a, tex.a);
+	FragColor = vec4(color.rgb * color.a, color.a);
 }
 #endif

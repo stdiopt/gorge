@@ -7,7 +7,7 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-func List() Func {
+func List(s ...float32) Func {
 	return func(b *Builder) {
 		var (
 			spacing float32
@@ -27,22 +27,25 @@ func List() Func {
 				switch dir {
 				case Vertical:
 					rt.SetAnchor(0, 0, 1, 0)
-					d := r[3] - r[1] + rt.Margin[1] + rt.Margin[3]
+					d := r[3] - r[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
 					rt.Position[1] = cur
 					cur += d + spacing
 				case Horizontal:
 					rt.SetAnchor(0, 0, 0, 1)
-					d := r[2] - r[0] + rt.Margin[0] + rt.Margin[2]
+					d := r[2] - r[0] + rt.Margin[0] + rt.Margin[2] + rt.Border[0] + rt.Border[2]
 					rt.Position[0] = cur
 					cur += d + spacing
 				}
 			}
 		})
+		if len(s) > 1 {
+			root.Set("spacing", s[0])
+		}
 	}
 }
 
-func (b *Builder) BeginList() *Entity {
-	return b.Begin(List())
+func (b *Builder) BeginList(spacing ...float32) *Entity {
+	return b.Begin(List(spacing...))
 }
 
 func (b *Builder) EndList() {

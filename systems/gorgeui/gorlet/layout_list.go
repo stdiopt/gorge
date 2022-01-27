@@ -17,7 +17,7 @@ func (l *ListLayout) Layout(ent *Entity) {
 
 		r := rt.Rect()
 
-		h := r[3] - r[1] + rt.Margin[1] + rt.Margin[3]
+		h := r[3] - r[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
 		rt.Position[1] = cury
 		cury += h + l.Spacing
 	}

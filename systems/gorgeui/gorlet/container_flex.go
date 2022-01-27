@@ -6,7 +6,7 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-func Flex() Func {
+func Flex(sz ...float32) Func {
 	return func(b *Builder) {
 		var (
 			sizes   []float32
@@ -64,11 +64,14 @@ func Flex() Func {
 				start = end
 			}
 		})
+		if len(sz) > 0 {
+			root.Set("sizes", sz)
+		}
 	}
 }
 
-func (b *Builder) BeginFlex() *Entity {
-	return b.Begin(Flex())
+func (b *Builder) BeginFlex(sz ...float32) *Entity {
+	return b.Begin(Flex(sz...))
 }
 
 func (b *Builder) EndFlex() {

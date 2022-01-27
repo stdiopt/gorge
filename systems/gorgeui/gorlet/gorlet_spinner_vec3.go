@@ -9,38 +9,43 @@ import (
 func SpinnerVec3(fn func(gm.Vec3)) Func {
 	return func(b *Builder) {
 		var (
+			// props
 			fontScale   = b.Prop("fontScale", 2)
 			background  = b.Prop("background", nil)
 			labelColorX = b.Prop("x.labelColor", gm.Color(.5, 0, 0))
 			labelColorY = b.Prop("y.labelColor", gm.Color(0, .5, 0))
 			labelColorZ = b.Prop("z.labelColor", gm.Color(0, 0, .5))
+
+			// spinners
+			x *Entity
+			y *Entity
+			z *Entity
 		)
 		var val gm.Vec3
-
-		root := b.Root()
-		obsFn := func(i int) func(v float32) {
-			return func(v float32) {
-				cp := val
-				cp[i] = v
-				root.Set("value", cp)
-			}
-		}
-
 		b.Push("fontScale", fontScale)
-
 		b.Use("color", background)
-		b.BeginPanel(LayoutFlexHorizontal(1))
+		root := b.SetRoot(Quad())
+		b.BeginFlex(1)
+		{
 
-		b.Use("labelColor", labelColorX)
-		x := b.Spinner("X", obsFn(0))
+			obsFn := func(i int) func(v float32) {
+				return func(v float32) {
+					cp := val
+					cp[i] = v
+					root.Set("value", cp)
+				}
+			}
+			b.Use("labelColor", labelColorX)
+			x = b.Spinner("X", obsFn(0))
 
-		b.Use("labelColor", labelColorY)
-		y := b.Spinner("Y", obsFn(1))
+			b.Use("labelColor", labelColorY)
+			y = b.Spinner("Y", obsFn(1))
 
-		b.Use("labelColor", labelColorZ)
-		z := b.Spinner("Z", obsFn(2))
+			b.Use("labelColor", labelColorZ)
+			z = b.Spinner("Z", obsFn(2))
 
-		b.EndPanel()
+		}
+		b.EndFlex()
 
 		Observe(b, "value", func(v gm.Vec3) {
 			if val == v {

@@ -24,10 +24,12 @@ func Slider(min, max float32, fn func(float32)) Func {
 	}
 	return func(b *Builder) {
 		var (
-			fontScale        = b.Prop("fontScale")
-			backgroundColor  = b.Prop("backgroundColor", gm.Color(.4, .2))
-			handlerTextColor = b.Prop("textColor")
-			handlerColor     = b.Prop("handlerColor")
+			fontScale          = b.Prop("fontScale")
+			backgroundColor    = b.Prop("backgroundColor", gm.Color(.4, .2))
+			handlerTextColor   = b.Prop("textColor")
+			handlerColor       = b.Prop("handlerColor")
+			handlerBorder      = b.Prop("handlerBorder", Border(0))
+			handlerBorderColor = b.Prop("handlerBorderColor", gm.Color())
 		)
 		var (
 			valFmt      = "%.2f"
@@ -37,10 +39,10 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handler     *Entity
 		)
 
-		root := b.Root()
-		root.SetDragEvents(true)
 		b.Use("color", backgroundColor)
-		b.BeginPanel()
+		b.UseDragEvents(true)
+		root := b.SetRoot(Quad())
+		root.SetDragEvents(true)
 		{
 			b.UseAnchor(0, 0, 1, 1)
 			b.UseRect(handlerSize/2, 0, handlerSize/2, 0)
@@ -50,19 +52,21 @@ func Slider(min, max float32, fn func(float32)) Func {
 				// track.SetRect(handlerSize/2, 0, handlerSize/2, 0)
 
 				// this will be stuck forever :/
-				b.Use("textColor", handlerTextColor)
-				b.Use("color", handlerColor)
-				b.Use("fontScale", fontScale)
-				b.Use("textOverflow", text.OverflowOverlap)
-
-				b.UsePivot(.5)
-				b.UseRect(0, 0, handlerSize, 0)
-				b.UseAnchor(val, 0, val, 1)
+				b.UseProps(Props{
+					"textColor":    handlerTextColor,
+					"color":        handlerColor,
+					"fontScale":    fontScale,
+					"textOverflow": text.OverflowOverlap,
+					"border":       handlerBorder,
+					"borderColor":  handlerBorderColor,
+					"pivot":        Pivot(.5),
+					"rect":         Rect(0, 0, handlerSize, 0),
+					"anchor":       Anchor(val, 0, val, 1),
+				})
 				handler = b.TextButton("0", nil)
 			}
 			b.End()
 		}
-		b.EndContainer()
 
 		Observe(b, "min", func(v float32) { min = v })
 		Observe(b, "max", func(v float32) { max = v })

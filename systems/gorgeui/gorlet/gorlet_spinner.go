@@ -23,10 +23,10 @@ func Spinner(lbl string, fn func(float32)) Func {
 
 		b.Push("fontScale", fontScale)
 
-		root := b.Root()
-		root.SetDragEvents(true)
-		b.UseLayout(LayoutFlexHorizontal(1, 2))
-		b.BeginPanel()
+		b.UseDragEvents(true)
+		// b.UseLayout(LayoutFlexHorizontal(1, 2))
+		root := b.SetRoot(Quad())
+		b.BeginFlex(1, 2)
 		{
 
 			b.Use("color", labelColor)
@@ -37,10 +37,12 @@ func Spinner(lbl string, fn func(float32)) Func {
 			}
 			b.End()
 		}
-		b.Use("color", textColor)
-		b.Use("overflow", textOverflow)
+		b.UseProps(Props{
+			"color":    textColor,
+			"overflow": textOverflow,
+		})
 		l := b.Label("")
-		b.EndPanel()
+		b.EndFlex()
 
 		Observe(b, "value", func(v float32) {
 			if val == v {

@@ -125,6 +125,13 @@ func (b *Builder) UseMargin(v ...float32) {
 	})
 }
 
+// Use border adds a border space to the next widget.
+func (b *Builder) UseBorder(v ...float32) {
+	b.next.add(func(e *Entity) {
+		e.SetBorder(v...)
+	})
+}
+
 // UseAnchor sets next Entity Anchor.
 func (b *Builder) UseAnchor(v ...float32) {
 	b.next.add(func(e *Entity) {

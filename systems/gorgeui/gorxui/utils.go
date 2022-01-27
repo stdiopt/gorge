@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui/gorlet"
 )
 
@@ -89,7 +90,10 @@ func parseLayout(param string) (gorlet.Layouter, error) {
 	return gorlet.MultiLayout(layouts...), nil
 }
 
-var typDirection = reflect.TypeOf(gorlet.Direction(0))
+var (
+	typDirection = reflect.TypeOf(gorlet.Direction(0))
+	typVec4      = reflect.TypeOf(gm.Vec4{})
+)
 
 func parseTyp(typ reflect.Type, s string) (interface{}, error) {
 	typ = typ.In(0)
@@ -103,6 +107,13 @@ func parseTyp(typ reflect.Type, s string) (interface{}, error) {
 		default:
 			return nil, fmt.Errorf("Unknown direction %s only horizontal or vertical allowed", s)
 		}
+	case typVec4:
+		f, err := parseFloat32Slice(s)
+		if err != nil {
+			return nil, err
+		}
+		return gm.V4(f...), nil
+
 	}
 	switch typ.Kind() {
 	case reflect.Float32:
@@ -119,6 +130,6 @@ func parseTyp(typ reflect.Type, s string) (interface{}, error) {
 	case reflect.Bool:
 		return strconv.ParseBool(s)
 	}
-	panic(fmt.Sprintf("unsupported type %v", typ.In(0)))
+	panic(fmt.Sprintf("unsupported type %v", typ))
 	// return nil, fmt.Errorf("unsupported type %s", typ.Kind())
 }

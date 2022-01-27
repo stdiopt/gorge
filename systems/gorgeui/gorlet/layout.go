@@ -43,7 +43,7 @@ func AutoHeight(spacing float32) LayoutFunc {
 		dim := gm.Vec2{}
 		for _, c := range children {
 			rect := c.Rect()
-			h := rect[3] - rect[1] + (c.Margin[1] + c.Margin[3])
+			h := rect[3] - rect[1] + (c.Margin[1] + c.Margin[3] + c.Border[1] + c.Border[3])
 
 			top := c.Position[1]
 			bottom := top + h
@@ -51,7 +51,7 @@ func AutoHeight(spacing float32) LayoutFunc {
 
 		}
 		rt := ent.RectTransform()
-		rt.Dim[1] = dim[1] + rt.Margin[1] + rt.Margin[3]
+		rt.Dim[1] = dim[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
 	}
 }
 

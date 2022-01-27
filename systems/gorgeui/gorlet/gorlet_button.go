@@ -20,12 +20,8 @@ func Button(clickfn func()) Func {
 		Observe(b, "down", Ptr(&down))
 		Observe(b, "fadeFactor", Ptr(&fadeFactor))
 
-		root := b.Root()
-
 		b.Use("color", normal)
-		p := b.BeginPanel()
-		b.ClientArea()
-		b.EndPanel()
+		root := b.SetRoot(Quad())
 
 		color := normal
 		type buttonState int
@@ -48,7 +44,7 @@ func Button(clickfn func()) Func {
 			// it is somewhat ok since comparing with epsilon might be slower
 			if target != color {
 				color = color.Lerp(target, e.DeltaTime()*s)
-				p.Set("color", color)
+				root.Set("color", color)
 			}
 		})
 		event.Handle(root, func(gorgeui.EventPointerDown) {

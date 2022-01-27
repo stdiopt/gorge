@@ -43,28 +43,30 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 		fn = func(gm.Vec4) {}
 	}
 	return func(b *Builder) {
-		var val gm.Vec4
+		var (
+			spacing  = b.Prop("spacing", 0)
+			val      gm.Vec4
+			outColor *Entity
+			picker   *Entity
+		)
 
-		root := b.Root()
-		b.BeginPanel(LayoutFlexHorizontal(1, 7))
+		root := b.SetRoot(Panel())
+		b.Use("spacing", spacing)
+		b.BeginFlex(1, 7)
+		{
+			b.UseDragEvents(true)
+			outColor = b.Quad()
 
-		b.UseDragEvents(true)
-		b.UseRect(0, 0, .3, 0)
-		outColor := b.Quad()
+			b.UseProps(Props{
+				"color":   gm.Color(1),
+				"texture": gorge.NewTexture(colorTex),
+			})
+			b.UseDragEvents(true)
+			picker = b.Quad()
+		}
+		b.EndFlex()
 
-		b.UseProps(Props{
-			"color":   gm.Color(1),
-			"texture": gorge.NewTexture(colorTex),
-		})
-		b.UseDragEvents(true)
-		picker := b.Quad()
-
-		b.EndPanel()
-
-		Observe(b, "spacing", func(v float32) {
-			outColor.SetRect(0, 0, v, 0)
-		})
-		Observe(b, "color", func(v gm.Vec4) {
+		Observe(b, "value", func(v gm.Vec4) {
 			val = v
 			outColor.Set("color", v)
 			fn(v)
@@ -93,16 +95,16 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 			val[1] = float32(colorTex.PixelData[i+1]) / 255
 			val[2] = float32(colorTex.PixelData[i+2]) / 255
 
-			root.Set("color", val)
+			root.Set("value", val)
 		}
 		event.Handle(picker, func(e gorgeui.EventPointerDown) { pickColor(e.PointerData) })
 		event.Handle(picker, func(e gorgeui.EventDragBegin) { pickColor(e.PointerData) })
 		event.Handle(picker, func(e gorgeui.EventDrag) { pickColor(e.PointerData) })
 		event.Handle(outColor, func(e gorgeui.EventDrag) {
 			val[3] = gm.Clamp(val[3]-e.Delta[1]*.01, 0, 1)
-			root.Set("color", val)
+			root.Set("value", val)
 		})
-		root.Set("color", gm.Color(1))
+		root.Set("value", gm.Color(1))
 	}
 }
 

@@ -108,12 +108,12 @@ func (c *RectComponent) SetRect(vs ...float32) {
 	c.Dim[1] = v[3]
 }
 
+func (c *RectComponent) SetBorder(vs ...float32) {
+	c.Border = v4f(vs...)
+}
+
 func (c *RectComponent) SetMargin(vs ...float32) {
-	v := v4f(vs...)
-	c.Margin[0] = v[0]
-	c.Margin[1] = v[1]
-	c.Margin[2] = v[2]
-	c.Margin[3] = v[3]
+	c.Margin = v4f(vs...)
 }
 
 // SetWidth sets the width.
@@ -134,16 +134,16 @@ func (c *RectComponent) SetSize(v ...float32) {
 // SetAnchor sets anchor.
 func (c *RectComponent) SetAnchor(v ...float32) {
 	switch len(v) {
+	case 0:
+		c.Anchor = gm.Vec4{}
 	case 1:
 		c.Anchor = gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:
 		c.Anchor = gm.Vec4{v[0], v[1], v[0], v[1]}
 	case 3:
 		c.Anchor = gm.Vec4{v[0], v[1], v[2], v[1]}
-	case 4:
-		c.Anchor = gm.Vec4(*(*[4]float32)(v))
 	default:
-		panic("wrong number of params")
+		c.Anchor = gm.Vec4{v[0], v[1], v[2], v[3]}
 
 	}
 }
@@ -212,8 +212,8 @@ func (c *RectComponent) RelativeSize(parentDim gm.Vec2) gm.Vec2 {
 		bottom = h - c.Dim[1] - c.Position[1]
 	}
 	return gm.Vec2{
-		right - c.Margin[2] - c.Margin[0],
-		bottom - c.Margin[1] - c.Margin[3],
+		right - c.Margin[2] - c.Margin[0] - c.Border[2] - c.Border[0],
+		bottom - c.Margin[1] - c.Margin[3] - c.Border[1] - c.Border[3],
 	}
 }
 
@@ -257,9 +257,9 @@ func (c *RectComponent) RelativeRect(parentRect gm.Vec4) gm.Vec4 {
 	return gm.Vec4{
 		left,
 		top,
-		right - c.Margin[2] - c.Margin[0],
+		right - c.Margin[2] - c.Margin[0] - c.Border[2] - c.Border[0],
 		// bottom - c.Margin[3] - c.Margin[1],
-		bottom - c.Margin[1] - c.Margin[3],
+		bottom - c.Margin[1] - c.Margin[3] - c.Border[1] - c.Border[3],
 	}
 }
 

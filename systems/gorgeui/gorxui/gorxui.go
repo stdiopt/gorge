@@ -296,7 +296,7 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		}
 		e.SetAnchor(p...)
 
-	case "color", "textColor", "handlerColor":
+	case "color", "textColor", "handlerColor", "borderColor":
 		p, err := parseFloat32Slice(a.Value)
 		if err != nil {
 			return err
