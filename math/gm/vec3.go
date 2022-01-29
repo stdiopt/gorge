@@ -7,6 +7,20 @@ import (
 // Vec3 an Float array of size 3 with methods for vector operations.
 type Vec3 [3]Float
 
+func V3(v ...Float) Vec3 {
+	switch len(v) {
+	case 0:
+		return Vec3{}
+	case 1:
+		return Vec3{v[0], v[0], v[0]}
+	case 2:
+		return Vec3{v[0], v[1], v[0]}
+	default:
+		return Vec3{v[0], v[1], v[2]}
+
+	}
+}
+
 // Add returns a new Vec3 based on the sum of the param.
 func (v Vec3) Add(v2 Vec3) Vec3 {
 	return Vec3{v[0] + v2[0], v[1] + v2[1], v[2] + v2[2]}

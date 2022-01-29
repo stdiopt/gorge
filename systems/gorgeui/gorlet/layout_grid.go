@@ -18,7 +18,7 @@ func (l *GridLayout) Layout(e *Entity) {
 		ch := float32(i/l.Cols) / float32(l.Rows)
 		e.SetAnchor(cw, ch, cw+sw, ch+sh)
 		// s := gm.Vec4{l.Spacing / 2, l.Spacing / 2, l.Spacing / 2, l.Spacing / 2}
-		s := gm.Vec4{0, 0, l.Spacing / 2, l.Spacing / 2}
+		s := gm.Vec4{l.Spacing / 2, l.Spacing / 2, l.Spacing / 2, l.Spacing / 2}
 		if cw == 0 {
 			s[0] = 0
 		} else if cw+sw == 1 {

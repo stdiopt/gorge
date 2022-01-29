@@ -8,7 +8,7 @@ type stencilFunc struct {
 	Mask uint32
 }
 
-type stateful struct {
+type cached struct {
 	*wrapper
 
 	// Toggles
@@ -18,6 +18,7 @@ type stateful struct {
 	enableStencil  bool
 	enableScissor  bool
 
+	blendEq   Enum
 	blendFunc [2]Enum
 
 	depthMask bool
@@ -38,7 +39,7 @@ type stateful struct {
 	viewport [4]int32
 }
 
-func (s *stateful) Enable(cap Enum) {
+func (s *cached) Enable(cap Enum) {
 	switch cap {
 	case BLEND:
 		if s.enableBlend {
@@ -69,7 +70,7 @@ func (s *stateful) Enable(cap Enum) {
 	s.wrapper.Enable(cap)
 }
 
-func (s *stateful) Disable(cap Enum) {
+func (s *cached) Disable(cap Enum) {
 	switch cap {
 	case BLEND:
 		if !s.enableBlend {
@@ -100,7 +101,15 @@ func (s *stateful) Disable(cap Enum) {
 	s.wrapper.Disable(cap)
 }
 
-func (s *stateful) BlendFunc(sfactor, dfactor Enum) {
+func (s *cached) BlendEquation(eq Enum) {
+	if s.blendEq == eq {
+		return
+	}
+	s.blendEq = eq
+	s.wrapper.BlendEquation(eq)
+}
+
+func (s *cached) BlendFunc(sfactor, dfactor Enum) {
 	if s.blendFunc[0] == sfactor && s.blendFunc[1] == dfactor {
 		return
 	}
@@ -109,7 +118,7 @@ func (s *stateful) BlendFunc(sfactor, dfactor Enum) {
 	s.wrapper.BlendFunc(sfactor, dfactor)
 }
 
-func (s *stateful) DepthMask(flag bool) {
+func (s *cached) DepthMask(flag bool) {
 	if s.depthMask == flag {
 		return
 	}
@@ -117,7 +126,7 @@ func (s *stateful) DepthMask(flag bool) {
 	s.wrapper.DepthMask(flag)
 }
 
-func (s *stateful) DepthFunc(f Enum) {
+func (s *cached) DepthFunc(f Enum) {
 	if s.depthFunc == f {
 		return
 	}
@@ -125,7 +134,7 @@ func (s *stateful) DepthFunc(f Enum) {
 	s.wrapper.DepthFunc(f)
 }
 
-func (s *stateful) ClearColor(r, g, b, a float32) {
+func (s *cached) ClearColor(r, g, b, a float32) {
 	if s.clearColor[0] == r && s.clearColor[1] == g && s.clearColor[2] == b && s.clearColor[3] == a {
 		return
 	}
@@ -133,7 +142,7 @@ func (s *stateful) ClearColor(r, g, b, a float32) {
 	s.wrapper.ClearColor(r, g, b, a)
 }
 
-func (s *stateful) ColorMask(r, g, b, a bool) {
+func (s *cached) ColorMask(r, g, b, a bool) {
 	if s.colorMask[0] == r && s.colorMask[1] == g && s.colorMask[2] == b && s.colorMask[3] == a {
 		return
 	}
@@ -144,7 +153,7 @@ func (s *stateful) ColorMask(r, g, b, a bool) {
 	s.wrapper.ColorMask(r, g, b, a)
 }
 
-func (s *stateful) CullFace(f Enum) {
+func (s *cached) CullFace(f Enum) {
 	if s.cullFace == f {
 		return
 	}
@@ -152,7 +161,7 @@ func (s *stateful) CullFace(f Enum) {
 	s.wrapper.CullFace(f)
 }
 
-func (s *stateful) FrontFace(f Enum) {
+func (s *cached) FrontFace(f Enum) {
 	if s.frontFace == f {
 		return
 	}
@@ -160,7 +169,7 @@ func (s *stateful) FrontFace(f Enum) {
 	s.wrapper.FrontFace(f)
 }
 
-func (s *stateful) StencilMask(mask uint32) {
+func (s *cached) StencilMask(mask uint32) {
 	if s.stencilMask == mask {
 		return
 	}
@@ -168,7 +177,7 @@ func (s *stateful) StencilMask(mask uint32) {
 	s.wrapper.StencilMask(mask)
 }
 
-func (s *stateful) StencilFunc(f Enum, ref int, mask uint32) {
+func (s *cached) StencilFunc(f Enum, ref int, mask uint32) {
 	if s.stencilFunc.Func == f && s.stencilFunc.Ref == ref && s.stencilFunc.Mask == mask {
 		return
 	}
@@ -176,7 +185,7 @@ func (s *stateful) StencilFunc(f Enum, ref int, mask uint32) {
 	s.wrapper.StencilFunc(f, ref, mask)
 }
 
-func (s *stateful) StencilOp(sfail, dfail, dpass Enum) {
+func (s *cached) StencilOp(sfail, dfail, dpass Enum) {
 	if s.stencilOp[0] == sfail && s.stencilOp[1] == dfail && s.stencilOp[2] == dpass {
 		return
 	}
@@ -184,7 +193,7 @@ func (s *stateful) StencilOp(sfail, dfail, dpass Enum) {
 	s.wrapper.StencilOp(sfail, dfail, dpass)
 }
 
-func (s *stateful) Scissor(x, y, width, height int32) {
+func (s *cached) Scissor(x, y, width, height int32) {
 	if s.scissor[0] == x && s.scissor[1] == y && s.scissor[2] == width && s.scissor[3] == height {
 		return
 	}
@@ -192,7 +201,7 @@ func (s *stateful) Scissor(x, y, width, height int32) {
 	s.wrapper.Scissor(x, y, width, height)
 }
 
-func (s *stateful) Viewport(x, y, width, height int32) {
+func (s *cached) Viewport(x, y, width, height int32) {
 	if s.viewport[0] == x && s.viewport[1] == y && s.viewport[2] == width && s.viewport[3] == height {
 		return
 	}
@@ -200,12 +209,13 @@ func (s *stateful) Viewport(x, y, width, height int32) {
 	s.wrapper.Viewport(x, y, width, height)
 }
 
-func (s *stateful) init() {
+func (s *cached) init() {
 	s.enableDepth = true
 	s.enableCullFace = true
 	s.enableBlend = false
 	s.enableStencil = false
 	s.enableScissor = false
+	s.blendEq = FUNC_ADD
 	s.blendFunc = [2]Enum{ONE, ONE_MINUS_SRC_ALPHA}
 	s.depthMask = true
 	s.depthFunc = LESS
@@ -225,6 +235,7 @@ func (s *stateful) init() {
 	s.wrapper.Disable(STENCIL_TEST)
 	s.wrapper.Disable(SCISSOR_TEST)
 
+	s.wrapper.BlendEquation(s.blendEq)
 	s.wrapper.BlendFunc(s.blendFunc[0], s.blendFunc[1])
 	s.wrapper.DepthMask(s.depthMask)
 	s.wrapper.DepthFunc(s.depthFunc)

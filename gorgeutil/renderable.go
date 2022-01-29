@@ -13,18 +13,6 @@ type Entity struct {
 	*gorge.ColorableComponent
 }
 
-// RenderableWithOptions
-/*func RenderableWithOptions(opts ...gorge.EntityFunc) *Renderable {
-	mat := gorge.NewMaterial()
-	m := &Renderable{
-		TransformComponent:  gorge.TransformIdent(),
-		RenderableComponent: gorge.NewRenderableComponent(nil, mat),
-		ColorableComponent:  gorge.NewColorableComponent(1, 1, 1, 1),
-	}
-	gorge.ApplyTo(m, opts...)
-	return m
-}*/
-
 // NewRenderable returns a new renderable.
 func NewRenderable(mesh gorge.Mesher, mat gorge.Materialer) *Entity {
 	return &Entity{
@@ -50,6 +38,13 @@ func NewPlane(dir primitive.PlaneDir) *Entity {
 	}
 }
 
+// AddPlane to entityAdder.
+func AddPlane(a entityAdder, dir primitive.PlaneDir) *Entity {
+	p := NewPlane(dir)
+	a.Add(p)
+	return p
+}
+
 // NewSphere returns a new renderable sphere.
 func NewSphere(sector, stack int) *Entity {
 	mat := gorge.NewMaterial()
@@ -61,6 +56,13 @@ func NewSphere(sector, stack int) *Entity {
 	}
 }
 
+// AddSphere to entityAdder.
+func AddSphere(a entityAdder, sector, stack int) *Entity {
+	s := NewSphere(sector, stack)
+	a.Add(s)
+	return s
+}
+
 // NewCube returns a new renderable cube.
 func NewCube() *Entity {
 	mat := gorge.NewMaterial()
@@ -70,4 +72,11 @@ func NewCube() *Entity {
 		RenderableComponent: gorge.NewRenderableComponent(mesh, mat),
 		ColorableComponent:  gorge.NewColorableComponent(1, 1, 1, 1),
 	}
+}
+
+// AddCube to entityAdder.
+func AddCube(a entityAdder) *Entity {
+	c := NewCube()
+	a.Add(c)
+	return c
 }

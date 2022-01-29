@@ -5,52 +5,56 @@ import (
 	"github.com/stdiopt/gorge/systems/render"
 )
 
-// Controller is a configurable particle controller
-type Controller[T any] struct {
+// Emitter entity will emit particles based on the given parameters when added
+// to gorge, particle.System must be in gorge initialization list.
+type Emitter[T any, Tp particler[T]] struct {
+	gorge.TransformComponent
+	EmitterComponent
+
 	CreateFunc func(*T)
 	InitFunc   func(*T)
 	UpdateFunc func(*T, float32)
 }
 
-// Create calls the CreateFunc if set.
-func (c Controller[T]) Create(p *T) {
-	if c.CreateFunc != nil {
-		c.CreateFunc(p)
-	}
-}
-
-// Init calls the init func if set.
-func (c Controller[T]) Init(p *T) {
-	if c.InitFunc != nil {
-		c.InitFunc(p)
-	}
-}
-
-// Update calls the update func if set.
-func (c Controller[T]) Update(p *T, dt float32) {
-	if c.UpdateFunc != nil {
-		c.UpdateFunc(p, dt)
-	}
-}
-
-// Emitter entity will emit particles based on the given parameters when added
-// to gorge, particle.System must be in gorge initialization list.
-type Emitter[T any] struct {
-	gorge.TransformComponent
-	EmitterComponent
-}
-
 // NewEmitter creates a new default emitter.
-func NewEmitter[T any]() *Emitter[T] {
-	return &Emitter[T]{
+func NewEmitter[T any, Tp particler[T]]() *Emitter[T, Tp] {
+	return &Emitter[T, Tp]{
 		TransformComponent: *gorge.NewTransformComponent(),
-		EmitterComponent:   *NewEmitterComponent[T](),
+		EmitterComponent:   *NewEmitterComponent[T, Tp](),
 	}
 }
 
-// SetController sets the controller for the particles.
-func (e *Emitter[T]) SetController(c controller[T]) {
-	e.Generator.(*Generator[T]).Controller = c
+func (e *Emitter[T, Tp]) SetCreateFunc(f func(*T)) {
+	e.CreateFunc = f
+}
+
+func (e *Emitter[T, Tp]) SetInitFunc(f func(*T)) {
+	e.InitFunc = f
+}
+
+func (e *Emitter[T, Tp]) SetUpdateFunc(f func(*T, float32)) {
+	e.UpdateFunc = f
+}
+
+// CreateParticle implements particle creator method.
+func (e *Emitter[T, Tp]) CreateParticle(p *T) {
+	if e.CreateFunc != nil {
+		e.CreateFunc(p)
+	}
+}
+
+// InitParticle implements particle initializer method.
+func (e *Emitter[T, Tp]) InitParticle(p *T) {
+	if e.InitFunc != nil {
+		e.InitFunc(p)
+	}
+}
+
+// UpdateParticle implements particle updater method.
+func (e *Emitter[T, Tp]) UpdateParticle(p *T, dt float32) {
+	if e.UpdateFunc != nil {
+		e.UpdateFunc(p, dt)
+	}
 }
 
 // Entity default particle entity

@@ -28,10 +28,8 @@ func (r *CameraRig) GetEntities() []gorge.Entity {
 // HandleEvent implements the event handler interface.
 func (r *CameraRig) HandleEvent(e event.Event) {
 	switch e := e.(type) {
-	case gorgeui.EventDragEnd:
-		r.disableEvents = false
-	case gorgeui.EventDragBegin:
-		r.disableEvents = true
+	case gorgeui.EventDragging:
+		r.disableEvents = e.Entity != nil
 	case input.EventPointer:
 		if r.disableEvents {
 			return
@@ -44,16 +42,20 @@ func (r *CameraRig) HandleEvent(e event.Event) {
 		}
 		delta := e.Pointers[0].Pos.Sub(*r.lastP)
 		*r.lastP = e.Pointers[0].Pos
+
+		// Commented until we find a way to avoid scrolling and zoom out simultaneously.
 		/*
 			if e.Type == input.MouseWheel {
 				t := r.Camera.Transform()
 				dist := t.WorldPosition().Len()
 				multiplier := dist * 0.005
-				t.Translate(0, 0, e.Pointers[0].DeltaZ*multiplier)
+				t.Translate(0, 0, e.Pointers[0].ScrollDelta[1]*multiplier)
 				if t.Position[2] < 0 {
 					t.Position[2] = 0
 				}
-			}*/
+			}
+		*/
+
 		if e.Type == input.MouseDown {
 			r.dragging = true
 		}
@@ -98,4 +100,11 @@ func NewTrackballCamera(c cameraEntity) *CameraRig {
 	camRig.Vert.Rotate(-0.7, 0, 0)
 
 	return camRig
+}
+
+func AddTrackballCamera(a entityAdder) *CameraRig {
+	c := NewTrackballCamera(nil)
+	a.Add(c)
+	a.AddHandler(c)
+	return c
 }

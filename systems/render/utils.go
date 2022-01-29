@@ -153,6 +153,54 @@ func StencilOp(n gorge.StencilOp) gl.Enum {
 	return gl.KEEP
 }
 
+func BlendEnum(n gorge.BlendEnum) gl.Enum {
+	switch n {
+	case gorge.BlendZero:
+		return gl.ZERO
+	case gorge.BlendOne:
+		return gl.ONE
+	case gorge.BlendSrcColor:
+		return gl.SRC_COLOR
+	case gorge.BlendOneMinusSrcColor:
+		return gl.ONE_MINUS_SRC_COLOR
+	case gorge.BlendDstColor:
+		return gl.DST_COLOR
+	case gorge.BlendOneMinusDstColor:
+		return gl.ONE_MINUS_DST_COLOR
+	case gorge.BlendSrcAlpha:
+		return gl.SRC_ALPHA
+	case gorge.BlendOneMinusSrcAlpha:
+		return gl.ONE_MINUS_SRC_ALPHA
+	case gorge.BlendDstAlpha:
+		return gl.DST_ALPHA
+	case gorge.BlendOneMinusDstAlpha:
+		return gl.ONE_MINUS_DST_ALPHA
+	case gorge.BlendConstantColor:
+		return gl.CONSTANT_COLOR
+	case gorge.BlendOneMinusConstantColor:
+		return gl.ONE_MINUS_CONSTANT_COLOR
+	case gorge.BlendConstantAlpha:
+		return gl.CONSTANT_ALPHA
+	case gorge.BlendOneMinusConstantAlpha:
+		return gl.ONE_MINUS_CONSTANT_ALPHA
+	default:
+		return gl.ONE
+	}
+}
+
+func BlendEq(n gorge.BlendEq) gl.Enum {
+	switch n {
+	case gorge.BlendEqAdd:
+		return gl.FUNC_ADD
+	case gorge.BlendEqSub:
+		return gl.FUNC_SUBTRACT
+	case gorge.BlendEqRevSub:
+		return gl.FUNC_REVERSE_SUBTRACT
+	default:
+		return gl.FUNC_ADD
+	}
+}
+
 // From glTf-Sample-Viewer
 func stringHash(str string) uint {
 	seed := uint(0)

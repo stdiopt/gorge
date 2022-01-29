@@ -26,7 +26,7 @@ func FromContext(g *gorge.Context) *Context {
 		sources: map[*gorge.AudioSource]*Processor{},
 	}
 	ctx := &Context{audio}
-	gorge.AddContext(g, ctx)
+	gorge.SetContext(g, ctx)
 	// g.PutProp(&Context{audio})
 	g.AddHandler(audio)
 

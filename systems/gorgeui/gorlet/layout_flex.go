@@ -31,12 +31,16 @@ func (l FlexLayout) Layout(ent *Entity) {
 		end := start + sz/esum
 		switch l.Direction {
 		case Horizontal:
+			if i != 0 {
+				e.SetRect(l.Spacing, 0, 0, 0)
+			}
 			e.SetAnchor(start, 0, end, 1)
 		case Vertical:
+			if i != 0 {
+				e.SetRect(0, l.Spacing, 0, 0)
+			}
 			e.SetAnchor(0, start, 1, end)
 		}
-		// Do we need to set rect here?
-		// r.SetRect(l.Spacing)
 		start = end
 	}
 }

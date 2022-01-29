@@ -125,7 +125,7 @@ func (g *Wrapper) BlendColor(red float32, green float32, blue float32, alpha flo
 //
 // http://www.khronos.org/opengles/sdk/docs/man3/html/glBlendEquation.xhtml
 func (g *Wrapper) BlendEquation(mode Enum) {
-	panic("not implemented") // TODO: Implement
+	gl.BlendEquation(mode)
 }
 
 // BlendEquationSeparate sets RGB and alpha blend equations separately.

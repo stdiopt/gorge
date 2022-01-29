@@ -12,20 +12,28 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 			// props
 			fontScale   = b.Prop("fontScale", 2)
 			background  = b.Prop("background", nil)
+			border      = b.Prop("border")
+			borderColor = b.Prop("borderColor")
+
 			labelColorX = b.Prop("x.labelColor", gm.Color(.5, 0, 0))
 			labelColorY = b.Prop("y.labelColor", gm.Color(0, .5, 0))
 			labelColorZ = b.Prop("z.labelColor", gm.Color(0, 0, .5))
 
 			// spinners
-			x *Entity
-			y *Entity
-			z *Entity
+			x   *Entity
+			y   *Entity
+			z   *Entity
+			val gm.Vec3
 		)
-		var val gm.Vec3
 		b.Push("fontScale", fontScale)
-		b.Use("color", background)
-		root := b.SetRoot(Quad())
-		b.BeginFlex(1)
+
+		root := b.Root()
+		b.UseProps(Props{
+			"color":       background,
+			"border":      border,
+			"borderColor": borderColor,
+		})
+		b.BeginPanel(LayoutFlexHorizontal(1))
 		{
 
 			obsFn := func(i int) func(v float32) {
@@ -45,7 +53,7 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 			z = b.Spinner("Z", obsFn(2))
 
 		}
-		b.EndFlex()
+		b.EndPanel()
 
 		Observe(b, "value", func(v gm.Vec3) {
 			if val == v {

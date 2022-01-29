@@ -33,10 +33,22 @@ func NewLight() *Light {
 	}
 }
 
+func AddLight(a entityAdder) *Light {
+	l := NewLight()
+	a.Add(l)
+	return l
+}
+
 // NewPointLight returns a new PointLight.
 func NewPointLight() *Light {
 	// NewLight defaults to pointlight.
 	return NewLight()
+}
+
+func AddPointLight(a entityAdder) *Light {
+	l := NewPointLight()
+	a.Add(l)
+	return l
 }
 
 // NewDirectionalLight returns a directional light.
@@ -52,6 +64,12 @@ func NewDirectionalLight() *Light {
 	}
 }
 
+func AddDirectionalLight(a entityAdder) *Light {
+	l := NewDirectionalLight()
+	a.Add(l)
+	return l
+}
+
 // NewSpotLight returns a spot light.
 func NewSpotLight() *Light {
 	return &Light{
@@ -65,4 +83,10 @@ func NewSpotLight() *Light {
 			OuterConeCos: gm.Cos(40 * (math.Pi / 180)),
 		},
 	}
+}
+
+func AddSpotLight(a entityAdder) *Light {
+	l := NewSpotLight()
+	a.Add(l)
+	return l
 }

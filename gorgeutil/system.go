@@ -2,16 +2,16 @@ package gorgeutil
 
 import (
 	"github.com/stdiopt/gorge"
+	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/primitive"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-// System initializes gorgeutil context
-/*func System(g *gorge.Context) func() *Context {
-	return func() *Context {
-		return WithContext(g)
-	}
-}*/
+type entityAdder interface {
+	Add(...gorge.Entity)
+	AddHandler(event.Handler)
+	AddBus(event.Buser)
+}
 
 // Camera creates and adds a default camera to a gorge context.
 func (c Context) Camera() *Camera {

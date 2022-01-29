@@ -11,7 +11,9 @@ type ForwardProp struct {
 type curEntity struct {
 	// will be called on each child
 	placement EntityFunc
-	entity    *Entity
+	props     Props
+
+	entity *Entity
 }
 
 // Func to build a guilet
@@ -26,8 +28,8 @@ type nextData struct {
 	props Props
 }
 
-func (n *nextData) add(fn func(e *Entity)) {
-	n.apply = append(n.apply, fn)
+func (n *nextData) add(fn ...func(e *Entity)) {
+	n.apply = append(n.apply, fn...)
 }
 
 // Builder used to build a guilet.
@@ -65,8 +67,8 @@ func (b *Builder) SetPlacement(fn EntityFunc) {
 }
 
 // Next pushes a func to the next created entity.
-func (b *Builder) Next(fn func(e *Entity)) {
-	b.next.add(fn)
+func (b *Builder) Next(fn ...func(e *Entity)) {
+	b.next.add(fn...)
 }
 
 // UseLayout set next widget layout.
@@ -165,9 +167,25 @@ func (b *Builder) UseProps(p Props) {
 	if b.next.props == nil {
 		b.next.props = Props{}
 	}
-	for k, v := range p {
-		b.next.props.Set(k, v)
+	b.next.props.SetProps(p)
+}
+
+// Local use these props on all the children.
+func (b *Builder) Local(k string, v any) {
+	cur := b.cur()
+	if cur.props == nil {
+		cur.props = Props{}
 	}
+	cur.props.Set(k, v)
+}
+
+// LocalProps sets local props on all the children.
+func (b *Builder) LocalProps(p Props) {
+	cur := b.cur()
+	if cur.props == nil {
+		cur.props = Props{}
+	}
+	cur.props.SetProps(p)
 }
 
 // Prop returns a property forwarded by k with optional default value.
@@ -205,9 +223,7 @@ func (b *Builder) Push(k string, v any) {
 // PushProps will set the props to any added entity.
 func (b *Builder) PushProps(p Props) {
 	cur := b.propStack.cur()
-	for k, v := range p {
-		cur.Set(k, v)
-	}
+	cur.SetProps(p)
 }
 
 // Save save props state onto stack.
@@ -234,9 +250,12 @@ func (b *Builder) Create(fn Func) *Entity {
 	for _, fn := range b.next.apply {
 		fn(e)
 	}
-
-	// Merge props
-	props := b.propStack.cur().Merge(b.next.props)
+	// Merge props in the following order:
+	// 1. Stack props
+	// 2. Local props
+	// 3. Next props
+	props := b.propStack.cur().Merge(b.cur().props)
+	props = props.Merge(b.next.props)
 	b.setupProps(e, props)
 
 	b.next = nextData{}

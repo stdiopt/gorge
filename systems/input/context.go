@@ -29,7 +29,7 @@ func FromContext(g *gorge.Context) *Context {
 		s.keyManager.update()
 		s.mouseManager.update()
 	})
-	return gorge.AddContext(g, &Context{s})
+	return gorge.SetContext(g, &Context{s})
 }
 
 // IsDown checks if wether a key or mouse button is pressed.

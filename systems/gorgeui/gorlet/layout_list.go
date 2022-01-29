@@ -9,17 +9,24 @@ type ListLayout struct {
 
 // Layout implements layouter
 func (l *ListLayout) Layout(ent *Entity) {
-	cury := float32(0)
+	cur := float32(0)
 	children := ent.Children()
 	for _, e := range children {
 		rt := e.RectTransform()
-		rt.SetAnchor(0, 0, 1, 0)
-
 		r := rt.Rect()
 
-		h := r[3] - r[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
-		rt.Position[1] = cury
-		cury += h + l.Spacing
+		switch l.Direction {
+		case Vertical:
+			rt.SetAnchor(0, 0, 1, 0)
+			d := r[3] - r[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
+			rt.Position[1] = cur
+			cur += d + l.Spacing
+		case Horizontal:
+			rt.SetAnchor(0, 0, 0, 1)
+			d := r[2] - r[0] + rt.Margin[0] + rt.Margin[2] + rt.Border[0] + rt.Border[2]
+			rt.Position[0] = cur
+			cur += d + l.Spacing
+		}
 	}
 }
 

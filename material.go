@@ -12,7 +12,8 @@ type Material struct {
 	Queue       int
 	Depth       DepthMode
 	DoubleSided bool
-	Blend       BlendType
+
+	Blend *Blend
 
 	DisableShadow bool
 
@@ -69,7 +70,7 @@ func (m *Material) SetDoubleSided(v bool) {
 }
 
 // SetBlend sets the blend type for material.
-func (m *Material) SetBlend(v BlendType) {
+func (m *Material) SetBlend(v *Blend) {
 	m.Blend = v
 }
 

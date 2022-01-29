@@ -281,16 +281,18 @@ func (r *Render) SetupShader(
 
 	// Get cached shader by thing
 
-	// avoid this calls by storing the state globally?
-	switch mat.Blend {
-	case gorge.BlendDisable:
-		gl.Disable(gl.BLEND)
-	case gorge.BlendOneOneMinusSrcAlpha:
+	switch {
+	// legacy if blend is zeroed we use default
+	case mat.Blend == nil:
 		gl.Enable(gl.BLEND)
+		gl.BlendEquation(gl.FUNC_ADD)
 		gl.BlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
-	case gorge.BlendOneOne:
+	case mat.Blend.Disabled:
+		gl.Disable(gl.BLEND)
+	default:
 		gl.Enable(gl.BLEND)
-		gl.BlendFunc(gl.ONE, gl.ONE)
+		gl.BlendEquation(BlendEq(mat.Blend.Eq))
+		gl.BlendFunc(BlendEnum(mat.Blend.Src), BlendEnum(mat.Blend.Dst))
 	}
 
 	switch mat.Depth {

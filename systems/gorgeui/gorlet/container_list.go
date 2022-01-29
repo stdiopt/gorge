@@ -8,39 +8,23 @@ import (
 )
 
 func List(s ...float32) Func {
+	spacing := float32(0)
+	if len(s) > 0 {
+		spacing = s[0]
+	}
 	return func(b *Builder) {
-		var (
-			spacing float32
-			dir     = Vertical
-		)
+		list := ListLayout{
+			Direction: Vertical,
+			Spacing:   spacing,
+		}
 
 		root := b.Root()
-		Observe(b, "spacing", func(v float32) { spacing = v })
-		Observe(b, "direction", func(v Direction) { dir = v })
+		Observe(b, "spacing", func(v float32) { list.Spacing = v })
+		Observe(b, "direction", func(v Direction) { list.Direction = v })
 
 		event.Handle(root, func(gorgeui.EventUpdate) {
-			cur := float32(0)
-			children := root.Children()
-			for _, e := range children {
-				rt := e.RectTransform()
-				r := rt.Rect()
-				switch dir {
-				case Vertical:
-					rt.SetAnchor(0, 0, 1, 0)
-					d := r[3] - r[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
-					rt.Position[1] = cur
-					cur += d + spacing
-				case Horizontal:
-					rt.SetAnchor(0, 0, 0, 1)
-					d := r[2] - r[0] + rt.Margin[0] + rt.Margin[2] + rt.Border[0] + rt.Border[2]
-					rt.Position[0] = cur
-					cur += d + spacing
-				}
-			}
+			list.Layout(root)
 		})
-		if len(s) > 1 {
-			root.Set("spacing", s[0])
-		}
 	}
 }
 

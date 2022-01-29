@@ -27,7 +27,7 @@ func FromContext(g *gorge.Context) *Context {
 	log.Println("initializing system")
 	r := newRenderer(g)
 	ctx := &Context{render: r}
-	gorge.AddContext(g, ctx)
+	gorge.SetContext(g, ctx)
 
 	var (
 		totalTime      float32

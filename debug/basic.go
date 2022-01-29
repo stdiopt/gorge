@@ -80,8 +80,6 @@ func (b *Basic) HandleEvent(v event.Event) {
 	b.camVec = b.camVec.Mul(.92)
 	b.camRot *= .92
 
-	cam := b.CamRig.Camera.Camera()
-
 	if b.input.KeyDown(input.KeyW) {
 		camTransform := b.CamRig.Camera.Transform()
 		b.camVec = b.camVec.Add(camTransform.Forward().Mul(power))
@@ -91,36 +89,40 @@ func (b *Basic) HandleEvent(v event.Event) {
 		b.camVec = b.camVec.Add(camTransform.Backward().Mul(power))
 	}
 	// Ambient control
-	if b.input.KeyDown(input.KeyR) {
-		cam.ClearColor[0] =
-			gm.Min(cam.ClearColor[0]+step, 1)
-	}
-	if b.input.KeyDown(input.KeyF) {
-		cam.ClearColor[0] =
-			gm.Max(cam.ClearColor[0]-step, 0)
-	}
-	if b.input.KeyDown(input.KeyT) {
-		cam.ClearColor[1] =
-			gm.Min(cam.ClearColor[1]+step, 1)
-	}
-	if b.input.KeyDown(input.KeyG) {
-		cam.ClearColor[1] =
-			gm.Max(cam.ClearColor[1]-step, 0)
-	}
-	if b.input.KeyDown(input.KeyY) {
-		cam.ClearColor[2] =
-			gm.Min(cam.ClearColor[2]+step, 1)
-	}
-	if b.input.KeyDown(input.KeyH) {
-		cam.ClearColor[2] =
-			gm.Max(cam.ClearColor[2]-step, 0)
-	}
+	/*
+		        cam := b.CamRig.Camera.Camera()
+			if b.input.KeyDown(input.KeyR) {
+				cam.ClearColor[0] =
+					gm.Min(cam.ClearColor[0]+step, 1)
+			}
+			if b.input.KeyDown(input.KeyF) {
+				cam.ClearColor[0] =
+					gm.Max(cam.ClearColor[0]-step, 0)
+			}
+			if b.input.KeyDown(input.KeyT) {
+				cam.ClearColor[1] =
+					gm.Min(cam.ClearColor[1]+step, 1)
+			}
+			if b.input.KeyDown(input.KeyG) {
+				cam.ClearColor[1] =
+					gm.Max(cam.ClearColor[1]-step, 0)
+			}
+			if b.input.KeyDown(input.KeyY) {
+				cam.ClearColor[2] =
+					gm.Min(cam.ClearColor[2]+step, 1)
+			}
+			if b.input.KeyDown(input.KeyH) {
+				cam.ClearColor[2] =
+					gm.Max(cam.ClearColor[2]-step, 0)
+			}
+	*/
 }
 
 // NewBasic creates a default scene.
 func NewBasic(g *gorge.Context) *Basic {
 	container := gorge.Container{}
 
+	// These...
 	ui := gorgeui.FromContext(g)
 	ic := input.FromContext(g)
 

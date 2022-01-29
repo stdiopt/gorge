@@ -24,6 +24,8 @@ type Bus struct {
 	listeners []any // slices
 
 	handlers setlist.SetList[Handler]
+
+	children []Buser
 }
 
 func (b *Bus) bus() *Bus { return b }
@@ -34,6 +36,23 @@ func (b *Bus) AddHandler(h Handler) {
 
 func (b *Bus) Remove(h Handler) {
 	b.handlers.Remove(h)
+}
+
+// AddBus adds a children bus.
+func (b *Bus) AddBus(bu Buser) {
+	b.children = append(b.children, bu)
+}
+
+// RemoveBus removes a Bus.
+func (b *Bus) RemoveBus(bu Buser) {
+	for i, c := range b.children {
+		if c == bu {
+			t := b.children
+			b.children = append(b.children[:i], b.children[i+1:]...)
+			t[len(t)-1] = nil
+			return
+		}
+	}
 }
 
 func Trigger[T any](bb Buser, v T) {
@@ -50,6 +69,9 @@ func Trigger[T any](bb Buser, v T) {
 	}
 	for _, h := range b.handlers.Items() {
 		h.HandleEvent(v)
+	}
+	for _, c := range b.children {
+		Trigger(c, v)
 	}
 }
 

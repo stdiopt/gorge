@@ -18,7 +18,7 @@ func System(g *gorge.Context) error {
 	if _, ok := gorge.GetContext[*Context](g); ok {
 		return nil
 	}
-	gorge.AddContext(g, &Context{})
+	gorge.SetContext(g, &Context{})
 
 	emitters := []emitter{}
 

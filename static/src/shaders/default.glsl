@@ -321,7 +321,7 @@ layout(std140) uniform Camera {
 		//vec3 ambient = Ambient;
 		float alpha = texture(albedoMap, TexCoords).a * ColorV.a;
 
-		if (alpha <= 0.001) {
+		if (alpha <= 0.01) {
 			discard;
 		}
 

@@ -1,8 +1,6 @@
 package gorlet
 
-import (
-	"github.com/stdiopt/gorge/math/gm"
-)
+import "github.com/stdiopt/gorge/math/gm"
 
 func Pivot(v ...float32) gm.Vec2 {
 	switch len(v) {
@@ -18,11 +16,11 @@ func Pivot(v ...float32) gm.Vec2 {
 func Rect(v ...float32) gm.Vec4 {
 	switch len(v) {
 	case 0:
-		return gm.Vec4{0, 0, 0, 0}
+		return gm.Vec4{}
 	case 1:
 		return gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:
-		return gm.Vec4{v[0], v[0], v[1], v[1]}
+		return gm.Vec4{v[0], v[1], v[0], v[1]}
 	case 3:
 		return gm.Vec4{v[0], v[1], v[2], v[2]}
 	default:
@@ -32,6 +30,8 @@ func Rect(v ...float32) gm.Vec4 {
 
 func Anchor(v ...float32) gm.Vec4 {
 	switch len(v) {
+	case 0:
+		return gm.Vec4{}
 	case 1:
 		return gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:
@@ -45,6 +45,8 @@ func Anchor(v ...float32) gm.Vec4 {
 
 func Margin(v ...float32) gm.Vec4 {
 	switch len(v) {
+	case 0:
+		return gm.Vec4{}
 	case 1:
 		return gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:
@@ -58,6 +60,8 @@ func Margin(v ...float32) gm.Vec4 {
 
 func Border(v ...float32) gm.Vec4 {
 	switch len(v) {
+	case 0:
+		return gm.Vec4{}
 	case 1:
 		return gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:

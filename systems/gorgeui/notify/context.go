@@ -106,6 +106,6 @@ func FromContext(g *gorge.Context) *Context {
 		gorge:  g,
 		system: s,
 	}
-	gorge.AddContext(g, ctx)
+	gorge.SetContext(g, ctx)
 	return ctx
 }

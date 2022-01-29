@@ -30,6 +30,12 @@ func (p Props) Set(k string, v any) {
 	p[k] = v
 }
 
+func (p Props) SetProps(p2 Props) {
+	for k, v := range p2 {
+		p.Set(k, v)
+	}
+}
+
 type propStack struct {
 	stack []Props
 	root  Props

@@ -67,9 +67,6 @@ func (g *Gorge) Start() error {
 	for _, fn := range g.inits {
 		fn(c)
 	}
-	/*if err := g.tcore.Start(); err != nil {
-		return err
-	}*/
 
 	event.Trigger(g, EventStart{})
 	event.Trigger(g, EventAfterStart{})

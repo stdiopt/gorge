@@ -61,7 +61,7 @@ func defaultObservers(e *Entity) {
 		e.SetPivot(v[:]...)
 	})
 	Observe(e, "layout", e.SetLayout)
-	Observe(e, "border", func(v gm.Vec4) {
-		e.SetBorder(v[:]...)
-	})
+	//Observe(e, "border", func(v gm.Vec4) {
+	//	e.SetBorder(v[:]...)
+	//})
 }

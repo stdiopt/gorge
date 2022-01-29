@@ -43,7 +43,7 @@ func FromContext(g *gorge.Context) *Context {
 	}
 	s.setupEvents(g)
 
-	return gorge.AddContext(g, &Context{s})
+	return gorge.SetContext(g, &Context{s})
 }
 
 // New returns a new UI

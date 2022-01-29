@@ -36,7 +36,7 @@ func FromContext(g *gorge.Context) *Context {
 
 	m := &Resource{gorge: g, fs: lfs}
 
-	return gorge.AddContext(g, &Context{resource: m})
+	return gorge.SetContext(g, &Context{resource: m})
 }
 
 // Texture helper that returns a texture with a resourcer ref

@@ -17,8 +17,8 @@ func (c *Context) Gorge() *Context {
 	return c
 }
 
-// AddContext to gorge context.
-func AddContext[T comparable](g *Context, c T) T {
+// SetContext to gorge context.
+func SetContext[T comparable](g *Context, c T) T {
 	if _, ok := GetContext[T](g); ok {
 		panic("context already exists")
 	}

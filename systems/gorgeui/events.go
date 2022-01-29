@@ -1,6 +1,7 @@
 package gorgeui
 
 import (
+	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/math/ray"
 )
@@ -25,6 +26,10 @@ type (
 	EventDragEnd struct{ *PointerData }
 	// EventUpdate triggers on gorge.EventUpdate
 	EventUpdate float32
+
+	// Global events
+	// EventDraggingON
+	EventDragging struct{ Entity gorge.Entity }
 )
 
 // PointerData common pointer data for pointer events.

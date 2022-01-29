@@ -10,18 +10,30 @@ import (
 func Button(clickfn func()) Func {
 	return func(b *Builder) {
 		var (
+			borderColor = b.Prop("borderColor", gm.Color())
+
 			normal     = gm.Color(.7, .9)
 			highlight  = gm.Color(.8, .9, .8)
 			down       = gm.Color(.4)
 			fadeFactor = float32(10)
+
+			panel *Entity
 		)
+
+		root := b.Root()
+		b.UseProps(Props{
+			"color":       normal,
+			"borderColor": borderColor,
+		})
+		panel = b.BeginPanel()
+		b.ClientArea()
+		b.EndPanel()
+
 		Observe(b, "color", Ptr(&normal))
 		Observe(b, "highlight", Ptr(&highlight))
 		Observe(b, "down", Ptr(&down))
 		Observe(b, "fadeFactor", Ptr(&fadeFactor))
-
-		b.Use("color", normal)
-		root := b.SetRoot(Quad())
+		Observe(b, "border", panel.SetBorderv)
 
 		color := normal
 		type buttonState int
@@ -44,7 +56,7 @@ func Button(clickfn func()) Func {
 			// it is somewhat ok since comparing with epsilon might be slower
 			if target != color {
 				color = color.Lerp(target, e.DeltaTime()*s)
-				root.Set("color", color)
+				panel.Set("color", color)
 			}
 		})
 		event.Handle(root, func(gorgeui.EventPointerDown) {

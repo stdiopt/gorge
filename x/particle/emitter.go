@@ -4,14 +4,7 @@ import (
 	"github.com/stdiopt/gorge"
 )
 
-type particle interface {
-	Transform() *gorge.TransformComponent
-	Colorable() *gorge.ColorableComponent
-	Particle() *Component
-}
-
-// Used in container.
-type generator interface {
+type particles interface {
 	init(g *gorge.Context, em emitter)
 	update(g *gorge.Context, em emitter, dt float32)
 	destroy(g *gorge.Context)
@@ -30,38 +23,38 @@ type EmitterComponent struct { // Component
 	Rate    float32 // Number of particles per frame
 
 	// tracked particles
-	Generator generator
+	Particles particles
 }
 
-// NewEmitterComponent creates a new emitter component with defaults.
-func NewEmitterComponent[T any]() *EmitterComponent {
+// NewEmitterComponent creates a new emitter component with a default generator based on type T
+func NewEmitterComponent[T any, Tp particler[T]]() *EmitterComponent {
 	return &EmitterComponent{
 		Enabled:   true,
 		Count:     1000,
 		Rate:      100,
 		Step:      0.016,
-		Generator: &Generator[T]{},
+		Particles: &Particles[T, Tp]{},
 	}
 }
 
 func (c *EmitterComponent) init(g *gorge.Context, em emitter) {
-	if c.Generator == nil {
-		// This breaks stuff
+	if c.Particles == nil {
+		// This breaks stuff on go1.18beta1
 		// c.Generator = &Generator[Entity]{}
 	}
-	c.Generator.init(g, em)
+	c.Particles.init(g, em)
 }
 
 func (c *EmitterComponent) update(g *gorge.Context, em emitter, dt float32) {
 	if c.Step <= 0 {
-		c.Generator.update(g, em, dt)
+		c.Particles.update(g, em, dt)
 		return
 	}
-	c.Generator.update(g, em, c.Step)
+	c.Particles.update(g, em, c.Step)
 }
 
 func (c *EmitterComponent) destroy(g *gorge.Context) {
-	c.Generator.destroy(g)
+	c.Particles.destroy(g)
 }
 
 // Emitter implements emitter component.
@@ -100,4 +93,13 @@ func (c *EmitterComponent) SetCount(i int) {
 // SetRate sets the number of particles generated per frame.
 func (c *EmitterComponent) SetRate(f float32) {
 	c.Rate = f
+}
+
+// SetStep sets the animation step, it uses deltaTime if 0.
+func (c *EmitterComponent) SetStep(f float32) {
+	c.Step = f
+}
+
+func (c *EmitterComponent) SetGenerator(g particles) {
+	c.Particles = g
 }

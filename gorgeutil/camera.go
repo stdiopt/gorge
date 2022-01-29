@@ -38,6 +38,12 @@ func NewCamera() *Camera {
 	}
 }
 
+func AddCamera(a entityAdder, fov, near, far float32) *Camera {
+	c := NewPerspectiveCamera(fov, near, far)
+	a.Add(c)
+	return c
+}
+
 // NewOrthoCamera returns a camera defaulted to ortho projection.
 func NewOrthoCamera(size, near, far float32) *Camera {
 	return &Camera{
@@ -51,6 +57,12 @@ func NewOrthoCamera(size, near, far float32) *Camera {
 			Viewport:       gm.Vec4{0, 0, 1, 1},
 		},
 	}
+}
+
+func AddOrthoCamera(a entityAdder, size, near, far float32) *Camera {
+	c := NewOrthoCamera(size, near, far)
+	a.Add(c)
+	return c
 }
 
 // NewPerspectiveCamera returns a default perspective camera.
@@ -68,6 +80,12 @@ func NewPerspectiveCamera(fov, near, far float32) *Camera {
 	}
 }
 
+func AddPerspectiveCamera(a entityAdder, fov, near, far float32) *Camera {
+	c := NewPerspectiveCamera(fov, near, far)
+	a.Add(c)
+	return c
+}
+
 // NewUICamera returns an ortho camera with a specific CullMask 1<<17 for UI.
 func NewUICamera() *Camera {
 	return &Camera{
@@ -83,4 +101,10 @@ func NewUICamera() *Camera {
 			CullMask:       gorge.CullMaskUI,
 		},
 	}
+}
+
+func AddUICamera(a entityAdder) *Camera {
+	c := NewUICamera()
+	a.Add(c)
+	return c
 }

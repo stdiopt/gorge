@@ -26,6 +26,8 @@ func Slider(min, max float32, fn func(float32)) Func {
 		var (
 			fontScale          = b.Prop("fontScale")
 			backgroundColor    = b.Prop("backgroundColor", gm.Color(.4, .2))
+			border             = b.Prop("border")
+			borderColor        = b.Prop("borderColor")
 			handlerTextColor   = b.Prop("textColor")
 			handlerColor       = b.Prop("handlerColor")
 			handlerBorder      = b.Prop("handlerBorder", Border(0))
@@ -39,10 +41,14 @@ func Slider(min, max float32, fn func(float32)) Func {
 			handler     *Entity
 		)
 
-		b.Use("color", backgroundColor)
-		b.UseDragEvents(true)
-		root := b.SetRoot(Quad())
+		root := b.Root()
 		root.SetDragEvents(true)
+		b.UseProps(Props{
+			"color":       backgroundColor,
+			"border":      border,
+			"borderColor": borderColor,
+		})
+		b.BeginPanel()
 		{
 			b.UseAnchor(0, 0, 1, 1)
 			b.UseRect(handlerSize/2, 0, handlerSize/2, 0)
@@ -65,8 +71,9 @@ func Slider(min, max float32, fn func(float32)) Func {
 				})
 				handler = b.TextButton("0", nil)
 			}
-			b.End()
+			b.EndContainer()
 		}
+		b.EndPanel()
 
 		Observe(b, "min", func(v float32) { min = v })
 		Observe(b, "max", func(v float32) { max = v })

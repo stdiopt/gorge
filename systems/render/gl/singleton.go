@@ -1,4 +1,3 @@
-// Package gl ...
 // nolint
 package gl
 
@@ -13,7 +12,7 @@ type wrapperi interface {
 var glw wrapperi //*Wrapper
 
 func Init(w *Wrapper) {
-	s := &stateful{wrapper: w}
+	s := &cached{wrapper: w}
 	s.init()
 	glw = s
 	log.Println("GL The wrapper:", w)

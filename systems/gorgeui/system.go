@@ -153,6 +153,7 @@ func (s *system) handlePointer(e input.EventPointer) {
 		}
 		if s.dragging != nil {
 			triggerOn(s.dragging, EventDragEnd{pd})
+			event.Trigger(s.gorge, EventDragging{nil})
 			s.dragging = nil
 		}
 	}
@@ -169,6 +170,7 @@ func (s *system) handlePointer(e input.EventPointer) {
 				}
 				s.dragging = e
 				triggerOn(s.dragging, EventDragBegin{pd})
+				event.Trigger(s.gorge, EventDragging{e})
 				return false
 			})
 		}

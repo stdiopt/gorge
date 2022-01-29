@@ -112,6 +112,10 @@ func (c *RectComponent) SetBorder(vs ...float32) {
 	c.Border = v4f(vs...)
 }
 
+func (c *RectComponent) SetBorderv(v gm.Vec4) {
+	c.Border = v
+}
+
 func (c *RectComponent) SetMargin(vs ...float32) {
 	c.Margin = v4f(vs...)
 }

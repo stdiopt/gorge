@@ -71,7 +71,7 @@ func rectElement(ent graphicer) Func {
 				c.Set("_maskDepth", n)
 			}
 		})
-
+		Observe(b, "border", root.SetBorderv)
 		Observe(b, "borderColor", func(v gm.Vec4) {
 			ent.Renderable().Material.Set("borderColor", v)
 		})
