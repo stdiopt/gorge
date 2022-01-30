@@ -246,10 +246,6 @@ func (b *Builder) Create(fn Func) *Entity {
 		pfn(e)
 	}
 
-	// On next one
-	for _, fn := range b.next.apply {
-		fn(e)
-	}
 	// Merge props in the following order:
 	// 1. Stack props
 	// 2. Local props
@@ -257,6 +253,11 @@ func (b *Builder) Create(fn Func) *Entity {
 	props := b.propStack.cur().Merge(b.cur().props)
 	props = props.Merge(b.next.props)
 	b.setupProps(e, props)
+
+	// On next one
+	for _, fn := range b.next.apply {
+		fn(e)
+	}
 
 	b.next = nextData{}
 

@@ -28,6 +28,10 @@ func List(s ...float32) Func {
 	}
 }
 
+func (b *Builder) List(spacing ...float32) *Entity {
+	return b.Add(List(spacing...))
+}
+
 func (b *Builder) BeginList(spacing ...float32) *Entity {
 	return b.Begin(List(spacing...))
 }

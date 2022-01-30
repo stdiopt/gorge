@@ -20,13 +20,13 @@ func Mask() Func {
 		b.ClientArea()
 		b.EndContainer()
 
-		// b.Use("stencil", calcMaskOff(0))
 		maskOff := b.Create(Quad())
 		maskOff.Set("colorMask", &[4]bool{false, false, false, false})
 		maskOff.SetDisableRaycast(true)
 		root.AddElement(maskOff)
 
 		depthMask := 0
+
 		Observe(b, "_maskDepth", func(n int) {
 			depthMask = n
 		})

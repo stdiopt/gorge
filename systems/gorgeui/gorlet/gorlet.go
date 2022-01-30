@@ -347,6 +347,9 @@ func (e *Entity) CalcBounds() gm.Vec4 {
 	sz := e.CalcSize()
 	ret[2] = sz[0] + e.Margin[0] + e.Margin[2]
 	ret[3] = sz[1] + e.Margin[1] + e.Margin[3]
+	if e.Masked {
+		return ret
+	}
 	for _, e := range e.children {
 		b := e.CalcBounds()
 		ret[0] = gm.Min(ret[0], e.Position[0]+b[0])
