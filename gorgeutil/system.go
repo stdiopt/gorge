@@ -4,7 +4,6 @@ import (
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/primitive"
-	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 type entityAdder interface {
@@ -115,12 +114,4 @@ func (c Context) Plane(dir primitive.PlaneDir) *Entity {
 	r := NewPlane(dir)
 	c.Add(r)
 	return r
-}
-
-// UI returns a gorgeui.New(gorge.Context) with the injected context.
-func (c Context) UI(cam cameraEntity) *gorgeui.UI {
-	ui := gorgeui.New()
-	ui.SetCamera(cam)
-	c.Add(ui)
-	return ui
 }

@@ -169,8 +169,6 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 				})
 				continue
 			}
-			// log.Println("Start:", tok)
-			// b.UseLayout(gorlet.LayoutList(.5))
 			push(func(b *gorlet.Builder) {
 				e := b.Begin(fn())
 				for _, a := range tok.Attr {

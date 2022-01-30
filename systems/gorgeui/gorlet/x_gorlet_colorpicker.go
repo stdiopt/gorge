@@ -44,13 +44,17 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 	}
 	return func(b *Builder) {
 		var (
-			spacing  = b.Prop("spacing", 0)
-			val      gm.Vec4
-			outColor *Entity
-			picker   *Entity
+			borderColor = b.Prop("borderColor")
+			spacing     = b.Prop("spacing", 0)
+			val         gm.Vec4
+			outColor    *Entity
+			picker      *Entity
 		)
 
-		root := b.SetRoot(Panel())
+		root := b.Root()
+
+		b.Use("borderColor", borderColor)
+		panel := b.BeginPanel()
 		b.Use("spacing", spacing)
 		b.BeginFlex(1, 7)
 		{
@@ -65,12 +69,14 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 			picker = b.Quad()
 		}
 		b.EndFlex()
+		b.EndPanel()
 
 		Observe(b, "value", func(v gm.Vec4) {
 			val = v
 			outColor.Set("color", v)
 			fn(v)
 		})
+		Observe(b, "border", panel.SetBorderv)
 		pickColor := func(pd *gorgeui.PointerData) {
 			rect := picker.Rect()
 			m := picker.Mat4()

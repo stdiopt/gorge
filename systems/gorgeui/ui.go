@@ -188,7 +188,6 @@ func (w *UI) update(dt float32) {
 	for _, e := range w.entities {
 		walk(e)
 	}
-	// log.Printf("entity count: %v, order: %v", count, order)
 }
 
 type uiSorter []*UI
