@@ -60,14 +60,19 @@ func rectElement(ent graphicer) Func {
 		// Forget order here
 		Observe(b, "order", ent.Renderable().SetOrder)
 		Observe(b, "_maskDepth", func(n int) {
-			s := calcMaskOn(n)
-			s.WriteMask = 0
-			s.Fail = gorge.StencilOpKeep
-			s.ZFail = gorge.StencilOpKeep
-			s.ZPass = gorge.StencilOpKeep
+			var s *gorge.Stencil
+			if n > -1 {
+				s = calcMaskOn(n)
+				s.WriteMask = 0
+				s.Fail = gorge.StencilOpKeep
+				s.ZFail = gorge.StencilOpKeep
+				s.ZPass = gorge.StencilOpKeep
+			}
 
 			ent.Renderable().Stencil = s
-			for _, c := range root.Children() {
+			// Needs to be on local children instead of
+			// clientArea children
+			for _, c := range root.children {
 				c.Set("_maskDepth", n)
 			}
 		})

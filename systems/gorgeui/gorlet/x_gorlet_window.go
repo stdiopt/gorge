@@ -55,16 +55,13 @@ func Window(def string) Func {
 		// Body
 		b.UseRect(0, 2, 0, 0)
 		b.Use("color", bodyColor)
+		b.Use("overflow", b.Prop("overflow"))
 		b.BeginPanel()
 		b.ClientArea()
 		b.EndPanel()
 
 		b.Use("color", nil)
 		b.Use("textColor", nil)
-
-		// b.UseAnchor(0, 0, 1, 1)
-		// b.UseRect(0, 0, 1, 0)
-		// b.TextButton("status", nil)
 
 		b.UseAnchor(1)
 		b.UseRect(0, 0, 1, 1)

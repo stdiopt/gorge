@@ -95,6 +95,13 @@ func (v Vec3) Lerp(b Vec3, t Float) Vec3 {
 	}
 }
 
+func (v Vec3) X() Float { return v[0] }
+func (v Vec3) Y() Float { return v[1] }
+func (v Vec3) Z() Float { return v[2] }
+
+func (v Vec3) XY() Vec2 { return Vec2{v[0], v[1]} }
+func (v Vec3) YZ() Vec2 { return Vec2{v[1], v[2]} }
+
 // Up returns a up vector
 func Up() Vec3 { return Vec3{0, 1, 0} }
 

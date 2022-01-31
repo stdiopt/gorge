@@ -89,3 +89,19 @@ func (v Vec4) Lerp(b Vec4, t Float) Vec4 {
 		v[3] + t*(b[3]-v[3]),
 	}
 }
+
+// like swizzling.
+
+func (v Vec4) X() Float { return v[0] }
+func (v Vec4) Y() Float { return v[1] }
+func (v Vec4) Z() Float { return v[2] }
+func (v Vec4) W() Float { return v[3] }
+
+func (v Vec4) XY() Vec2 { return Vec2{v[0], v[1]} }
+func (v Vec4) YZ() Vec2 { return Vec2{v[1], v[2]} }
+func (v Vec4) ZW() Vec2 { return Vec2{v[2], v[3]} }
+
+func (v Vec4) XZ() Vec2 { return Vec2{v[0], v[2]} }
+func (v Vec4) YW() Vec2 { return Vec2{v[1], v[3]} }
+
+func (v Vec4) XYZ() Vec3 { return Vec3{v[0], v[1], v[2]} }

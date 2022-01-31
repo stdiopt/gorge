@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/gohxs/prettylog"
+	"github.com/stdiopt/gorge/core/logger"
 )
 
 var (
@@ -42,7 +42,7 @@ func init() {
 }
 
 func main() {
-	prettylog.Global()
+	logger.Global()
 	flag.StringVar(&flagHTMLFile, "ohtml", "", "write output to file.wasm file.html")
 	flag.Parse()
 	pkg := flag.Arg(0)
@@ -72,7 +72,7 @@ func main() {
 	log.Println("Listening at:", addr)
 	err := http.Serve(listener, chain(
 		Server(),
-		Logger(prettylog.New("gorgeserve")),
+		Logger(logger.New("gorgeserve")),
 	))
 	if err != nil {
 		log.Fatal(err)

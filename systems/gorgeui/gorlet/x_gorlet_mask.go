@@ -14,7 +14,7 @@ func Mask() Func {
 		maskOn.Set("colorMask", &[4]bool{false, false, false, false})
 		maskOn.SetDisableRaycast(true)
 
-		root.AddElement(maskOn)
+		root.Add(maskOn)
 
 		container := b.BeginContainer()
 		b.ClientArea()
@@ -23,11 +23,14 @@ func Mask() Func {
 		maskOff := b.Create(Quad())
 		maskOff.Set("colorMask", &[4]bool{false, false, false, false})
 		maskOff.SetDisableRaycast(true)
-		root.AddElement(maskOff)
+		root.Add(maskOff)
 
 		depthMask := 0
 
 		Observe(b, "_maskDepth", func(n int) {
+			if n < 0 {
+				n = 0
+			}
 			depthMask = n
 		})
 

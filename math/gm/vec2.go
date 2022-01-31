@@ -36,6 +36,15 @@ func (v Vec2) Mul(c Float) Vec2 {
 	return Vec2{v[0] * c, v[1] * c}
 }
 
+// MulVec2 returns a new Vec2 with the multiplication by the corresponding
+// elements of v2.
+func (v Vec2) MulVec2(v2 Vec2) Vec2 {
+	return Vec2{
+		v[0] * v2[0],
+		v[1] * v2[1],
+	}
+}
+
 // Vec3 returns a vec3 with the extra value z.
 func (v Vec2) Vec3(z Float) Vec3 {
 	return Vec3{v[0], v[1], z}
@@ -69,3 +78,6 @@ func (v Vec2) Lerp(b Vec2, t Float) Vec2 {
 		v[1] + t*(b[1]-v[1]),
 	}
 }
+
+func (v Vec2) X() Float { return v[0] }
+func (v Vec2) Y() Float { return v[1] }

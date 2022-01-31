@@ -93,9 +93,6 @@ func Create(fn Func) *Entity {
 		RectComponent: *gorgeui.NewRectComponent(),
 	}
 	defaultObservers(defEntity)
-	// defEntity.SetLayout(gorgeui.AutoHeight(1))
-	// defEntity.SetAnchor(0)
-	// defEntity.SetRect(0, 0, 30, 5)
 	defEntity.SetPivot(0)
 	b := Builder{
 		root: &curEntity{entity: defEntity},
@@ -340,24 +337,23 @@ func (e *Entity) SetRelRect(v ...float32) {
 	e.SetRect(v...)
 }
 
-// CalcBounds calculates children bounds and positions and return min max
-// size
-func (e *Entity) CalcBounds() gm.Vec4 {
-	var ret gm.Vec4
+// CalcMax calculates children bounds and positions and return min max
+// Calc maximum of the children
+func (e *Entity) CalcMax() gm.Vec2 { // CalcMax
 	sz := e.CalcSize()
-	ret[2] = sz[0] + e.Margin[0] + e.Margin[2]
-	ret[3] = sz[1] + e.Margin[1] + e.Margin[3]
+	sz[0] += e.Margin[0] + e.Margin[2]
+	sz[1] += e.Margin[1] + e.Margin[3]
 	if e.Masked {
-		return ret
+		return sz
 	}
 	for _, e := range e.children {
-		b := e.CalcBounds()
-		ret[0] = gm.Min(ret[0], e.Position[0]+b[0])
-		ret[1] = gm.Min(ret[1], e.Position[1]+b[1])
-		ret[2] = gm.Max(ret[2], e.Position[0]+b[2])
-		ret[3] = gm.Max(ret[3], e.Position[1]+b[3])
+		b := e.CalcMax()
+		p := e.Position.XY()
+		p = p.Sub(e.Pivot.MulVec2(b))
+		sz[0] = gm.Max(sz[0], p[0]+b[0])
+		sz[1] = gm.Max(sz[1], p[1]+b[1])
 	}
-	return ret
+	return sz
 }
 
 // IntersectFromScreen intersects the entity rect from screen coordinates.

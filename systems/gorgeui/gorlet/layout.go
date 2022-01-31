@@ -61,10 +61,10 @@ func ContentSize() LayoutFunc {
 		ent.Anchor[2] = ent.Anchor[0]
 		ent.Anchor[3] = ent.Anchor[1]
 
-		b := ent.CalcBounds()
+		b := ent.CalcMax()
 
-		ent.Dim[0] = b[2]
-		ent.Dim[1] = b[3]
+		ent.Dim[0] = b[0]
+		ent.Dim[1] = b[1]
 	}
 }
 
