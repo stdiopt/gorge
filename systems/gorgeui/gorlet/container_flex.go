@@ -14,11 +14,12 @@ func Flex(sz ...float32) Func {
 		Observe(b, "direction", func(v Direction) { flex.Direction = v })
 		Observe(b, "spacing", func(v float32) { flex.Spacing = v })
 
+		// This way we can add layouters without messing with flex.
 		event.Handle(root, func(gorgeui.EventUpdate) {
 			flex.Layout(root)
 		})
 		if len(sz) > 0 {
-			root.Set("sizes", sz)
+			flex.SetSizes(sz...)
 		}
 	}
 }

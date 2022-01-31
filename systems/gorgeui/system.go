@@ -1,8 +1,10 @@
 package gorgeui
 
 import (
+	"log"
 	"math/rand"
 	"sort"
+	"time"
 
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
@@ -276,7 +278,11 @@ func (s *system) rayTest(pointerPos gm.Vec2) (Entity, ray.Result) {
 	hit, r := s.rayPick(pointerPos)
 	// debug
 	if s.Debug&DebugRays != 0 {
+		log.Printf("system debug: 0b%b DebugRays 0b%b = %v", s.Debug, DebugRays, s.Debug&DebugRays)
+
+		mark := time.Now()
 		s.debugRayIntersection(pointerPos)
+		log.Println("pointer exit", time.Since(mark))
 	}
 
 	if hit == s.pointOver {

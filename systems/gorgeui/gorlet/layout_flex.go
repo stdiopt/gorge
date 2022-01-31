@@ -19,8 +19,6 @@ func (l FlexLayout) Layout(ent *Entity) {
 	if d := len(children) - len(l.sizes); d > 0 {
 		esum = l.sum + float32(d)*l.smaller
 	}
-	// log.Println("Smaller:", l.smaller)
-	// log.Println("Sizes:", l.sizes)
 	var start float32
 	for i, e := range children {
 		sz := l.smaller

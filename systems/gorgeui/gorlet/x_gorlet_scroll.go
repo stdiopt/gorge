@@ -69,7 +69,6 @@ func Scroll() Func {
 			b.Use("margin", contentMargin)
 			scrollable = b.BeginMask()
 			{
-				b.UseAnchor(0, 0, 1, 1)
 				container = b.BeginContainer()
 				b.ClientArea()
 				b.EndContainer()
