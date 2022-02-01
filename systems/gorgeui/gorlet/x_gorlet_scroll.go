@@ -6,27 +6,28 @@ import (
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
-type scrollbar struct {
-	disabled bool
-	entity   *Entity
-	size     float32
-	value    float32
+type scrollent struct {
+	disabled  bool
+	notneeded bool
+	entity    *Entity
+	size      float32
+	value     float32
 }
 
-func Scroll() Func {
+func scroll() Func {
 	return func(b *Builder) {
 		var (
 			contentMargin = b.Prop("contentMargin", Margin(0))
 			container     *Entity
 			scrollable    *Entity
-			scrolls       = [2]scrollbar{
+			scrolls       = [2]scrollent{
 				{size: 1},
 				{size: 1},
 			}
 			scrollVel gm.Vec2
 		)
 
-		doscroll := func(n int) func(v float32) {
+		scrollFunc := func(n int) func(v float32) {
 			return func(v float32) {
 				if scrolls[n].disabled {
 					return
@@ -47,22 +48,18 @@ func Scroll() Func {
 		// Update scrollsize
 		updateScrolls := func() {
 			sz := gm.Vec2{}
-			if !scrolls[0].disabled {
+			if !scrolls[0].disabled && !scrolls[0].notneeded {
 				sz[0] = scrolls[0].size
 			}
-			if !scrolls[1].disabled {
+			if !scrolls[1].disabled && !scrolls[1].notneeded {
 				sz[1] = scrolls[1].size
 			}
 			scrollable.SetRect(0, 0, sz[1], sz[0])
-
 			scrolls[0].entity.SetRect(0, -sz[0], sz[1], sz[0])
 			scrolls[1].entity.SetRect(-sz[1], 0, sz[1], sz[0])
 		}
 
 		root := b.Root()
-		// TODO: Observe root while setting root.
-		// we might want to skip this
-		// b.BeginContainer()
 		{
 			b.UseRect(0, 0, scrolls[1].size, scrolls[0].size)
 			b.Use("margin", contentMargin)
@@ -78,13 +75,16 @@ func Scroll() Func {
 			// Horizontal
 			b.UseAnchor(0, 1, 1, 1)
 			b.Use("color", gm.Color(0, 0, 0, .2))
-			scrolls[0].entity = b.HScrollBar(doscroll(0))
+			scrolls[0].entity = b.Add(
+				scrollBar(Horizontal, scrollFunc(0)),
+			)
 			// Vertical scrollBar
 			b.UseAnchor(1, 0, 1, 1)
 			b.Use("color", gm.Color(0, 0, 0, .2))
-			scrolls[1].entity = b.VScrollBar(doscroll(1))
+			scrolls[1].entity = b.Add(
+				scrollBar(Vertical, scrollFunc(1)),
+			)
 		}
-		// b.EndContainer()
 
 		Observe(b, "hscrollSize", func(v float32) {
 			scrolls[0].disabled = (v == 0)
@@ -126,6 +126,7 @@ func Scroll() Func {
 
 			scrollVel = scrollVel.Lerp(gm.Vec2{}, e.DeltaTime()*20)
 			if !scrolls[0].disabled {
+				scrolls[0].notneeded = sz[0] >= b[0]
 				if sz[0] >= b[0] {
 					scrolls[0].entity.Set("value", 0)
 					scrolls[0].entity.Set("handlerSize", sz[0])
@@ -139,6 +140,7 @@ func Scroll() Func {
 			}
 
 			if !scrolls[1].disabled {
+				scrolls[1].notneeded = sz[1] >= b[1]
 				// Vertical
 				if sz[1] >= b[1] {
 					scrolls[1].entity.Set("value", 0)
@@ -151,25 +153,18 @@ func Scroll() Func {
 					scrolls[1].entity.Set("handlerSize", hs)
 				}
 			}
+			updateScrolls()
 		})
 		root.Set("scrollSize", 1)
 	}
 }
 
-func HScrollBar(fn func(float32)) Func {
-	return ScrollBar(Horizontal, fn)
-}
-
-func VScrollBar(fn func(float32)) Func {
-	return ScrollBar(Vertical, fn)
-}
-
-// ScrollBar creates a scroll bar
-// TODO: implement direction
-func ScrollBar(dir Direction, fn func(float32)) Func {
+func scrollBar(dir Direction, fn func(float32)) Func {
+	const sp = .3
+	const spx = .2
 	return func(b *Builder) {
 		var (
-			backgroundColor = b.Prop("backgroundColor", gm.Color(.4, .2))
+			backgroundColor = b.Prop("backgroundColor", gm.Color(.4, .3))
 			handlerColor    = b.Prop("handlerColor")
 		)
 		var (
@@ -198,9 +193,11 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 				b.Use("color", handlerColor)
 				b.UsePivot(.5)
 				if dir == Horizontal {
+					b.UseMargin(spx, sp)
 					b.UseRect(0, 0, handlerSize, 0)
 					b.UseAnchor(val, 0, val, 1)
 				} else {
+					b.UseMargin(sp, spx)
 					b.UseRect(0, 0, 0, handlerSize)
 					b.UseAnchor(0, val, 1, val)
 				}
@@ -280,24 +277,4 @@ func ScrollBar(dir Direction, fn func(float32)) Func {
 
 		root.Set("value", float32(0))
 	}
-}
-
-// BeginScroll creates and pushes a scrollable area.
-func (b *Builder) BeginScroll() *Entity {
-	return b.Begin(Scroll())
-}
-
-// EndScroll alias to .End()
-func (b *Builder) EndScroll() {
-	b.End()
-}
-
-// ScrollBar creates a scroll bar
-func (b *Builder) VScrollBar(fn func(float32)) *Entity {
-	return b.Add(ScrollBar(Vertical, fn))
-}
-
-// ScrollBar creates a scroll bar
-func (b *Builder) HScrollBar(fn func(float32)) *Entity {
-	return b.Add(ScrollBar(Horizontal, fn))
 }

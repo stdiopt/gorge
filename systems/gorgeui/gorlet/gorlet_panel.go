@@ -13,53 +13,35 @@ func Panel() Func {
 		var cur Overflow
 		// Need to store state about panel, mask and Scroll too
 
+		// This way we can set props on Quad
 		root := b.SetRoot(Quad())
-
-		container := b.Create(Container())
-		root.Add(container)
-		root.SetClientArea(container)
+		wrapper := b.BeginContainer()
+		container := b.BeginContainer()
+		b.ClientArea()
+		b.EndContainer()
+		b.EndContainer()
 
 		Observe(root, "overflow", func(o Overflow) {
 			if cur == o {
 				return
 			}
 			cur = o
+			root.SetClientArea(nil)
+			root.Remove(wrapper)
 			// This will swap containers
 			switch o {
 			// case Resize:
-			case OverflowVisible:
-				children := container.Children()
-				root.SetClientArea(nil)
-				root.Remove(container)
-				container = Create(Container())
-				for _, c := range children {
-					// Reset mask depth
-					c.Set("_maskDepth", -1)
-					container.Add(c)
-				}
-				root.Add(container)
-				root.SetClientArea(container)
 			case OverflowHidden:
-				children := container.Children()
-				root.SetClientArea(nil)
-				root.Remove(container)
-				container = Create(Mask())
-				for _, c := range children {
-					container.Add(c)
-				}
-				root.Add(container)
-				root.SetClientArea(container)
+				wrapper = Create(Mask())
 			case OverflowScroll:
-				children := container.Children()
-				root.SetClientArea(nil)
-				root.Remove(container)
-				container = Create(Scroll())
-				for _, c := range children {
-					container.Add(c)
-				}
-				root.Add(container)
-				root.SetClientArea(container)
+				wrapper = Create(scroll())
+			default:
+				container.Set("_maskDepth", -1)
+				wrapper = Create(Container())
 			}
+			wrapper.Add(container)
+			root.Add(wrapper)
+			root.SetClientArea(container)
 		})
 	}
 }

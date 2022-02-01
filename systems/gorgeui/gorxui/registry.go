@@ -19,7 +19,6 @@ func (r Registry) merge(r2 Registry) Registry {
 
 var registry = Registry{
 	"container":   func() gorlet.Func { return gorlet.Container() },
-	"scrollarea":  func() gorlet.Func { return gorlet.Scroll() },
 	"panel":       func() gorlet.Func { return gorlet.Panel() }, // nolint: gocritic
 	"label":       func() gorlet.Func { return gorlet.Label("") },
 	"textbutton":  func() gorlet.Func { return gorlet.TextButton("", nil) },

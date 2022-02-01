@@ -117,7 +117,19 @@ func (c *RectComponent) SetBorderv(v gm.Vec4) {
 }
 
 func (c *RectComponent) SetMargin(vs ...float32) {
-	c.Margin = v4f(vs...)
+	switch len(vs) {
+	case 0:
+		c.Margin = gm.Vec4{}
+	case 1:
+		c.Margin = gm.Vec4{vs[0], vs[0], vs[0], vs[0]}
+	case 2:
+		c.Margin = gm.Vec4{vs[0], vs[1], vs[0], vs[1]}
+	case 3:
+		c.Margin = gm.Vec4{vs[0], vs[1], vs[2], vs[2]}
+	default:
+		c.Margin = gm.Vec4{vs[0], vs[1], vs[2], vs[3]}
+
+	}
 }
 
 // SetWidth sets the width.

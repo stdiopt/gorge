@@ -68,6 +68,19 @@ func ContentSize() LayoutFunc {
 	}
 }
 
+func ContentSizeY() LayoutFunc {
+	return func(ent *Entity) {
+		ent.Dim = gm.Vec2{}
+		ent.Anchor[2] = ent.Anchor[0]
+		// ent.Anchor[3] = ent.Anchor[1]
+
+		b := ent.CalcMax()
+
+		// ent.Dim[0] = b[0]
+		ent.Dim[1] = b[1]
+	}
+}
+
 // Placement
 
 // Vertical placement
