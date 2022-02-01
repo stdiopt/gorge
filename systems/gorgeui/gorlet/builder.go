@@ -319,10 +319,10 @@ func (b *Builder) setupProps(e *Entity, props Props) {
 		k, v := k, v
 
 		// If we don't have the target observer, don't bother setting it.
-		o := e.observer(k)
-		if o == nil {
-			continue
-		}
+		//o := e.observer(k)
+		//if o == nil {
+		//	continue
+		//}
 
 		pk, ok := v.(ForwardProp)
 		if !ok {

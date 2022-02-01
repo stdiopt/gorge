@@ -38,3 +38,13 @@ func KeyDirection(
 		return f.Mul(power)
 	}
 }
+
+func KeyDirectionV(g *gorge.Context) func(gorge.EventUpdate) gm.Vec2 {
+	return KeyDirection(g,
+		input.KeyLeftShift,
+		input.KeyK,
+		input.KeyL,
+		input.KeyJ,
+		input.KeyH,
+	)
+}

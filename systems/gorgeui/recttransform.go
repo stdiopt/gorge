@@ -205,8 +205,8 @@ func (c *RectComponent) Translate(x, y, z float32) {
 }
 
 // This should be called Dim which are the dimentions, lefttop will always be 0,0
-
-func (c *RectComponent) CalcSize() gm.Vec2 {
+// ContentSize
+func (c *RectComponent) ContentSize() gm.Vec2 {
 	return c.RelativeSize(c.parentSize())
 }
 
@@ -227,15 +227,17 @@ func (c *RectComponent) RelativeSize(parentDim gm.Vec2) gm.Vec2 {
 		h -= h*(1-c.Anchor[3]) + h*(c.Anchor[1])
 		bottom = h - c.Dim[1] - c.Position[1]
 	}
-	return gm.Vec2{
+
+	r := gm.Vec2{
 		right - c.Margin[2] - c.Margin[0] - c.Border[2] - c.Border[0],
 		bottom - c.Margin[1] - c.Margin[3] - c.Border[1] - c.Border[3],
 	}
+	return r
 }
 
 func (c *RectComponent) parentSize() gm.Vec2 {
-	if p, ok := c.parent.(interface{ CalcSize() gm.Vec2 }); ok {
-		return p.CalcSize()
+	if p, ok := c.parent.(interface{ ContentSize() gm.Vec2 }); ok {
+		return p.ContentSize()
 	}
 	return gm.Vec2{}
 }

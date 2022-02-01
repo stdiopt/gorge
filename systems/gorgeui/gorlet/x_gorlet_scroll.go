@@ -14,7 +14,7 @@ type scrollent struct {
 	value     float32
 }
 
-func scroll() Func {
+func Scroll() Func {
 	return func(b *Builder) {
 		var (
 			contentMargin = b.Prop("contentMargin", Margin(0))
@@ -36,7 +36,7 @@ func scroll() Func {
 				if v == scrolls[n].value {
 					return
 				}
-				sz := scrollable.CalcSize()
+				sz := scrollable.ContentSize()
 				b := container.CalcMax()
 				if sz[n]/b[n] > 1 {
 					return
@@ -44,19 +44,6 @@ func scroll() Func {
 				container.Position[n] = v * (sz[n] - b[n])
 				scrolls[n].value = v
 			}
-		}
-		// Update scrollsize
-		updateScrolls := func() {
-			sz := gm.Vec2{}
-			if !scrolls[0].disabled && !scrolls[0].notneeded {
-				sz[0] = scrolls[0].size
-			}
-			if !scrolls[1].disabled && !scrolls[1].notneeded {
-				sz[1] = scrolls[1].size
-			}
-			scrollable.SetRect(0, 0, sz[1], sz[0])
-			scrolls[0].entity.SetRect(0, -sz[0], sz[1], sz[0])
-			scrolls[1].entity.SetRect(-sz[1], 0, sz[1], sz[0])
 		}
 
 		root := b.Root()
@@ -89,17 +76,14 @@ func scroll() Func {
 		Observe(b, "hscrollSize", func(v float32) {
 			scrolls[0].disabled = (v == 0)
 			scrolls[0].size = v
-			updateScrolls()
 		})
 		Observe(b, "vscrollSize", func(v float32) {
 			scrolls[1].disabled = (v == 0)
 			scrolls[1].size = v
-			updateScrolls()
 		})
 		Observe(b, "scrollSize", func(v float32) {
 			scrolls[0].size = v
 			scrolls[1].size = v
-			updateScrolls()
 		})
 
 		event.Handle(root, func(e gorgeui.EventPointerWheel) {
@@ -121,16 +105,19 @@ func scroll() Func {
 			}
 		})
 		event.Handle(root, func(e gorgeui.EventUpdate) {
-			sz := scrollable.CalcSize()
+			sz := scrollable.ContentSize()
 			b := container.CalcMax()
+
+			ssz := gm.Vec2{}
 
 			scrollVel = scrollVel.Lerp(gm.Vec2{}, e.DeltaTime()*20)
 			if !scrolls[0].disabled {
-				scrolls[0].notneeded = sz[0] >= b[0]
-				if sz[0] >= b[0] {
+				if sz[0]+gm.Epsilon >= b[0] {
 					scrolls[0].entity.Set("value", 0)
 					scrolls[0].entity.Set("handlerSize", sz[0])
-				} else if sz[0] < b[0] {
+				} else {
+					ssz[0] = scrolls[0].size
+
 					hs := sz[0] * (sz[0] / b[0])
 					delta := scrollVel[0] * .8
 					curScroll := container.Position[0] / (sz[0] - b[0])
@@ -140,12 +127,12 @@ func scroll() Func {
 			}
 
 			if !scrolls[1].disabled {
-				scrolls[1].notneeded = sz[1] >= b[1]
 				// Vertical
-				if sz[1] >= b[1] {
+				if sz[1]+gm.Epsilon >= b[1] {
 					scrolls[1].entity.Set("value", 0)
 					scrolls[1].entity.Set("handlerSize", sz[1])
-				} else if sz[1] < b[1] {
+				} else {
+					ssz[1] = scrolls[1].size
 					hs := sz[1] * (sz[1] / b[1])
 					curScroll := container.Position[1] / (sz[1] - b[1])
 					delta := scrollVel[1] * .8
@@ -153,7 +140,9 @@ func scroll() Func {
 					scrolls[1].entity.Set("handlerSize", hs)
 				}
 			}
-			updateScrolls()
+			scrollable.SetRect(0, 0, ssz[1], ssz[0])
+			scrolls[0].entity.SetRect(0, -ssz[0], ssz[1], ssz[0])
+			scrolls[1].entity.SetRect(-ssz[1], 0, ssz[1], ssz[0])
 		})
 		root.Set("scrollSize", 1)
 	}
@@ -277,4 +266,14 @@ func scrollBar(dir Direction, fn func(float32)) Func {
 
 		root.Set("value", float32(0))
 	}
+}
+
+// BeginScroll starts a scrollable rect.
+func (b *Builder) BeginScroll() *Entity {
+	return b.Begin(Scroll())
+}
+
+// EndScroll ends a scrollable rect.
+func (b *Builder) EndScroll() {
+	b.End()
 }

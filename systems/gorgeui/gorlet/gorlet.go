@@ -42,6 +42,9 @@ type gcref struct{ n int }
 
 // Entity is a gui component
 type Entity struct {
+	// Temp solution for the thing
+	Masked bool
+
 	observers
 	id string
 	gorgeui.ElementComponent
@@ -58,9 +61,6 @@ type Entity struct {
 	layouter   Layouter
 
 	// observers map[string][]ObserverFunc
-
-	// Temp solution for the thing
-	Masked bool
 
 	gcref *gcref
 }
@@ -340,7 +340,7 @@ func (e *Entity) SetRelRect(v ...float32) {
 // CalcMax calculates children bounds and positions and return min max
 // Calc maximum of the children
 func (e *Entity) CalcMax() gm.Vec2 { // CalcMax
-	sz := e.CalcSize()
+	sz := e.ContentSize()
 	sz[0] += e.Margin[0] + e.Margin[2]
 	sz[1] += e.Margin[1] + e.Margin[3]
 	if e.Masked {
@@ -358,7 +358,7 @@ func (e *Entity) CalcMax() gm.Vec2 { // CalcMax
 
 // IntersectFromScreen intersects the entity rect from screen coordinates.
 func (e *Entity) IntersectFromScreen(pos gm.Vec2) ray.Result {
-	sz := e.CalcSize()
+	sz := e.ContentSize()
 	m := e.Mat4()
 	v0 := m.MulV4(gm.Vec4{0, 0, 0, 1}).Vec3()     // 0
 	v1 := m.MulV4(gm.Vec4{sz[0], 0, 0, 1}).Vec3() // right
