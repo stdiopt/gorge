@@ -20,24 +20,15 @@ func (o *Observer) Call(v any) {
 
 type observers struct {
 	observers map[string]*Observer
-	data      map[string]any
 }
 
 func (o *observers) set(k string, v any) bool {
 	oo := o.observers[k]
 	if oo == nil {
-		if o.data == nil {
-			o.data = make(map[string]any)
-		}
-		o.data[k] = v
 		return false
 	}
 	oo.Call(v)
 	return true
-}
-
-func (o *observers) Get(k string) any {
-	return o.data[k]
 }
 
 func (o *observers) observeWithType(k string, typ reflect.Type, fn ObserverFunc) {

@@ -21,8 +21,7 @@ const (
 
 // cameraEntity camera composition used in UI system.
 type cameraEntity interface {
-	gorge.Matrixer
-	Transform() *gorge.TransformComponent
+	gorge.Transformer
 	Camera() *gorge.CameraComponent
 }
 

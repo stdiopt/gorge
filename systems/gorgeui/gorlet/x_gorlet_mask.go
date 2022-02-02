@@ -9,7 +9,7 @@ func Mask() Func {
 	return func(b *Builder) {
 		root := b.Root()
 		// This will Clip input
-		root.Masked = true
+		root.masked = true
 		maskOn := Create(Quad())
 		maskOn.Set("colorMask", &[4]bool{false, false, false, false})
 		maskOn.SetDisableRaycast(true)

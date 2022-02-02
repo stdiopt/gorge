@@ -43,7 +43,8 @@ type gcref struct{ n int }
 // Entity is a gui component
 type Entity struct {
 	// Temp solution for the thing
-	Masked bool
+	masked bool
+	fill   bool
 
 	observers
 	id string
@@ -117,7 +118,7 @@ func entityUpdate(ent *Entity) {
 }
 
 func (e *Entity) IsMasked() bool {
-	return e.Masked
+	return e.masked
 }
 
 // XXX:
@@ -143,9 +144,9 @@ func (e *Entity) String() string {
 	return e.name
 }
 
-// Client returns the client area of the entity, the client area
+// ClientArea returns the client area of the entity, the client area
 // is an Entity where the children will be added using Add method.
-func (e *Entity) Client() *Entity {
+func (e *Entity) ClientArea() *Entity {
 	if e.clientArea == nil {
 		return e
 	}
@@ -343,7 +344,7 @@ func (e *Entity) CalcMax() gm.Vec2 { // CalcMax
 	sz := e.ContentSize()
 	sz[0] += e.Margin[0] + e.Margin[2]
 	sz[1] += e.Margin[1] + e.Margin[3]
-	if e.Masked {
+	if e.masked {
 		return sz
 	}
 	for _, e := range e.children {

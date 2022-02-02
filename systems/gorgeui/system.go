@@ -234,42 +234,6 @@ func (s *system) rayPick(pointerPos gm.Vec2) (Entity, ray.Result) {
 	return nil, ray.Result{}
 }
 
-/*
-func (s *system) rayPick(pointerPos gm.Vec2) (Entity, ray.Result) {
-	uiMap := map[*UI][]Entity{}
-	uis := []*UI{}
-	// Heavy'ish?
-	for _, el := range s.elems {
-		u := RootUI(el)
-		if u == nil {
-			continue
-		}
-		if _, ok := uiMap[u]; !ok {
-			uis = append(uis, u)
-		}
-		uiMap[u] = append(uiMap[u], el)
-	}
-	sort.Sort(uiSorter(uis))
-	for _, u := range uis {
-		elems := uiMap[u]
-		r := ray.FromScreen(s.gorge.ScreenSize(), u.Camera, pointerPos)
-
-		for i := len(elems) - 1; i >= 0; i-- {
-			k := elems[i]
-			bw := k.Element()
-			if bw.DisableRaycast {
-				continue
-			}
-			if res := rayRect(r, k); res.Hit {
-				return k, res
-			}
-		}
-	}
-	return nil, ray.Result{}
-}
-
-/**/
-
 // Ray test and return an entity
 // if the pick is the same to the pointOver it will return
 // if not it will trigger Pointer leave on the existing pointOver
