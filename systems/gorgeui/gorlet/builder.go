@@ -154,6 +154,12 @@ func (b *Builder) UseDragEvents(v bool) {
 	})
 }
 
+func (b *Builder) UseFill(v bool) {
+	b.next.add(func(e *Entity) {
+		e.SetFill(v)
+	})
+}
+
 // Use a property for the next widget.
 func (b *Builder) Use(k string, v any) {
 	if b.next.props == nil {

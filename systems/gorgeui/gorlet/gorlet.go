@@ -168,15 +168,6 @@ func (e *Entity) OnAdd(fn func(e *Entity)) {
 	e.onAdd = fn
 }
 
-// SetLayout Will set the layouter thing on client Entity.
-func (e *Entity) SetLayout(l Layouter) {
-	if e.clientArea != nil {
-		e.clientArea.SetLayout(l)
-		return
-	}
-	e.layouter = l
-}
-
 // GetEntities implement gorge.Container.
 func (e *Entity) GetEntities() []gorge.Entity {
 	return e.container
@@ -276,6 +267,20 @@ func (e *Entity) ID() string {
 // SetID set entity ID.
 func (e *Entity) SetID(name string) {
 	e.id = name
+}
+
+// SetLayout Will set the layouter thing on client Entity.
+func (e *Entity) SetLayout(l Layouter) {
+	if e.clientArea != nil {
+		e.clientArea.SetLayout(l)
+		return
+	}
+	e.layouter = l
+}
+
+// SetFill for fill layout.
+func (e *Entity) SetFill(f bool) {
+	e.fill = f
 }
 
 // Set invoke any observer attached to the named propery.
