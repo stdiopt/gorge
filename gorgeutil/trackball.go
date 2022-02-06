@@ -20,6 +20,10 @@ type CameraRig struct {
 	disableEvents bool
 }
 
+func (s *CameraRig) String() string {
+	return "CameraRig"
+}
+
 // GetEntities returns the underlying camera entities.
 func (r *CameraRig) GetEntities() []gorge.Entity {
 	return []gorge.Entity{r.Camera}

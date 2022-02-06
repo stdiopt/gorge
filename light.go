@@ -1,6 +1,10 @@
 package gorge
 
-import "github.com/stdiopt/gorge/math/gm"
+import (
+	"fmt"
+
+	"github.com/stdiopt/gorge/math/gm"
+)
 
 // LightType type for lights
 type LightType int
@@ -11,6 +15,19 @@ const (
 	LightDirectional
 	LightSpot
 )
+
+func (l LightType) String() string {
+	switch l {
+	case LightPoint:
+		return "LightPoint"
+	case LightDirectional:
+		return "LightDirectional"
+	case LightSpot:
+		return "LightSpot"
+	default:
+		return fmt.Sprintf("LightUnknown(%d)", l)
+	}
+}
 
 // LightComponent component type of light and what nots
 // type of light as in

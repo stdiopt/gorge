@@ -1,6 +1,7 @@
 package gorgeutil
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/stdiopt/gorge"
@@ -12,6 +13,10 @@ type Light struct {
 	Name string
 	gorge.TransformComponent
 	gorge.LightComponent
+}
+
+func (l *Light) String() string {
+	return fmt.Sprintf("gorgeutil.Light(%v)", l.Type)
 }
 
 // SetName sets the light name for debugging purposes.

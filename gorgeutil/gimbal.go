@@ -16,10 +16,18 @@ type MeshEntity struct {
 	*gorge.ColorableComponent
 }
 
+func (e MeshEntity) String() string {
+	return "gorgeutil.MeshEntity"
+}
+
 // Gimbal Compost object
 type Gimbal struct {
 	Entities []gorge.Entity
 	*gorge.TransformComponent
+}
+
+func (g Gimbal) String() string {
+	return "Gimbal"
 }
 
 // GetEntities implement the gorge entity container.
