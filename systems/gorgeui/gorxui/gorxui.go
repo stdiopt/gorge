@@ -84,7 +84,7 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 	// main
 	fns := []gorlet.Func{}
 
-	push := func(fn func(*gorlet.Builder)) {
+	push := func(fn func(*gorlet.B)) {
 		if target == "" {
 			fns = append(fns, fn)
 			return
@@ -109,7 +109,7 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 			if t == "" {
 				continue
 			}
-			push(func(b *gorlet.Builder) {
+			push(func(b *gorlet.B) {
 				// b.Save()
 				// add a label right here
 				b.Use("autoSize", true)
@@ -125,7 +125,7 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 			t := strings.ToLower(tok.Name.Local)
 			switch t {
 			case "clientarea":
-				push(func(b *gorlet.Builder) {
+				push(func(b *gorlet.B) {
 					b.ClientArea()
 				})
 				continue
@@ -161,7 +161,7 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 			}
 			// This uses set root which might not be ideal for certain situations
 			if isFirst { // this uses SetRoot
-				push(func(b *gorlet.Builder) {
+				push(func(b *gorlet.B) {
 					e := b.SetRoot(fn())
 					for _, a := range tok.Attr {
 						setProp(b.Root(), e, a) // errcheck
@@ -169,7 +169,7 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 				})
 				continue
 			}
-			push(func(b *gorlet.Builder) {
+			push(func(b *gorlet.B) {
 				e := b.Begin(fn())
 				for _, a := range tok.Attr {
 					setProp(b.Root(), e, a) // errcheck
@@ -178,7 +178,7 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 		case xml.EndElement:
 			if tok.Name.Local == "template" {
 				fns := defs[target]
-				bf := func(b *gorlet.Builder) {
+				bf := func(b *gorlet.B) {
 					for _, fn := range fns {
 						fn(b)
 					}
@@ -187,12 +187,12 @@ func (x *XUI) read(rd io.Reader) (gorlet.Func, error) {
 				target = ""
 				continue
 			}
-			push(func(b *gorlet.Builder) {
+			push(func(b *gorlet.B) {
 				b.End()
 			})
 		}
 	}
-	bf := func(b *gorlet.Builder) {
+	bf := func(b *gorlet.B) {
 		for _, fn := range fns {
 			fn(b)
 		}
@@ -274,13 +274,13 @@ func setProp(root, e *gorlet.Entity, a xml.Attr) error {
 		if err != nil {
 			return err
 		}
-		e.Dim[0] = float32(v)
+		e.Size[0] = float32(v)
 	case "height":
 		v, err := strconv.ParseFloat(a.Value, 32)
 		if err != nil {
 			return err
 		}
-		e.Dim[1] = float32(v)
+		e.Size[1] = float32(v)
 	case "anchor":
 		p, err := parseFloat32Slice(a.Value)
 		if err != nil {

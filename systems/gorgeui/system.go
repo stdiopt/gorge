@@ -332,8 +332,8 @@ func (s *system) debugRects() {
 		s.dbg.AddRect(v0, v1, v3, v2)
 
 		dot := gm.Vec4{
-			rect[0] + (t.Dim[0])*t.Pivot[0],
-			rect[1] + (t.Dim[1])*t.Pivot[1],
+			rect[0] + (t.Size[0])*t.Pivot[0],
+			rect[1] + (t.Size[1])*t.Pivot[1],
 			0,
 			1,
 		}

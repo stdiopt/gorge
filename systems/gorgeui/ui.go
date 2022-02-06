@@ -27,6 +27,10 @@ type UI struct {
 	gorge *gorge.Context
 }
 
+func (u *UI) String() string {
+	return "UI"
+}
+
 // New returns a new UI.
 func New() *UI {
 	e := &UI{
@@ -41,6 +45,31 @@ func New() *UI {
 	return e
 }
 
+func Add(g *gorge.Context) *UI {
+	defCam := &defaultCamera{
+		TransformComponent: *gorge.NewTransformComponent(),
+		CameraComponent: gorge.CameraComponent{
+			Name:           "ui camera",
+			ProjectionType: gorge.ProjectionOrtho,
+			CullMask:       gorge.CullMaskUI,
+			OrthoSize:      100,
+			Near:           -100,
+			Far:            100,
+			ClearFlag:      gorge.ClearDepthOnly,
+			Order:          3000,
+			Viewport:       gm.Vec4{0, 0, 1, 1},
+			ClearColor:     gm.Vec3{.3, .3, .3},
+		},
+	}
+	g.Add(defCam)
+	ui := New()
+	ui.SetCamera(defCam)
+
+	g.Add(ui)
+
+	return ui
+}
+
 // SetCullMask for the UI.
 func (w *UI) SetCullMask(a gorge.CullMaskFlags) {
 	w.CullMask = a
@@ -53,6 +82,12 @@ func (w *UI) SetOrder(a int) {
 
 // SetCamera sets this UI Camera.
 func (w *UI) SetCamera(c cameraEntity) {
+	if w.Camera == c {
+		return
+	}
+	if c, ok := w.Camera.(*defaultCamera); ok && w.gorge != nil {
+		w.gorge.Remove(c)
+	}
 	w.Camera = c
 }
 
@@ -69,7 +104,7 @@ func (w *UI) Rect() gm.Vec4 {
 	// so it should be probably positioned from 0,0 of the screen
 	cam := w.Camera.Camera()
 	if cam.ProjectionType != gorge.ProjectionOrtho {
-		return gm.Vec4{0, 0, w.Dim[0], w.Dim[1]}
+		return gm.Vec4{0, 0, w.Size[0], w.Size[1]}
 	}
 	// ScreenSize
 	vp := cam.CalcViewport(w.ScreenSize())
@@ -82,14 +117,14 @@ func (w *UI) Rect() gm.Vec4 {
 	halfV := cam.OrthoSize / 2
 	return gm.Vec4{
 		-halfH + w.Position[0], -halfV + w.Position[1],
-		halfH + w.Dim[0], halfV + w.Dim[1],
+		halfH + w.Size[0], halfV + w.Size[1],
 	}
 }
 
 func (w *UI) CalcSize() gm.Vec2 {
 	cam := w.Camera.Camera()
 	if cam.ProjectionType != gorge.ProjectionOrtho {
-		return w.Dim
+		return w.Size
 	}
 	// ScreenSize
 	vp := cam.CalcViewport(w.ScreenSize())
@@ -105,7 +140,9 @@ func (w *UI) CalcSize() gm.Vec2 {
 }
 
 // ScreenSize returns the screensize.
-func (w *UI) ScreenSize() gm.Vec2 { return w.gorge.ScreenSize() }
+func (w *UI) ScreenSize() gm.Vec2 {
+	return w.gorge.ScreenSize()
+}
 
 func (w *UI) GetEntities() []gorge.Entity {
 	return w.entities

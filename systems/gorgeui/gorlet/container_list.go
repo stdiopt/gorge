@@ -12,7 +12,7 @@ func List(s ...float32) Func {
 	if len(s) > 0 {
 		spacing = s[0]
 	}
-	return func(b *Builder) {
+	return func(b *B) {
 		list := ListLayout{
 			Direction: Vertical,
 			Spacing:   spacing,
@@ -28,14 +28,14 @@ func List(s ...float32) Func {
 	}
 }
 
-func (b *Builder) List(spacing ...float32) *Entity {
+func (b *B) List(spacing ...float32) *Entity {
 	return b.Add(List(spacing...))
 }
 
-func (b *Builder) BeginList(spacing ...float32) *Entity {
+func (b *B) BeginList(spacing ...float32) *Entity {
 	return b.Begin(List(spacing...))
 }
 
-func (b *Builder) EndList() {
+func (b *B) EndList() {
 	b.End()
 }

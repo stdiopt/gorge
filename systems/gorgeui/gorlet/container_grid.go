@@ -6,7 +6,7 @@ import (
 )
 
 func Grid() Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		grid := GridLayout{}
 
 		Observe(b, "cols", func(v int) { grid.Cols = v })
@@ -20,10 +20,10 @@ func Grid() Func {
 	}
 }
 
-func (b *Builder) BeginGrid() *Entity {
+func (b *B) BeginGrid() *Entity {
 	return b.Begin(Grid())
 }
 
-func (b *Builder) EndGrid() {
+func (b *B) EndGrid() {
 	b.End()
 }

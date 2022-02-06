@@ -7,7 +7,7 @@ import (
 
 // SpinnerVec3 creates 3 spinners to control a gm.Vec3
 func SpinnerVec3(fn func(gm.Vec3)) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			// props
 			fontScale   = b.Prop("fontScale", 2)
@@ -72,6 +72,6 @@ func SpinnerVec3(fn func(gm.Vec3)) Func {
 }
 
 // SpinnerVec3 adds a spinner to builder.
-func (b *Builder) SpinnerVec3(fn func(gm.Vec3)) *Entity {
+func (b *B) SpinnerVec3(fn func(gm.Vec3)) *Entity {
 	return b.Add(SpinnerVec3(fn))
 }

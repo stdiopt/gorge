@@ -87,7 +87,7 @@ func FromContext(g *gorge.Context) *Context {
 				c.Enter.UpdateDelta(e.DeltaTime())
 			}
 			// curV := -float32(i+1) * (5 + 1)
-			curV -= c.Widget.Dim[1] + 1
+			curV -= c.Widget.Size[1] + 1
 
 			pos := c.Widget.Position
 			pos[1] = curV

@@ -3,7 +3,7 @@ package gorlet
 import "github.com/stdiopt/gorge/math/gm"
 
 func TextButton(t string, clickfn func()) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			text         = b.Prop("text", t)
 			fontScale    = b.Prop("fontScale", 2)
@@ -23,6 +23,6 @@ func TextButton(t string, clickfn func()) Func {
 }
 
 // TextButton add a text button child.
-func (b *Builder) TextButton(t string, clickfn func()) *Entity {
+func (b *B) TextButton(t string, clickfn func()) *Entity {
 	return b.Add(TextButton(t, clickfn))
 }

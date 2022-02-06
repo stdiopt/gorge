@@ -17,7 +17,7 @@ type curEntity struct {
 }
 
 // Func to build a guilet
-type Func func(b *Builder)
+type Func func(b *B)
 
 type nextData struct {
 	// Placement will be set on
@@ -32,8 +32,8 @@ func (n *nextData) add(fn ...func(e *Entity)) {
 	n.apply = append(n.apply, fn...)
 }
 
-// Builder used to build a guilet.
-type Builder struct {
+// B used to build a guilet.
+type B struct {
 	next       nextData
 	clientArea *Entity
 	onAddFn    func(e *Entity)
@@ -46,14 +46,14 @@ type Builder struct {
 }
 
 // Root returns root guilet.
-func (b *Builder) Root() *Entity {
+func (b *B) Root() *Entity {
 	return b.root.entity
 }
 
 // ClientArea sets the root entity client area, when adding entities using Add
 // those will be added to the current container
 // calling this twice will override the previous call.
-func (b *Builder) ClientArea() {
+func (b *B) ClientArea() {
 	b.clientArea = b.cur().entity
 }
 
@@ -62,17 +62,17 @@ func (b *Builder) ClientArea() {
 ///////////////////////////////////////////////////////////////////////////////
 
 // UsePlacement sets the placement func.
-func (b *Builder) SetPlacement(fn EntityFunc) {
+func (b *B) SetPlacement(fn EntityFunc) {
 	b.cur().placement = fn
 }
 
 // Next pushes a func to the next created entity.
-func (b *Builder) Next(fn ...func(e *Entity)) {
+func (b *B) Next(fn ...func(e *Entity)) {
 	b.next.add(fn...)
 }
 
 // UseLayout set next widget layout.
-func (b *Builder) UseLayout(fns ...Layouter) {
+func (b *B) UseLayout(fns ...Layouter) {
 	if len(fns) == 0 {
 		return
 	}
@@ -82,7 +82,7 @@ func (b *Builder) UseLayout(fns ...Layouter) {
 }
 
 // UseDimRect uses dimension rect sets anchor to 0
-func (b *Builder) UseDimRect(v ...float32) {
+func (b *B) UseDimRect(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetAnchor(0)
 		e.SetPivot(0)
@@ -91,7 +91,7 @@ func (b *Builder) UseDimRect(v ...float32) {
 }
 
 // UseRelRect uses relative from parent rect.
-func (b *Builder) UseRelRect(v ...float32) {
+func (b *B) UseRelRect(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetAnchor(0, 0, 1, 1)
 		e.SetPivot(0)
@@ -100,68 +100,68 @@ func (b *Builder) UseRelRect(v ...float32) {
 }
 
 // UseRect sets next Entity Rect.
-func (b *Builder) UseRect(v ...float32) {
+func (b *B) UseRect(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetRect(v...)
 	})
 }
 
 // UseWidth sets the next entity width.
-func (b *Builder) UseWidth(v float32) {
+func (b *B) UseWidth(v float32) {
 	b.next.add(func(e *Entity) {
 		e.SetWidth(v)
 	})
 }
 
 // UseWidth sets the next entity Height.
-func (b *Builder) UseHeight(v float32) {
+func (b *B) UseHeight(v float32) {
 	b.next.add(func(e *Entity) {
 		e.SetHeight(v)
 	})
 }
 
 // UseMargin sets the next entity padding.
-func (b *Builder) UseMargin(v ...float32) {
+func (b *B) UseMargin(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetMargin(v...)
 	})
 }
 
 // Use border adds a border space to the next widget.
-func (b *Builder) UseBorder(v ...float32) {
+func (b *B) UseBorder(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetBorder(v...)
 	})
 }
 
 // UseAnchor sets next Entity Anchor.
-func (b *Builder) UseAnchor(v ...float32) {
+func (b *B) UseAnchor(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetAnchor(v...)
 	})
 }
 
 // UsePivot sets next Entity Pivot.
-func (b *Builder) UsePivot(v ...float32) {
+func (b *B) UsePivot(v ...float32) {
 	b.next.add(func(e *Entity) {
 		e.SetPivot(v...)
 	})
 }
 
-func (b *Builder) UseDragEvents(v bool) {
+func (b *B) UseDragEvents(v bool) {
 	b.next.add(func(e *Entity) {
 		e.SetDragEvents(v)
 	})
 }
 
-func (b *Builder) UseFill(v bool) {
+func (b *B) UseFill(v bool) {
 	b.next.add(func(e *Entity) {
 		e.SetFill(v)
 	})
 }
 
 // Use a property for the next widget.
-func (b *Builder) Use(k string, v any) {
+func (b *B) Use(k string, v any) {
 	if b.next.props == nil {
 		b.next.props = Props{}
 	}
@@ -169,7 +169,7 @@ func (b *Builder) Use(k string, v any) {
 }
 
 // UseProps a property for the next widget.
-func (b *Builder) UseProps(p Props) {
+func (b *B) UseProps(p Props) {
 	if b.next.props == nil {
 		b.next.props = Props{}
 	}
@@ -177,7 +177,7 @@ func (b *Builder) UseProps(p Props) {
 }
 
 // Local use these props on all the children.
-func (b *Builder) Local(k string, v any) {
+func (b *B) Local(k string, v any) {
 	cur := b.cur()
 	if cur.props == nil {
 		cur.props = Props{}
@@ -186,7 +186,7 @@ func (b *Builder) Local(k string, v any) {
 }
 
 // LocalProps sets local props on all the children.
-func (b *Builder) LocalProps(p Props) {
+func (b *B) LocalProps(p Props) {
 	cur := b.cur()
 	if cur.props == nil {
 		cur.props = Props{}
@@ -195,7 +195,7 @@ func (b *Builder) LocalProps(p Props) {
 }
 
 // Prop returns a property forwarded by k with optional default value.
-func (b *Builder) Prop(k string, v ...any) ForwardProp {
+func (b *B) Prop(k string, v ...any) ForwardProp {
 	var def any
 	if len(v) > 0 {
 		def = v[0]
@@ -205,7 +205,7 @@ func (b *Builder) Prop(k string, v ...any) ForwardProp {
 
 // ForwardProps will forward any entity props in this builder to the entity
 // using a prefix
-func (b *Builder) ForwardProps(pre string, e *Entity) {
+func (b *B) ForwardProps(pre string, e *Entity) {
 	for k, v := range e.observers.observers {
 		key := k
 		if pre != "" {
@@ -217,34 +217,34 @@ func (b *Builder) ForwardProps(pre string, e *Entity) {
 	}
 }
 
-func (b Builder) observeWithType(k string, t reflect.Type, fn ObserverFunc) {
+func (b B) observeWithType(k string, t reflect.Type, fn ObserverFunc) {
 	b.root.entity.observeWithType(k, t, fn)
 }
 
 // Push will set the prop to any added entity.
-func (b *Builder) Push(k string, v any) {
+func (b *B) Push(k string, v any) {
 	b.propStack.cur().Set(k, v)
 }
 
 // PushProps will set the props to any added entity.
-func (b *Builder) PushProps(p Props) {
+func (b *B) PushProps(p Props) {
 	cur := b.propStack.cur()
 	cur.SetProps(p)
 }
 
 // Save save props state onto stack.
-func (b *Builder) Save() {
+func (b *B) Save() {
 	b.propStack.Save()
 }
 
 // Restore restores props from stack.
-func (b *Builder) Restore() {
+func (b *B) Restore() {
 	b.propStack.Restore()
 }
 
 // Create creates an Entity with builder properties
 // NOTE: it does not add to the current container.
-func (b *Builder) Create(fn Func) *Entity {
+func (b *B) Create(fn Func) *Entity {
 	e := Create(fn)
 
 	// Should be on All in this container
@@ -271,12 +271,12 @@ func (b *Builder) Create(fn Func) *Entity {
 }
 
 // Add creates and add an Entity to the current container.
-func (b *Builder) Add(fn Func) *Entity {
+func (b *B) Add(fn Func) *Entity {
 	return b.AddEntity(b.Create(fn))
 }
 
 // AddEntity adds a prebuilt entity.
-func (b *Builder) AddEntity(e *Entity) *Entity {
+func (b *B) AddEntity(e *Entity) *Entity {
 	cur := b.cur()
 	cur.entity.Add(e)
 	if b.onAddFn != nil {
@@ -287,7 +287,7 @@ func (b *Builder) AddEntity(e *Entity) *Entity {
 }
 
 // SetRoot will set the root container.
-func (b *Builder) SetRoot(fn Func) *Entity {
+func (b *B) SetRoot(fn Func) *Entity {
 	if len(b.stack) > 0 {
 		panic("Builder.Start() called while already in a container")
 	}
@@ -302,11 +302,11 @@ func (b *Builder) SetRoot(fn Func) *Entity {
 
 // Begin creates and pushes an Entity onto stack it will save
 // property state and restore on end.
-func (b *Builder) Begin(fn Func) *Entity {
+func (b *B) Begin(fn Func) *Entity {
 	return b.BeginEntity(b.Create(fn))
 }
 
-func (b *Builder) BeginEntity(e *Entity) *Entity {
+func (b *B) BeginEntity(e *Entity) *Entity {
 	b.AddEntity(e)
 	b.push(e)
 	b.propStack.Save()
@@ -314,12 +314,12 @@ func (b *Builder) BeginEntity(e *Entity) *Entity {
 }
 
 // End pops the current guilet from the stack.
-func (b *Builder) End() {
+func (b *B) End() {
 	b.propStack.Restore()
 	b.pop()
 }
 
-func (b *Builder) setupProps(e *Entity, props Props) {
+func (b *B) setupProps(e *Entity, props Props) {
 	for k, v := range props {
 		// shadow
 		k, v := k, v
@@ -343,20 +343,20 @@ func (b *Builder) setupProps(e *Entity, props Props) {
 	}
 }
 
-func (b *Builder) push(e *Entity) {
+func (b *B) push(e *Entity) {
 	cur := curEntity{entity: e}
 
 	b.stack = append(b.stack, &cur)
 }
 
-func (b *Builder) pop() {
+func (b *B) pop() {
 	if len(b.stack) == 0 {
 		return
 	}
 	b.stack = b.stack[:len(b.stack)-1]
 }
 
-func (b *Builder) cur() *curEntity {
+func (b *B) cur() *curEntity {
 	if len(b.stack) == 0 {
 		return b.root
 	}

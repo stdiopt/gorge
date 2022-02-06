@@ -11,7 +11,7 @@ import (
 
 // Spinner creates a new spinner.
 func Spinner(lbl string, fn func(float32)) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			fontScale      = b.Prop("fontScale", 2)
 			border         = b.Prop("border")
@@ -79,6 +79,6 @@ func Spinner(lbl string, fn func(float32)) Func {
 }
 
 // Spinner add a spinner to the child.
-func (b *Builder) Spinner(t string, fn func(float32)) *Entity {
+func (b *B) Spinner(t string, fn func(float32)) *Entity {
 	return b.Add(Spinner(t, fn))
 }

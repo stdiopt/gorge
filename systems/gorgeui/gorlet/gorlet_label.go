@@ -27,7 +27,7 @@ func TextAlign(a ...text.Align) [2]text.Align {
 
 // Label functional.
 func Label(t string) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var autoSize bool
 
 		mesh := text.NewMesh(gorgeui.DefaultFont)
@@ -61,10 +61,10 @@ func Label(t string) Func {
 				}
 				if root.Anchor[0] == root.Anchor[2] {
 					r[0], r[2] = pr[0], pr[2]
-					root.Dim[0] = mesh.Max[0]
+					root.Size[0] = mesh.Max[0]
 				}
 				if root.Anchor[1] == root.Anchor[3] {
-					root.Dim[1] = mesh.Max[1] - mesh.Min[1]
+					root.Size[1] = mesh.Max[1] - mesh.Min[1]
 				}
 			}
 
@@ -122,6 +122,6 @@ func Label(t string) Func {
 }
 
 // Label creates a label on builder.
-func (b *Builder) Label(t string) *Entity {
+func (b *B) Label(t string) *Entity {
 	return b.Add(Label(t))
 }

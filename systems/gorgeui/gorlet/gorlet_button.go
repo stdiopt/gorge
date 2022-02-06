@@ -8,7 +8,7 @@ import (
 
 // Button creates a simple button.
 func Button(clickfn func()) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			borderColor = b.Prop("borderColor", gm.Color())
 
@@ -78,14 +78,14 @@ func Button(clickfn func()) Func {
 	}
 }
 
-func (b *Builder) Button(clickfn func()) *Entity {
+func (b *B) Button(clickfn func()) *Entity {
 	return b.Add(Button(clickfn))
 }
 
 // BeginButton begins a button.
-func (b *Builder) BeginButton(clickfn func()) *Entity {
+func (b *B) BeginButton(clickfn func()) *Entity {
 	return b.Begin(Button(clickfn))
 }
 
 // EndButton alias to End.
-func (b *Builder) EndButton() { b.End() }
+func (b *B) EndButton() { b.End() }

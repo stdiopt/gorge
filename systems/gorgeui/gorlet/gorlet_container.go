@@ -2,17 +2,17 @@ package gorlet
 
 // Container empty container consturctor.
 func Container() Func {
-	return func(b *Builder) {}
+	return func(b *B) {}
 }
 
 // BeginContainer begins an empty container.
-func (b *Builder) BeginContainer(layout ...Layouter) *Entity {
+func (b *B) BeginContainer(layout ...Layouter) *Entity {
 	b.UseLayout(layout...)
 	return b.Begin(Container())
 }
 
 // EndContainer alias for End.
-func (b *Builder) EndContainer() {
+func (b *B) EndContainer() {
 	b.End()
 }
 

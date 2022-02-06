@@ -51,33 +51,33 @@ func AutoHeight(spacing float32) LayoutFunc {
 
 		}
 		rt := ent.RectTransform()
-		rt.Dim[1] = dim[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
+		rt.Size[1] = dim[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
 	}
 }
 
 func ContentSize() LayoutFunc {
 	return func(ent *Entity) {
-		ent.Dim = gm.Vec2{}
+		ent.Size = gm.Vec2{}
 		ent.Anchor[2] = ent.Anchor[0]
 		ent.Anchor[3] = ent.Anchor[1]
 
 		b := ent.CalcMax()
 
-		ent.Dim[0] = b[0]
-		ent.Dim[1] = b[1]
+		ent.Size[0] = b[0]
+		ent.Size[1] = b[1]
 	}
 }
 
 func ContentSizeY() LayoutFunc {
 	return func(ent *Entity) {
-		ent.Dim = gm.Vec2{}
+		ent.Size = gm.Vec2{}
 		ent.Anchor[2] = ent.Anchor[0]
 		// ent.Anchor[3] = ent.Anchor[1]
 
 		b := ent.CalcMax()
 
 		// ent.Dim[0] = b[0]
-		ent.Dim[1] = b[1]
+		ent.Size[1] = b[1]
 	}
 }
 

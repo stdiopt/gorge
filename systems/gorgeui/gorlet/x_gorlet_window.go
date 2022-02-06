@@ -9,7 +9,7 @@ import (
 
 // Window creates a draggable window with a title bar.
 func Window(def string) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		const (
 			spacing = .4
 		)
@@ -75,14 +75,14 @@ func Window(def string) Func {
 			ui := gorgeui.RootUI(root)
 			wp := ray.FromScreen(ui.ScreenSize(), ui.Camera, e.Delta).GetPoint(1)
 			wp = wp.Sub(ray.FromScreen(ui.ScreenSize(), ui.Camera, gm.Vec2{}).GetPoint(1))
-			root.Dim = root.Dim.Add(gm.Vec2{wp[0], -wp[1]})
+			root.Size = root.Size.Add(gm.Vec2{wp[0], -wp[1]})
 		})
 	}
 }
 
 // WindowWrap wraps a window directly.
 func WindowWrap(title string, bodyFn Func) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		b.SetRoot(Window(title))
 		body := b.Add(bodyFn)
 		b.ForwardProps("", body)
@@ -90,11 +90,11 @@ func WindowWrap(title string, bodyFn Func) Func {
 }
 
 // BeginWindow begins a window.
-func (b *Builder) BeginWindow(titleText string) *Entity {
+func (b *B) BeginWindow(titleText string) *Entity {
 	return b.Begin(Window(titleText))
 }
 
 // EndWindow alias to End().
-func (b *Builder) EndWindow() {
+func (b *B) EndWindow() {
 	b.End()
 }

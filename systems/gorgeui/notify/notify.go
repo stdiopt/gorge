@@ -36,7 +36,7 @@ type system struct {
 func (s *system) createNotification(e EventNotify) {
 	w := gorlet.Create(notifyWidget(e))
 	w.SetAnchor(1, 1, 1, 1)
-	w.SetRect(-21, w.Dim[1], 20, 0)
+	w.SetRect(-21, w.Size[1], 20, 0)
 	s.ui.Add(w)
 
 	card := &card{
@@ -60,7 +60,7 @@ func (s *system) createNotification(e EventNotify) {
 		ch.On(func(v float32) {
 			w.Position[0] = v
 		})
-		ch.SetKey(0, -w.Dim[0]-1)
+		ch.SetKey(0, -w.Size[0]-1)
 		ch.SetKey(animTime*2, 0)
 
 		opch := anim.AddChannel(card.Exit, anim.Float32)
@@ -90,7 +90,7 @@ type card struct {
 }
 
 func notifyWidget(e EventNotify) gorlet.Func {
-	return func(b *gorlet.Builder) {
+	return func(b *gorlet.B) {
 		color := gm.Color(0, 0, 0, .3)
 		switch e.Severity {
 		case SeverityInfo:

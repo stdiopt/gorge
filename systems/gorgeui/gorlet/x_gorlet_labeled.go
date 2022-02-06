@@ -7,7 +7,7 @@ import (
 
 // Labeled returns a gorlet that labels an entity.
 func Labeled(lbl string) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			fontScale = b.Prop("fontScale", 2)
 			textAlign = TextAlign(text.AlignEnd, text.AlignCenter)
@@ -45,7 +45,7 @@ func Labeled(lbl string) Func {
 
 // Labeled creates a labeled entity by passing the body
 // it returns the entity created by fn.
-func (b *Builder) Labeled(lbl string, fn Func) *Entity {
+func (b *B) Labeled(lbl string, fn Func) *Entity {
 	b.BeginLabeled(lbl)
 	e := b.Add(fn)
 	b.EndLabeled()
@@ -53,11 +53,11 @@ func (b *Builder) Labeled(lbl string, fn Func) *Entity {
 }
 
 // BeginLabeled creates a labeled Entity.
-func (b *Builder) BeginLabeled(lbl string) *Entity {
+func (b *B) BeginLabeled(lbl string) *Entity {
 	return b.Begin(Labeled(lbl))
 }
 
 // EndLabeled is an alias to End.
-func (b *Builder) EndLabeled() {
+func (b *B) EndLabeled() {
 	b.End()
 }

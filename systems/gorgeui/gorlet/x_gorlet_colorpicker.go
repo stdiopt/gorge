@@ -42,7 +42,7 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 	if fn == nil {
 		fn = func(gm.Vec4) {}
 	}
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			borderColor = b.Prop("borderColor")
 			spacing     = b.Prop("spacing", 0)
@@ -118,6 +118,6 @@ func ColorPicker(fn func(gm.Vec4)) Func {
 // props:
 // - color: sets the current color value
 // - spacing: spacing between color picker and output color
-func (b *Builder) ColorPicker(fn func(gm.Vec4)) *Entity {
+func (b *B) ColorPicker(fn func(gm.Vec4)) *Entity {
 	return b.Add(ColorPicker(fn))
 }

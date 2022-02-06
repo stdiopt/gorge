@@ -95,7 +95,7 @@ func Create(fn Func) *Entity {
 	}
 	defaultObservers(defEntity)
 	defEntity.SetPivot(0)
-	b := Builder{
+	b := B{
 		root: &curEntity{entity: defEntity},
 	}
 	fn(&b)

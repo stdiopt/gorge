@@ -6,7 +6,7 @@ import (
 )
 
 func Flex(sz ...float32) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		flex := FlexLayout{}
 		root := b.Root()
 
@@ -24,10 +24,10 @@ func Flex(sz ...float32) Func {
 	}
 }
 
-func (b *Builder) BeginFlex(sz ...float32) *Entity {
+func (b *B) BeginFlex(sz ...float32) *Entity {
 	return b.Begin(Flex(sz...))
 }
 
-func (b *Builder) EndFlex() {
+func (b *B) EndFlex() {
 	b.End()
 }

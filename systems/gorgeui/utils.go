@@ -6,6 +6,15 @@ import (
 	"github.com/stdiopt/gorge/math/ray"
 )
 
+type defaultCamera struct {
+	gorge.TransformComponent
+	gorge.CameraComponent
+}
+
+func (s defaultCamera) String() string {
+	return "gorgeui.defaultCamera"
+}
+
 // RectTransformer transform interface for UI elements
 type RectTransformer interface {
 	RectTransform() *RectComponent

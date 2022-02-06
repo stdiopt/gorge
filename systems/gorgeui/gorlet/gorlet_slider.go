@@ -22,7 +22,7 @@ func Slider(min, max float32, fn func(float32)) Func {
 	real := func(v float32) float32 {
 		return min + v*(max-min)
 	}
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			fontScale          = b.Prop("fontScale")
 			backgroundColor    = b.Prop("backgroundColor", gm.Color(.4, .2))
@@ -158,6 +158,6 @@ func Slider(min, max float32, fn func(float32)) Func {
 }
 
 // Slider adds a slider to current element.
-func (b *Builder) Slider(min, max float32, fn func(float32)) *Entity {
+func (b *B) Slider(min, max float32, fn func(float32)) *Entity {
 	return b.Add(Slider(min, max, fn))
 }

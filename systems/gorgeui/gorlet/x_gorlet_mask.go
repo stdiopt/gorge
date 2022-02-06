@@ -6,7 +6,7 @@ import (
 )
 
 func Mask() Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		root := b.Root()
 		// This will Clip input
 		root.masked = true
@@ -45,11 +45,11 @@ func Mask() Func {
 }
 
 // BeginMask pushes a Mask entity into builder.
-func (b *Builder) BeginMask() *Entity {
+func (b *B) BeginMask() *Entity {
 	return b.Begin(Mask())
 }
 
 // EndMask convinient alias to End.
-func (b *Builder) EndMask() {
+func (b *B) EndMask() {
 	b.End()
 }

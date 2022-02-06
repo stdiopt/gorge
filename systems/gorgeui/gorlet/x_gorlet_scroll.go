@@ -15,7 +15,7 @@ type scrollent struct {
 }
 
 func Scroll() Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			contentMargin = b.Prop("contentMargin", Margin(0))
 			container     *Entity
@@ -151,7 +151,7 @@ func Scroll() Func {
 func scrollBar(dir Direction, fn func(float32)) Func {
 	const sp = .3
 	const spx = .2
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			backgroundColor = b.Prop("backgroundColor", gm.Color(.4, .3))
 			handlerColor    = b.Prop("handlerColor")
@@ -269,11 +269,11 @@ func scrollBar(dir Direction, fn func(float32)) Func {
 }
 
 // BeginScroll starts a scrollable rect.
-func (b *Builder) BeginScroll() *Entity {
+func (b *B) BeginScroll() *Entity {
 	return b.Begin(Scroll())
 }
 
 // EndScroll ends a scrollable rect.
-func (b *Builder) EndScroll() {
+func (b *B) EndScroll() {
 	b.End()
 }

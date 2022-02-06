@@ -44,7 +44,7 @@ type graphicer interface {
 }
 
 func rectElement(ent graphicer) Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		root := b.Root()
 		root.AddElement(ent)
 		// Defaults renderable, use it on label too
@@ -105,7 +105,7 @@ func Quad() Func {
 	return rectElement(quadEntity())
 }
 
-func (b *Builder) Quad() *Entity {
+func (b *B) Quad() *Entity {
 	return b.Add(Quad())
 }
 

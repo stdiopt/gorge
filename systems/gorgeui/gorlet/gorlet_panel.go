@@ -11,7 +11,7 @@ const (
 )
 
 func Panel() Func {
-	return func(b *Builder) {
+	return func(b *B) {
 		var (
 			cur        Overflow
 			scrollSize = gm.Vec2{1, 1}
@@ -58,12 +58,12 @@ func Panel() Func {
 }
 
 // BeginPanel begins a panel.
-func (b *Builder) BeginPanel(ls ...Layouter) *Entity {
+func (b *B) BeginPanel(ls ...Layouter) *Entity {
 	b.UseLayout(ls...)
 	return b.Begin(Panel())
 }
 
 // EndPanel alias to b.End()
-func (b *Builder) EndPanel() {
+func (b *B) EndPanel() {
 	b.End()
 }

@@ -19,7 +19,7 @@ type RectComponent struct {
 	Position gm.Vec3
 	Scale    gm.Vec3
 
-	Dim gm.Vec2
+	Size gm.Vec2
 	// New
 	Margin gm.Vec4
 	Border gm.Vec4
@@ -36,7 +36,7 @@ func RectIdent() RectComponent {
 		Scale:    gm.Vec3{1, 1, 1},
 
 		Anchor: gm.Vec4{0, 0, 1, 1},
-		Dim:    gm.Vec2{0, 0},
+		Size:   gm.Vec2{0, 0},
 		Pivot:  gm.Vec2{.5, .5},
 	}
 	return rc
@@ -70,10 +70,10 @@ func (c *RectComponent) Mat4() gm.Mat4 {
 	}
 	pivot := gm.Vec2{}
 	if gm.FloatEqual(c.Anchor[0], c.Anchor[2]) {
-		pivot[0] = -c.Dim[0] * c.Pivot[0]
+		pivot[0] = -c.Size[0] * c.Pivot[0]
 	}
 	if gm.FloatEqual(c.Anchor[1], c.Anchor[3]) {
-		pivot[1] = -c.Dim[1] * c.Pivot[1]
+		pivot[1] = -c.Size[1] * c.Pivot[1]
 	}
 
 	pos := c.Position.
@@ -104,8 +104,8 @@ func (c *RectComponent) SetRect(vs ...float32) {
 	c.Position[0] = v[0]
 	c.Position[1] = v[1]
 
-	c.Dim[0] = v[2]
-	c.Dim[1] = v[3]
+	c.Size[0] = v[2]
+	c.Size[1] = v[3]
 }
 
 func (c *RectComponent) SetBorder(vs ...float32) {
@@ -134,17 +134,17 @@ func (c *RectComponent) SetMargin(vs ...float32) {
 
 // SetWidth sets the width.
 func (c *RectComponent) SetWidth(w float32) {
-	c.Dim[0] = w
+	c.Size[0] = w
 }
 
 // SetHeight sets the height.
 func (c *RectComponent) SetHeight(w float32) {
-	c.Dim[1] = w
+	c.Size[1] = w
 }
 
 // SetSize sets the rect dimentions.
 func (c *RectComponent) SetSize(v ...float32) {
-	c.Dim = gm.V2(v...)
+	c.Size = gm.V2(v...)
 }
 
 // SetAnchor sets anchor.
@@ -186,6 +186,11 @@ func (c *RectComponent) SetPosition(x, y, z float32) {
 	c.Position = gm.Vec3{x, y, z}
 }
 
+// Translatev translates the entity.
+func (c *RectComponent) Translatev(v gm.Vec3) {
+	c.Position = c.Position.Add(v)
+}
+
 // SetRotation sets the rotation.
 func (c *RectComponent) SetRotation(q gm.Quat) {
 	c.Rotation = q
@@ -213,19 +218,19 @@ func (c *RectComponent) ContentSize() gm.Vec2 {
 func (c *RectComponent) RelativeSize(parentDim gm.Vec2) gm.Vec2 {
 	var right, bottom float32
 	// We might discard rect
-	right = c.Dim[0]
-	bottom = c.Dim[1]
+	right = c.Size[0]
+	bottom = c.Size[1]
 	// If anchor min and max are the same we use pivot
 	if c.Anchor[0] != c.Anchor[2] {
 		w := parentDim[0] // parentRect[0] is always 0 now
 		w -= w*(1-c.Anchor[2]) + w*(c.Anchor[0])
-		right = w - c.Dim[0] - c.Position[0]
+		right = w - c.Size[0] - c.Position[0]
 	}
 
 	if c.Anchor[1] != c.Anchor[3] {
 		h := parentDim[1]
 		h -= h*(1-c.Anchor[3]) + h*(c.Anchor[1])
-		bottom = h - c.Dim[1] - c.Position[1]
+		bottom = h - c.Size[1] - c.Position[1]
 	}
 
 	r := gm.Vec2{
@@ -256,21 +261,21 @@ func (c *RectComponent) RelativeRect(parentRect gm.Vec4) gm.Vec4 {
 	left = 0 // parentRect[0] //+ c.Anchor[0]*parentW
 	top = 0  // parentRect[1]  //+ c.Anchor[1]*parentH
 
-	right = c.Dim[0]
-	bottom = c.Dim[1]
+	right = c.Size[0]
+	bottom = c.Size[1]
 	// If anchor min and max are the same we use pivot
 	if c.Anchor[0] != c.Anchor[2] {
 		w := parentRect[2] - parentRect[0] // parentRect[0] is always 0 now
 		// reduce rect by the relative anchor from both sides
 		w -= w*(1-c.Anchor[2]) + w*(c.Anchor[0])
-		right = w - c.Dim[0] - c.Position[0]
+		right = w - c.Size[0] - c.Position[0]
 	}
 
 	if c.Anchor[1] != c.Anchor[3] {
 		h := parentRect[3] - parentRect[1]
 		h -= h*(1-c.Anchor[3]) + h*(c.Anchor[1])
 		// reduce rect by the relative anchor from both sides
-		bottom = h - c.Dim[1] - c.Position[1]
+		bottom = h - c.Size[1] - c.Position[1]
 	}
 	return gm.Vec4{
 		left,
