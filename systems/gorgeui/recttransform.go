@@ -80,8 +80,8 @@ func (c *RectComponent) Mat4() gm.Mat4 {
 		Add(anchor.Vec3(0)).
 		Add(gm.Vec3{c.Margin[0], c.Margin[1], 0}).
 		Add(gm.Vec3{c.Border[0], c.Border[1], 0})
-	m := gm.Translate3D(pos[0], pos[1], pos[2])
 
+	m := gm.Translate3D(pos[0], pos[1], pos[2])
 	m = m.Mul(c.Rotation.Mat4())
 	m = m.Mul(gm.Scale3D(c.Scale[0], c.Scale[1], c.Scale[2]))
 
@@ -104,8 +104,9 @@ func (c *RectComponent) SetRect(vs ...float32) {
 	c.Position[0] = v[0]
 	c.Position[1] = v[1]
 
-	c.Size[0] = v[2]
-	c.Size[1] = v[3]
+	c.SetSize(v[2], v[3])
+	// c.Size[0] = v[2]
+	// c.Size[1] = v[3]
 }
 
 func (c *RectComponent) SetBorder(vs ...float32) {
@@ -155,7 +156,7 @@ func (c *RectComponent) SetAnchor(v ...float32) {
 	case 1:
 		c.Anchor = gm.Vec4{v[0], v[0], v[0], v[0]}
 	case 2:
-		c.Anchor = gm.Vec4{v[0], v[1], v[0], v[1]}
+		c.Anchor = gm.Vec4{v[0], v[0], v[1], v[1]}
 	case 3:
 		c.Anchor = gm.Vec4{v[0], v[1], v[2], v[1]}
 	default:

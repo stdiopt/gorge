@@ -193,7 +193,9 @@ func (s *glfwSystem) setupEvents() {
 		s.input.SetCursorDelta(gm.Vec2{float32(x - cx), float32(y - cy)})
 		w.SetCursorPos(cx, cy)
 	})
-
+	s.window.SetCharCallback(func(_ *glfw.Window, char rune) {
+		s.input.SetKeyChar(char)
+	})
 	s.window.SetKeyCallback(func(_ *glfw.Window, k glfw.Key, _ int, a glfw.Action, _ glfw.ModifierKey) {
 		gkey, ok := keyMap[k]
 		if !ok {

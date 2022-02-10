@@ -51,7 +51,7 @@ func Add(g *gorge.Context) *UI {
 		CameraComponent: gorge.CameraComponent{
 			Name:           "ui camera",
 			ProjectionType: gorge.ProjectionOrtho,
-			CullMask:       gorge.CullMaskUI,
+			CullMask:       gorge.CullMaskUI | gorge.CullMaskUIDebug,
 			OrthoSize:      100,
 			Near:           -100,
 			Far:            100,
@@ -191,6 +191,7 @@ func (w *UI) GAdd(ents ...gorge.Entity) {
 	if w.Attached && w.gorge != nil {
 		w.gorge.Add(ents...)
 	}
+	w.reorder()
 }
 
 // GRemove removes from gorge if attached.
@@ -198,9 +199,13 @@ func (w *UI) GRemove(ents ...gorge.Entity) {
 	if w.Attached && w.gorge != nil {
 		w.gorge.Remove(ents...)
 	}
+	w.reorder()
 }
 
 func (w *UI) update(dt float32) {
+}
+
+func (w *UI) reorder() {
 	type renderable interface {
 		Renderable() *gorge.RenderableComponent
 	}
@@ -211,8 +216,7 @@ func (w *UI) update(dt float32) {
 	walk = func(e gorge.Entity) {
 		count++
 		if e, ok := e.(renderable); ok {
-			r := e.Renderable()
-			r.Order = order
+			e.Renderable().SetOrder(order)
 			order++
 		}
 		if e, ok := e.(gorge.EntityContainer); ok {

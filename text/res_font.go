@@ -20,12 +20,14 @@ func init() {
 	resource.Register((*Font)(nil), ".ttf", fontLoader)
 }
 
-const commonChars = `
+const commonChars = "`" + `
 0123456789µ&
 abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 {}()[]|$@?!%/\:;,._-+=<>*"'~#
-` + "`"
+áéíóúÁÉÍÓÚçÇãÃõÕ
+
+`
 
 func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 	fontOut := v.(*Font)

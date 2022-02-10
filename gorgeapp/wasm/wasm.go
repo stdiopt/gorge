@@ -163,13 +163,14 @@ func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) any {
 
 	code := evt.Get("code").String()
 	etype := evt.Get("type").String()
+	char := []rune(evt.Get("key").String())
 
 	if code == "F12" {
 		return nil
 	}
 	ikey, ok := keyMap[code]
 	if !ok {
-		log.Println("Key not mapped:", code, ikey)
+		log.Printf("Key not mapped: %q %q", code, ikey)
 		js.Global().Get("console").Call("log", evt)
 	}
 
@@ -177,6 +178,9 @@ func (s *wasmSystem) handleKeyEvents(t js.Value, args []js.Value) any {
 	case "keydown":
 		s.canvas.Call("focus")
 		s.input.SetKeyState(ikey, input.ActionDown)
+		if len(char) == 1 { // huh?
+			s.input.SetKeyChar(char[0])
+		}
 	case "keyup":
 		s.input.SetKeyState(ikey, input.ActionUp)
 	}

@@ -63,7 +63,7 @@ func (g *Gorge) Start() error {
 	}
 	g.done = make(chan error)
 	// Call every init func
-	c := &Context{g}
+	c := &Context{gorge: g}
 	for _, fn := range g.inits {
 		fn(c)
 	}

@@ -21,6 +21,11 @@ func (m *keyManager) update() {
 	}
 }
 
+// SetKeyChar triggers an EventKeyChar event
+func (m *keyManager) SetKeyChar(c rune) {
+	event.Trigger(m.gorge, EventChar{c})
+}
+
 func (m *keyManager) SetKeyState(key Key, s ActionState) {
 	if m.keyState == nil {
 		m.keyState = map[Key]ActionState{}

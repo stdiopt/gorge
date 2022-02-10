@@ -36,3 +36,7 @@ type EventKeyDown struct {
 type EventKeyUp struct {
 	Key Key
 }
+
+type EventChar struct {
+	Char rune
+}
