@@ -74,11 +74,19 @@ type roundedQuadMesh struct {
 }
 
 func (m *roundedQuadMesh) SetRadius(r float32) {
+	if m.radius == r {
+		return
+	}
 	m.radius = r
+	m.update()
 }
 
 func (m *roundedQuadMesh) SetSize(sz gm.Vec2) {
+	if m.size == sz {
+		return
+	}
 	m.size = sz
+	m.update()
 }
 
 func (m *roundedQuadMesh) update() {
@@ -88,6 +96,11 @@ func (m *roundedQuadMesh) update() {
 
 	cx := gm.Clamp(m.radius, 0, sz[0]/2)
 	cy := gm.Clamp(m.radius, 0, sz[1]/2)
+	if cx < cy {
+		cy = cx
+	} else {
+		cx = cy
+	}
 	cxi := sz[0] - cx
 	cyi := sz[1] - cy
 	m.path.LineTo(cxi, 0)                                  // BottomLeft to BottomRight

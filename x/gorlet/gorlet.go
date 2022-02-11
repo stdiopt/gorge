@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+	"strings"
 	"sync/atomic"
 
 	"github.com/stdiopt/gorge"
@@ -73,7 +74,8 @@ type entityConstraint[T any] interface {
 }
 
 type Widget[T any, Tp entityConstraint[T]] struct {
-	id string
+	id   string
+	name string
 	gorgeui.RectComponent
 	gorgeui.ElementComponent
 	base Tp
@@ -88,7 +90,16 @@ type Widget[T any, Tp entityConstraint[T]] struct {
 }
 
 func (w *Widget[T, Tp]) String() string {
-	return fmt.Sprintf("%T %s", w.base, w.id)
+	b := &strings.Builder{}
+
+	fmt.Fprintf(b, "%T", w.base)
+	if w.name != "" {
+		fmt.Fprintf(b, "[%q]", w.name)
+	}
+	if w.id != "" {
+		fmt.Fprintf(b, "#%q", w.id)
+	}
+	return b.String()
 }
 
 func (b *Widget[T, Tp]) setBase(b2 Widget[T, Tp]) {
@@ -157,6 +168,11 @@ func (w *Widget[T, Tp]) ID() string {
 
 func (w *Widget[T, Tp]) SetID(id string) {
 	w.id = id
+}
+
+func (w *Widget[T, Tp]) SetName(name string) Tp {
+	w.name = name
+	return w.base
 }
 
 func (w *Widget[T, Tp]) Attached(e gorgeui.Entity) {
@@ -294,13 +310,6 @@ func (w *Widget[T, Tp]) Remove(cs ...gorge.Entity) Tp {
 	return w.base
 }
 
-/*
-func (w *Widget[T, Tp]) SetLayout(l ...Layouter) Tp {
-	w.setLayout(l...)
-	return w.base
-}
-*/
-
 // XXX:
 // we could use layouter func here instead of gorgeui
 // this way we could just run through *Entity since this is
@@ -377,15 +386,6 @@ func (w *Widget[T, Tp]) Find(id string) Entity {
 	}
 	return nil
 }
-
-/*
-func (w *Widget[T, Tp]) setLayout(l ...Layouter) {
-	if w.clientArea != nil {
-		w.clientArea.setLayout(l...)
-	}
-	w.layout = MultiLayout(l...)
-}
-*/
 
 func (w *Widget[T, Tp]) setClientArea(a Entity) {
 	w.clientArea = a

@@ -45,7 +45,7 @@ func New() *UI {
 	return e
 }
 
-func Add(g *gorge.Context) *UI {
+func AddTo(g *gorge.Context) *UI {
 	defCam := &defaultCamera{
 		TransformComponent: *gorge.NewTransformComponent(),
 		CameraComponent: gorge.CameraComponent{

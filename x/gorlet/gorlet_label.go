@@ -57,7 +57,7 @@ func (w *WLabel) Build(b *B) {
 			}
 			if w.Anchor[1] == w.Anchor[3] {
 				bounds[1] = psz[1]
-				w.Size[1] = w.mesh.Max[1] - w.mesh.Min[1]
+				w.Size[1] = float32(w.mesh.Lines) * w.mesh.Size // w.mesh.Max[1] - w.mesh.Min[1]
 			}
 		}
 		if w.mesh.Boundary != bounds {

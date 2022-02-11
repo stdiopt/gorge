@@ -41,15 +41,18 @@ func (w *WSlider) Build(b *B) {
 	w.background = b.BeginPane()
 	{
 		w.track = b.BeginContainer().
+			SetName("sliderTrack").
 			SetRect(w.handlerSize/2, 0, w.handlerSize/2, 0).
 			SetPivot(0, .5)
 		{
 			w.handler = b.Button().
+				SetName("sliderHandler").
 				SetPivot(.5).
 				SetSize(w.handlerSize, 0).
 				SetAnchor(0, 0, 0, 1).
 				SetMargin(.2)
 			w.lbl = b.Label(fmt.Sprintf(w.valFmt, w.min)).
+				SetName("sliderLabel").
 				FillParent().
 				SetDisableRaycast(true)
 		}
