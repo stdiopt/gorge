@@ -14,9 +14,8 @@ import (
 	"github.com/stdiopt/gorge/text"
 )
 
-func System(g *gorge.Context) error {
+func System(g *gorge.Context) {
 	FromContext(g)
-	return nil
 }
 
 type system struct {

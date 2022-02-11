@@ -242,12 +242,12 @@ func (w *Widget[T, Tp]) SetSize(v ...float32) Tp {
 }
 
 func (w *Widget[T, Tp]) SetWidth(v float32) Tp {
-	w.RectComponent.Size[0] = v
+	w.Size[0] = v
 	return w.base
 }
 
 func (w *Widget[T, Tp]) SetHeight(v float32) Tp {
-	w.RectComponent.Size[1] = v
+	w.Size[1] = v
 	return w.base
 }
 

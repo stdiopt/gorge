@@ -80,7 +80,7 @@ func StatText(g *gorge.Context) {
 }
 
 // Stat inits stat system
-func Stat(g *gorge.Context) error {
+func Stat(g *gorge.Context) {
 	rc := resource.FromContext(g)
 	ic := input.FromContext(g)
 	s := &statSystem{
@@ -92,7 +92,8 @@ func Stat(g *gorge.Context) error {
 
 	font := &text.Font{}
 	if err := rc.Load(font, "_gorge/fonts/font.ttf", text.FontResolution(512)); err != nil {
-		return err
+		g.Error(err)
+		return
 	}
 
 	s.camera = gorgeutil.NewOrthoCamera(20, -100, 100)
@@ -168,7 +169,6 @@ func Stat(g *gorge.Context) error {
 	event.Handle(g, func(e render.EventStat) {
 		s.rendererStat = e
 	})
-	return nil
 }
 
 func (s *statSystem) recalc() {

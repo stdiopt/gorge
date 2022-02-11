@@ -13,9 +13,8 @@ import (
 )
 
 // System initializes the audio system.
-func System(g *gorge.Context) error {
+func System(g *gorge.Context) {
 	FromContext(g)
-	return nil
 }
 
 // System initializes the gorge system.

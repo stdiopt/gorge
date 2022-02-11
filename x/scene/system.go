@@ -11,9 +11,8 @@ type Context struct {
 	gorge *gorge.Context
 }
 
-func System(g *gorge.Context) error {
+func System(g *gorge.Context) {
 	FromContext(g)
-	return nil
 }
 
 type sceneGetter interface {

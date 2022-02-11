@@ -2,7 +2,6 @@ package input
 
 import "github.com/stdiopt/gorge"
 
-func System(g *gorge.Context) error {
+func System(g *gorge.Context) {
 	FromContext(g)
-	return nil
 }

@@ -73,10 +73,9 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 	}
 
 	ggArgs := []gorge.InitFunc{
-		func(g *gorge.Context) error {
+		func(g *gorge.Context) {
 			res := resource.FromContext(g)
 			res.AddFS("/", resourceFS)
-			return nil
 		},
 		s.System,
 	}
@@ -142,11 +141,10 @@ type glfwSystem struct {
 	cursorRelative bool
 }
 
-func (s *glfwSystem) System(g *gorge.Context) error {
+func (s *glfwSystem) System(g *gorge.Context) {
 	s.input = input.FromContext(g)
 	s.gorge = g
 	s.setupEvents()
-	return nil
 }
 
 func (s *glfwSystem) setupEvents() {

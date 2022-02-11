@@ -14,9 +14,9 @@ type emitter interface {
 
 type Context struct{}
 
-func System(g *gorge.Context) error {
+func System(g *gorge.Context) {
 	if _, ok := gorge.GetContext[*Context](g); ok {
-		return nil
+		return
 	}
 	gorge.SetContext(g, &Context{})
 
@@ -52,6 +52,4 @@ func System(g *gorge.Context) error {
 			// em.Emitter().update(g, em, 0.016)
 		}
 	})
-
-	return nil
 }

@@ -29,11 +29,10 @@ func FromContext(g *gorge.Context) *Context {
 }
 
 func Wrapper(fns ...func(*Context)) gorge.InitFunc {
-	return func(g *gorge.Context) error {
+	return func(g *gorge.Context) {
 		ctx := FromContext(g)
 		for _, fn := range fns {
 			fn(ctx)
 		}
-		return nil
 	}
 }
