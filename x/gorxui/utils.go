@@ -52,7 +52,7 @@ func parseLayout(param string) (gorlet.Layouter, error) {
 	parts := strings.Split(param, ";")
 	for _, p := range parts {
 		pp := strings.Split(p, ":")
-		switch pp[0] {
+		switch strings.ToLower(pp[0]) {
 		case "flex", "hflex":
 			sz, err := parseFloat32Slice(pp[1])
 			if err != nil {
@@ -87,7 +87,7 @@ func parseLayout(param string) (gorlet.Layouter, error) {
 			layouts = append(layouts, gorlet.LayoutList(spacing))
 		}
 	}
-	return gorlet.MultiLayout(layouts...), nil
+	return gorlet.LayoutMulti(layouts...), nil
 }
 
 var (
@@ -143,6 +143,7 @@ func parseTyp(typ reflect.Type, s string) (interface{}, error) {
 		switch typ.Elem().Kind() {
 		case reflect.Float32:
 			return parseFloat32Slice(s)
+		default:
 		}
 	case reflect.String:
 		return s, nil

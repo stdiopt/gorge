@@ -116,6 +116,21 @@ func (w *WScroll) Build(b *B) {
 	})
 }
 
+func (w *WScroll) SetScrollSize(v ...float32) *WScroll {
+	switch len(v) {
+	case 0:
+		w.scrolls[0].size = 1
+		w.scrolls[1].size = 1
+	case 1:
+		w.scrolls[0].size = v[0]
+		w.scrolls[1].size = v[0]
+	default:
+		w.scrolls[0].size = v[0]
+		w.scrolls[1].size = v[1]
+	}
+	return w
+}
+
 func (w *WScroll) scrollFunc(n int) func(v float32) {
 	return func(v float32) {
 		if w.scrolls[n].disabled {

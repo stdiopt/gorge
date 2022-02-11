@@ -85,7 +85,7 @@ func (w *WPane) SetTexture(tex gorge.Texturer) *WPane {
 }
 
 func (w *WPane) SetLayout(l ...Layouter) *WPane {
-	w.layout = MultiLayout(l...)
+	w.layout = LayoutMulti(l...)
 	return w
 }
 

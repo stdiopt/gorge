@@ -3,6 +3,9 @@ package gorlet
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/stdiopt/gorge/core/event"
+	"github.com/stdiopt/gorge/systems/gorgeui"
 )
 
 // Make dynamic observers here
@@ -22,6 +25,8 @@ func (o *Observer) Call(v any) {
 
 type WCustom struct {
 	Widget[WCustom]
+	Name      string
+	Layout    Layouter
 	observers map[string]*Observer
 }
 
@@ -33,6 +38,22 @@ func Custom(fn BuildFunc) *WCustom {
 		w.SetClientArea(b.clientArea)
 	}
 
+	event.Handle(w, func(gorgeui.EventUpdate) {
+		if w.Layout != nil {
+			w.Layout.Layout(w)
+		}
+	})
+
+	return w
+}
+
+func (w *WCustom) SetLayout(li ...Layouter) *WCustom {
+	w.Layout = LayoutMulti(li...)
+	return w
+}
+
+func (w *WCustom) SetName(name string) *WCustom {
+	w.Name = name
 	return w
 }
 

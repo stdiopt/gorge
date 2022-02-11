@@ -1,6 +1,8 @@
 package gorlet
 
 import (
+	"fmt"
+
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 )
@@ -27,41 +29,54 @@ func (fn LayoutFunc) Layout(ent Entity) {
 	fn(ent)
 }
 
-// MultiLayout multiple layout function
-func MultiLayout(ls ...Layouter) LayoutFunc {
-	return func(ent Entity) {
-		for _, l := range ls {
-			l.Layout(ent)
-		}
+type MultiLayout []Layouter
+
+func (l MultiLayout) Layout(ent Entity) {
+	for _, sl := range l {
+		sl.Layout(ent)
 	}
 }
 
-// AutoHeight be resize to content.
-func AutoHeight(spacing float32) LayoutFunc {
-	return func(ent Entity) {
-		mainrt := ent.RectTransform()
-		// Anchor Y should be Dimentional.
-		mainrt.Anchor[3] = mainrt.Anchor[1]
-		children := ent.GetEntities()
+func (l MultiLayout) String() string {
+	return fmt.Sprint([]Layouter(l))
+}
 
-		dim := gm.Vec2{}
-		for _, e := range children {
-			rr, ok := e.(gorgeui.RectTransformer)
-			if !ok {
-				continue
-			}
-			rt := rr.RectTransform()
-			rect := rt.Rect()
-			h := rect[3] - rect[1] + (rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3])
+func LayoutMulti(ls ...Layouter) MultiLayout {
+	return MultiLayout(ls)
+}
 
-			top := rt.Position[1]
-			bottom := top + h
-			dim[1] = gm.Max(bottom+spacing, dim[1])
+type AutoHeightLayout struct {
+	Spacing float32
+}
 
+func (l AutoHeightLayout) Layout(ent Entity) {
+	mainrt := ent.RectTransform()
+	// Anchor Y should be Dimentional.
+	mainrt.Anchor[3] = mainrt.Anchor[1]
+	children := ent.GetEntities()
+
+	dim := gm.Vec2{}
+	for _, e := range children {
+		rr, ok := e.(gorgeui.RectTransformer)
+		if !ok {
+			continue
 		}
-		rt := ent.RectTransform()
-		rt.Size[1] = dim[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
+		rt := rr.RectTransform()
+		rect := rt.Rect()
+		h := rect[3] - rect[1] + (rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3])
+
+		top := rt.Position[1]
+		bottom := top + h
+		dim[1] = gm.Max(bottom+l.Spacing, dim[1])
+
 	}
+	rt := ent.RectTransform()
+	rt.Size[1] = dim[1] + rt.Margin[1] + rt.Margin[3] + rt.Border[1] + rt.Border[3]
+}
+
+// AutoHeight be resize to content.
+func AutoHeight(spacing float32) *AutoHeightLayout {
+	return &AutoHeightLayout{Spacing: spacing}
 }
 
 /*

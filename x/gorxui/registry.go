@@ -27,8 +27,8 @@ var registry = Registry{
 	"slider":      func() gorlet.Entity { return gorlet.Slider(0, 1) },
 	"colorpicker": func() gorlet.Entity { return gorlet.ColorPicker() },
 	// containers
-	//"window":  func() gorlet.Func { return gorlet.Window("") },
-	//"labeled": func() gorlet.Func { return gorlet.Labeled("") },
+	// "window":  func() gorlet.Func { return gorlet.Window("") },
+	// "labeled": func() gorlet.Func { return gorlet.Labeled("") },
 	"list": func() gorlet.Entity { return gorlet.List() },
 	"flex": func() gorlet.Entity { return gorlet.Flex() },
 	"grid": func() gorlet.Entity { return gorlet.Grid() },

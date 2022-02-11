@@ -1,5 +1,9 @@
 package gorlet
 
+import (
+	"github.com/stdiopt/gorge/core/event"
+)
+
 type WTextButton struct {
 	Widget[WTextButton]
 	btn *WButton
@@ -23,6 +27,9 @@ func (w *WTextButton) Build(b *B) {
 			FillParent()
 	}
 	b.EndButton()
+	event.Handle(w.btn, func(e EventClick) {
+		event.Trigger(w, e)
+	})
 }
 
 func (w *WTextButton) SetText(t string) *WTextButton {

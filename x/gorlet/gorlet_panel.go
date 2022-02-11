@@ -82,13 +82,29 @@ func (w *WPanel) SetOverflow(o Overflow) *WPanel {
 	case OverflowHidden:
 		w.wrapper = Mask(w.content)
 	case OverflowScroll:
-		w.wrapper = Scroll(w.content)
+		w.wrapper = Scroll(w.content).
+			SetScrollSize(w.scrollSize[:]...)
 	default:
 		w.content.setMaskDepth(-1)
 		w.wrapper = Container(w.content)
 	}
 	w.Add(w.wrapper)
 	w.SetClientArea(w.content)
+	return w
+}
+
+func (w *WPanel) SetScrollSize(s ...float32) *WPanel {
+	switch len(s) {
+	case 0:
+		w.scrollSize = gm.Vec2{1, 1}
+	case 1:
+		w.scrollSize = gm.Vec2{s[0], s[0]}
+	default:
+		w.scrollSize = gm.Vec2{s[0], s[1]}
+	}
+	if w.overflow == OverflowScroll {
+		w.wrapper.(*WScroll).SetScrollSize(w.scrollSize[:]...)
+	}
 	return w
 }
 

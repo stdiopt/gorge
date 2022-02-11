@@ -10,6 +10,8 @@ type WList struct {
 	Widget[WList]
 
 	layout ListLayout
+
+	autoHeight Layouter
 }
 
 func List(c ...gorge.Entity) *WList {
@@ -19,7 +21,19 @@ func List(c ...gorge.Entity) *WList {
 func (w *WList) Build(b *B) {
 	event.Handle(w, func(gorgeui.EventUpdate) {
 		w.layout.Layout(w)
+		if w.autoHeight != nil {
+			w.autoHeight.Layout(w)
+		}
 	})
+}
+
+func (w *WList) SetAutoHeight(b bool) *WList {
+	if b {
+		w.autoHeight = AutoHeight(0)
+	} else {
+		w.autoHeight = nil
+	}
+	return w
 }
 
 func (w *WList) SetSpacing(v float32) *WList {

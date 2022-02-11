@@ -24,7 +24,7 @@ func (w *WContainer) Build(b *B) {
 }
 
 func (w *WContainer) SetLayout(l ...Layouter) *WContainer {
-	w.layouter = MultiLayout(l...)
+	w.layouter = LayoutMulti(l...)
 	return w
 }
 

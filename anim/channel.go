@@ -134,9 +134,9 @@ func (c *Channel[T]) SetKey(ct float32, v T) *Key[T] {
 	return kf
 }
 
-func (C *Channel[T]) SetKeys(m map[float32]T) {
+func (c *Channel[T]) SetKeys(m map[float32]T) {
 	for k, v := range m {
-		C.SetKey(k, v)
+		c.SetKey(k, v)
 	}
 }
 

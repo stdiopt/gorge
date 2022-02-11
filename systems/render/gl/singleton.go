@@ -9,7 +9,7 @@ type wrapperi interface {
 }
 
 // var glw *Wrapper
-var glw wrapperi //*Wrapper
+var glw wrapperi
 
 func Init(w *Wrapper) {
 	s := &cached{wrapper: w}

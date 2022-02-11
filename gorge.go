@@ -155,14 +155,6 @@ func (g *Gorge) Remove(ents ...Entity) {
 	}
 }
 
-// TriggerInMain does not trigger synchronous per say but does trigger in main loop
-// this is useful for GL related operations that depends on the specific thread it's running
-// since we don't control much threads
-
-//func (g *Gorge) TriggerInMain(v any) {
-//	g.RunInMain(func() { g.Trigger(v) })
-//}
-
 // Error persists an error in the event system
 // nolint: errcheck
 func (g *Gorge) Error(err error) {

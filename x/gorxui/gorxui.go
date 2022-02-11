@@ -22,7 +22,7 @@ func New() *XUI {
 	return &XUI{}
 }
 
-func Create(c any) gorlet.Entity {
+func Create(c any) *gorlet.WCustom {
 	return New().Create(c)
 }
 
@@ -92,7 +92,12 @@ func (x *XUI) MustFromString(s string) *gorlet.WCustom {
 
 func (x *XUI) read(rd io.Reader) (*gorlet.WCustom, error) {
 	var target string
-	defs := map[string][]gorlet.BuildFunc{}
+
+	type tmpl struct {
+		attr  []xml.Attr
+		funcs []gorlet.BuildFunc
+	}
+	defs := map[string]*tmpl{}
 	// main
 	fns := []gorlet.BuildFunc{}
 
@@ -101,7 +106,12 @@ func (x *XUI) read(rd io.Reader) (*gorlet.WCustom, error) {
 			fns = append(fns, fn)
 			return
 		}
-		defs[target] = append(defs[target], fn)
+		t, ok := defs[target]
+		if !ok {
+			t := &tmpl{}
+			defs[target] = t
+		}
+		t.funcs = append(t.funcs, fn)
 	}
 
 	xm := xml.NewDecoder(rd)
@@ -154,6 +164,10 @@ func (x *XUI) read(rd io.Reader) (*gorlet.WCustom, error) {
 				if _, ok := defs[name]; ok {
 					return nil, fmt.Errorf("gorxui: template %q already defined", name)
 				}
+
+				defs[name] = &tmpl{
+					attr: tok.Attr,
+				}
 				target = name
 				continue
 			default:
@@ -173,15 +187,18 @@ func (x *XUI) read(rd io.Reader) (*gorlet.WCustom, error) {
 			})
 		case xml.EndElement:
 			if tok.Name.Local == "template" {
-				fns := defs[target]
+				t := defs[target]
 				bf := func(b *gorlet.B) {
-					for _, fn := range fns {
+					for _, fn := range t.funcs {
 						fn(b)
 					}
 				}
 				x.Define(target, func() gorlet.Entity {
-					// log.Println("Creating from template:", target)
-					return gorlet.Custom(bf)
+					e := gorlet.Custom(bf)
+					for _, a := range t.attr {
+						setProp(e, e, a) // errcheck
+					}
+					return e
 				})
 				target = ""
 				continue
@@ -211,7 +228,9 @@ func setProp(root *gorlet.WCustom, e gorlet.Entity, a xml.Attr) error {
 	case "a":
 		switch a.Name.Local {
 		case "click":
+			log.Printf("Attaching handler click: %v to %v", a.Value, e)
 			event.Handle(e, func(evt gorlet.EventClick) {
+				log.Println("Clicked")
 				event.Trigger(root, EventAction{
 					a.Value,
 					evt,
@@ -226,6 +245,7 @@ func setProp(root *gorlet.WCustom, e gorlet.Entity, a xml.Attr) error {
 					e,
 				})
 			})
+
 		default:
 		}
 		event.Handle(e, func(evt EventAction) {
@@ -261,6 +281,14 @@ func setProp(root *gorlet.WCustom, e gorlet.Entity, a xml.Attr) error {
 	switch a.Name.Local {
 	case "id":
 		e.SetID(a.Value)
+	case "layout":
+		l, err := parseLayout(a.Value)
+		if err != nil {
+			return err
+		}
+		if c, ok := e.(*gorlet.WCustom); ok {
+			c.SetLayout(l)
+		}
 	default:
 		type customSetter interface {
 			Observer()
@@ -296,12 +324,10 @@ func setProp(root *gorlet.WCustom, e gorlet.Entity, a xml.Attr) error {
 			pv := reflect.ValueOf(v)
 			args := []reflect.Value{}
 			if f.Type.IsVariadic() {
-				// log.Printf("Calling[%T]: %s(%v...)", e, f.Name, v)
 				for i := 0; i < pv.Len(); i++ {
 					args = append(args, pv.Index(i))
 				}
 			} else {
-				// log.Printf("Calling[%T] : %s(%v)", e, f.Name, v)
 				args = append(args, pv)
 			}
 			mval.MethodByName(f.Name).Call(args)
@@ -310,70 +336,5 @@ func setProp(root *gorlet.WCustom, e gorlet.Entity, a xml.Attr) error {
 		}
 	}
 
-	/*
-		case "layout":
-			log.Println("No more layout")
-			l, err := parseLayout(a.Value)
-			if err != nil {
-				return err
-			}
-			e.SetLayout(l)
-		case "margin":
-			p, err := parseFloat32Slice(a.Value)
-			if err != nil {
-				return err
-			}
-			e.SetMargin(p...)
-		case "rect":
-			p, err := parseFloat32Slice(a.Value)
-			if err != nil {
-				return err
-			}
-			e.SetRect(p...)
-		case "width":
-			v, err := strconv.ParseFloat(a.Value, 32)
-			if err != nil {
-				return err
-			}
-			e.Size[0] = float32(v)
-		case "height":
-			v, err := strconv.ParseFloat(a.Value, 32)
-			if err != nil {
-				return err
-			}
-			e.Size[1] = float32(v)
-		case "anchor":
-			p, err := parseFloat32Slice(a.Value)
-			if err != nil {
-				return err
-			}
-			e.SetAnchor(p...)
-		case "pivot":
-			p, err := parseFloat32Slice(a.Value)
-			if err != nil {
-				return err
-			}
-			e.SetAnchor(p...)
-
-		case "color", "textColor", "handlerColor", "borderColor":
-			p, err := parseFloat32Slice(a.Value)
-			if err != nil {
-				return err
-			}
-			e.Set(a.Name.Local, gm.Color(p...))
-
-		default:
-
-			o := e.Observer(a.Name.Local)
-			if o == nil {
-				return nil
-			}
-			v, err := parseTyp(o.Type, a.Value)
-			if err != nil {
-				return err
-			}
-			e.Set(a.Name.Local, v)
-		}
-	*/
 	return nil
 }

@@ -31,24 +31,7 @@ func IntersectRect(r Ray, v0, v1, v2 gm.Vec3) Result {
 	ylen := ipos.Sub(v0)
 	uv[1] = ylen.Dot(yvec) / yvec.Dot(yvec)
 
-	/*
-		eps := float32(0.01)
-
-		if gm.FloatEqualThreshold(uv[0], 0, eps) ||
-			gm.FloatEqualThreshold(uv[0], 1, eps) ||
-			gm.FloatEqualThreshold(uv[1], 0, eps) ||
-			gm.FloatEqualThreshold(uv[1], 1, eps) { // out of edge
-			return Result{Hit: true, Position: ipos, UV: uv}
-		}
-	*/
 	hit := uv[0] >= 0 && uv[0] <= 1 && uv[1] >= 0 && uv[1] <= 1
-	//if uv[0] < 0 || uv[0] > 1 || uv[1] < 0 || uv[1] > 1 { // out of edge
-	//	return Result{Hit: false, Position: ipos, UV: uv}
-	//}
 
-	// vertical side
-	// vlen = v2.Sub(v0)
-	// plen = ipos.Sub(v0)
-	// v := plen.Dot(vlen) / vlen.Dot(vlen)
 	return Result{Hit: hit, Position: ipos, UV: uv}
 }

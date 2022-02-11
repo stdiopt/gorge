@@ -225,6 +225,16 @@ func (w *Widget[T, Tp]) SetSize(v ...float32) Tp {
 	return w.base
 }
 
+func (w *Widget[T, Tp]) SetWidth(v float32) Tp {
+	w.RectComponent.Size[0] = v
+	return w.base
+}
+
+func (w *Widget[T, Tp]) SetHeight(v float32) Tp {
+	w.RectComponent.Size[1] = v
+	return w.base
+}
+
 func (w *Widget[T, Tp]) SetPosition(x, y, z float32) Tp {
 	w.Position = gm.Vec3{x, y, z}
 	return w.base

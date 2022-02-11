@@ -15,6 +15,10 @@ type FlexLayout struct {
 	sum     float32
 }
 
+func (f *FlexLayout) String() string {
+	return "FlexLayout{sizeS: %v]"
+}
+
 // Layout implements layouter interface.
 func (l FlexLayout) Layout(ent Entity) {
 	children := ent.GetEntities()
@@ -57,6 +61,9 @@ func (l FlexLayout) Layout(ent Entity) {
 
 // SetSizes sets new sizes and recalculates flex.
 func (l *FlexLayout) SetSizes(sizes ...float32) {
+	if len(sizes) == 0 {
+		return
+	}
 	l.sizes = sizes
 	l.sum = 0
 	l.smaller = sizes[0]

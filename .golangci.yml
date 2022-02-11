@@ -10,18 +10,18 @@ linters:
   disable-all: true
   enable:
     - govet
-    - revive
-    - varcheck
-    - structcheck
-    - errcheck
-    - staticcheck
-    - ineffassign
-    - unconvert
-    - goimports
-    - misspell
-    - lll
-    - nakedret
-    - gocritic
+    #- revive
+    #- varcheck
+    #- structcheck
+      #- errcheck
+      #- staticcheck
+      #- ineffassign
+      #- unconvert
+      #- goimports
+      #- misspell
+      #- lll
+      #- nakedret
+      #- gocritic
 
 linters-settings:
   lll:

@@ -61,12 +61,6 @@ func (r *RenderableComponent) SetCullMask(m CullMaskFlags) {
 	r.CullMask = m
 }
 
-// SetCastShadow sets the castshadow if CastShadowDisabled it will be disabled
-// for all lights won't cast a shadow, CastShadowEnabled will enable it.
-//func (r *RenderableComponent) SetDisableShadow(b bool) {
-//	r.DisableShadow = b
-//}
-
 // SetOrder sets the render order lower will render first.
 func (r *RenderableComponent) SetOrder(o int) {
 	r.Order = o

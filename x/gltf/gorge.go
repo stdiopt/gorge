@@ -451,9 +451,6 @@ func (c *gltfCreator) getGAnimation(a *Animation) *anim.Animation {
 
 			ch := anim.AddChannel(gAnim, anim.Vec3)
 			ch.On(anim.Ptr(&targetNode.Scale))
-			//for i := range keys {
-			//	val = append(val, data[i*ds+off])
-			//}
 			for i, k := range keys {
 				kk := ch.SetKey(k, data[i*ds+off])
 				kk.SetEase(animEase(s.Interpolation))
