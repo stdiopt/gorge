@@ -115,7 +115,7 @@ func (c *ParticleEmitter) UpdateParticle(p *ParticleEntity, dt float32) {
 	p.Rotation += p.rotSpeed * (1 - l)
 }
 
-func AddParticleEmitter(a entityAdder) *ParticleEmitter {
+func AddParticleEmitter(a Contexter) *ParticleEmitter {
 	em := NewParticleEmitter()
 	a.Add(em)
 	return em

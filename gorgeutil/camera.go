@@ -38,7 +38,7 @@ func NewCamera() *Camera {
 	}
 }
 
-func AddCamera(a entityAdder, fov, near, far float32) *Camera {
+func AddCamera(a Contexter, fov, near, far float32) *Camera {
 	c := NewPerspectiveCamera(fov, near, far)
 	a.Add(c)
 	return c
@@ -59,7 +59,7 @@ func NewOrthoCamera(size, near, far float32) *Camera {
 	}
 }
 
-func AddOrthoCamera(a entityAdder, size, near, far float32) *Camera {
+func AddOrthoCamera(a Contexter, size, near, far float32) *Camera {
 	c := NewOrthoCamera(size, near, far)
 	a.Add(c)
 	return c
@@ -80,7 +80,7 @@ func NewPerspectiveCamera(fov, near, far float32) *Camera {
 	}
 }
 
-func AddPerspectiveCamera(a entityAdder, fov, near, far float32) *Camera {
+func AddPerspectiveCamera(a Contexter, fov, near, far float32) *Camera {
 	c := NewPerspectiveCamera(fov, near, far)
 	a.Add(c)
 	return c
@@ -103,7 +103,7 @@ func NewUICamera() *Camera {
 	}
 }
 
-func AddUICamera(a entityAdder) *Camera {
+func AddUICamera(a Contexter) *Camera {
 	c := NewUICamera()
 	a.Add(c)
 	return c

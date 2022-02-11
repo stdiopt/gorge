@@ -51,28 +51,28 @@ func New(inits ...gorge.InitFunc) *App {
 
 	// define default rendering pipeline
 	defInits := []gorge.InitFunc{
-		func(g *gorge.Context) error {
-			resource.FromContext(g)
-			input.FromContext(g)
-			render.FromContext(g)
-			renderpl.Default(g)
-			// This initializes some global fonts
-			gorgeui.FromContext(g)
-			return nil
-			// gorgeutil.FromContext(g)
-		},
+		resource.System,
+		input.System,
+		render.System,
+		renderpl.System,
+		gorgeui.System,
 		particle.System,
-		// resource.System,
-		// input.System,
-		// Disable audio system for android for now, since oto conflicts symbols because of
-		// x/mobile/app so it's being added in other platforms
-		// audio.System,
-		// render.System,
-		// renderpl.Default,
-		// gorgeui.System,
-		// gorgeutil.System,
+		/*func(g *gorge.Context) error {
+			ic := input.FromContext(g)
+			res := resource.FromContext(g)
+			appCtx := &Context{
+				gorgeContext:    g,
+				inputContext:    ic,
+				resourceContext: res,
+			}
+			for _, fn := range inits {
+				fn(appCtx)
+			}
+			return nil
+		},*/
 	}
 	a.inits = append(defInits, inits...) // nolint
+	// a.inits = defInits
 	return a
 }
 

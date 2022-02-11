@@ -45,7 +45,7 @@ func New() *UI {
 	return e
 }
 
-func AddTo(g *gorge.Context) *UI {
+func AddTo(g gorge.Contexter) *UI {
 	defCam := &defaultCamera{
 		TransformComponent: *gorge.NewTransformComponent(),
 		CameraComponent: gorge.CameraComponent{
@@ -61,11 +61,11 @@ func AddTo(g *gorge.Context) *UI {
 			ClearColor:     gm.Vec3{.3, .3, .3},
 		},
 	}
-	g.Add(defCam)
+	g.G().Add(defCam)
 	ui := New()
 	ui.SetCamera(defCam)
 
-	g.Add(ui)
+	g.G().Add(ui)
 
 	return ui
 }

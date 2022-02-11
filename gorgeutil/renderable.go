@@ -39,7 +39,7 @@ func NewPlane(dir primitive.PlaneDir) *Entity {
 }
 
 // AddPlane to entityAdder.
-func AddPlane(a entityAdder, dir primitive.PlaneDir) *Entity {
+func AddPlane(a Contexter, dir primitive.PlaneDir) *Entity {
 	p := NewPlane(dir)
 	a.Add(p)
 	return p
@@ -57,7 +57,7 @@ func NewSphere(sector, stack int) *Entity {
 }
 
 // AddSphere to entityAdder.
-func AddSphere(a entityAdder, sector, stack int) *Entity {
+func AddSphere(a Contexter, sector, stack int) *Entity {
 	s := NewSphere(sector, stack)
 	a.Add(s)
 	return s
@@ -75,8 +75,8 @@ func NewCube() *Entity {
 }
 
 // AddCube to entityAdder.
-func AddCube(a entityAdder) *Entity {
+func AddCube(g gorge.Contexter) *Entity {
 	c := NewCube()
-	a.Add(c)
+	g.G().Add(c)
 	return c
 }

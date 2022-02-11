@@ -6,10 +6,10 @@ import (
 	"github.com/stdiopt/gorge/primitive"
 )
 
-type entityAdder interface {
+type Contexter interface {
+	G() *gorge.Context
 	Add(...gorge.Entity)
-	AddHandler(event.Handler)
-	AddBus(event.Buser)
+	event.Handler
 }
 
 // Camera creates and adds a default camera to a gorge context.

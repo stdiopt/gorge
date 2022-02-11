@@ -14,6 +14,11 @@ import (
 	"github.com/stdiopt/gorge/text"
 )
 
+func System(g *gorge.Context) error {
+	FromContext(g)
+	return nil
+}
+
 type system struct {
 	Debug DebugFlag
 

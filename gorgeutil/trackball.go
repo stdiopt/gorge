@@ -106,9 +106,9 @@ func NewTrackballCamera(c cameraEntity) *CameraRig {
 	return camRig
 }
 
-func AddTrackballCamera(a entityAdder) *CameraRig {
+func AddTrackballCamera(a Contexter) *CameraRig {
 	c := NewTrackballCamera(nil)
-	a.Add(c)
-	a.AddHandler(c)
+	a.G().Add(c)
+	a.G().AddHandler(c)
 	return c
 }

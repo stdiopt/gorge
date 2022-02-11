@@ -38,7 +38,7 @@ func NewLight() *Light {
 	}
 }
 
-func AddLight(a entityAdder) *Light {
+func AddLight(a Contexter) *Light {
 	l := NewLight()
 	a.Add(l)
 	return l
@@ -50,7 +50,7 @@ func NewPointLight() *Light {
 	return NewLight()
 }
 
-func AddPointLight(a entityAdder) *Light {
+func AddPointLight(a Contexter) *Light {
 	l := NewPointLight()
 	a.Add(l)
 	return l
@@ -69,7 +69,7 @@ func NewDirectionalLight() *Light {
 	}
 }
 
-func AddDirectionalLight(a entityAdder) *Light {
+func AddDirectionalLight(a Contexter) *Light {
 	l := NewDirectionalLight()
 	a.Add(l)
 	return l
@@ -90,7 +90,7 @@ func NewSpotLight() *Light {
 	}
 }
 
-func AddSpotLight(a entityAdder) *Light {
+func AddSpotLight(a Contexter) *Light {
 	l := NewSpotLight()
 	a.Add(l)
 	return l

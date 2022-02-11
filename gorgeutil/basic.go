@@ -1,11 +1,8 @@
-package debug
+package gorgeutil
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
-	"github.com/stdiopt/gorge/gorgeutil"
 	"github.com/stdiopt/gorge/math/gm"
 	"github.com/stdiopt/gorge/systems/gorgeui"
 	"github.com/stdiopt/gorge/systems/input"
@@ -22,9 +19,9 @@ type Basic struct {
 	input   *input.Context
 	gorgeui *gorgeui.Context
 
-	PointLight *gorgeutil.Light
-	DirLight   *gorgeutil.Light
-	CamRig     *gorgeutil.CameraRig
+	PointLight *Light
+	DirLight   *Light
+	CamRig     *CameraRig
 
 	camRot float32
 	camVec gm.Vec3
@@ -88,69 +85,41 @@ func (b *Basic) HandleEvent(v event.Event) {
 		camTransform := b.CamRig.Camera.Transform()
 		b.camVec = b.camVec.Add(camTransform.Backward().Mul(power))
 	}
-	// Ambient control
-	/*
-		        cam := b.CamRig.Camera.Camera()
-			if b.input.KeyDown(input.KeyR) {
-				cam.ClearColor[0] =
-					gm.Min(cam.ClearColor[0]+step, 1)
-			}
-			if b.input.KeyDown(input.KeyF) {
-				cam.ClearColor[0] =
-					gm.Max(cam.ClearColor[0]-step, 0)
-			}
-			if b.input.KeyDown(input.KeyT) {
-				cam.ClearColor[1] =
-					gm.Min(cam.ClearColor[1]+step, 1)
-			}
-			if b.input.KeyDown(input.KeyG) {
-				cam.ClearColor[1] =
-					gm.Max(cam.ClearColor[1]-step, 0)
-			}
-			if b.input.KeyDown(input.KeyY) {
-				cam.ClearColor[2] =
-					gm.Min(cam.ClearColor[2]+step, 1)
-			}
-			if b.input.KeyDown(input.KeyH) {
-				cam.ClearColor[2] =
-					gm.Max(cam.ClearColor[2]-step, 0)
-			}
-	*/
 }
 
 // NewBasic creates a default scene.
-func NewBasic(g *gorge.Context) *Basic {
+func NewBasic(g gorge.Contexter) *Basic {
 	container := gorge.Container{}
 
 	// These...
-	ui := gorgeui.FromContext(g)
-	ic := input.FromContext(g)
+	ui := gorgeui.FromContext(g.G())
+	ic := input.FromContext(g.G())
 
 	lightRoot := gorge.NewTransformComponent()
 
-	pointLight := gorgeutil.NewPointLight()
+	pointLight := NewPointLight()
 	pointLight.SetParent(lightRoot)
 	pointLight.SetRange(300)
 	pointLight.SetPosition(1, 5, 2)
 
-	pointLightGimbal := gorgeutil.NewGimbal()
+	pointLightGimbal := NewGimbal()
 	pointLightGimbal.SetParent(pointLight)
 
-	cam := gorgeutil.NewCamera()
+	cam := NewCamera()
 	cam.SetClearFlag(gorge.ClearSkybox)
 	cam.SetClearColor(.4, .4, .4)
 
-	camRig := gorgeutil.NewTrackballCamera(cam)
+	camRig := NewTrackballCamera(cam)
 	camRig.SetPosition(0, 5, 5)
 
-	camGimbal := gorgeutil.NewGimbal()
+	camGimbal := NewGimbal()
 	camGimbal.SetParent(camRig)
 
-	dirLight := gorgeutil.NewDirectionalLight()
+	dirLight := NewDirectionalLight()
 	dirLight.SetPosition(10, 10, -5)
 	dirLight.LookAtPosition(gm.Vec3{0, 0, 0})
 
-	dirLightGimbal := gorgeutil.NewGimbal()
+	dirLightGimbal := NewGimbal()
 	dirLightGimbal.SetParent(dirLight)
 
 	container.Add(
@@ -167,7 +136,7 @@ func NewBasic(g *gorge.Context) *Basic {
 
 	return &Basic{
 		Container:  container,
-		gorge:      g,
+		gorge:      g.G(),
 		input:      ic,
 		gorgeui:    ui,
 		PointLight: pointLight,
@@ -178,19 +147,9 @@ func NewBasic(g *gorge.Context) *Basic {
 }
 
 // AddBasic adds a basic scene to the given gorge context.
-func AddBasic(g *gorge.Context) *Basic {
+func AddBasic(g gorge.Contexter) *Basic {
 	b := NewBasic(g)
 	g.Add(b)
-	g.AddHandler(b)
+	g.G().AddHandler(b)
 	return b
-}
-
-// BasicSystem initializes a default scene when used in app initializator.
-func BasicSystem(g *gorge.Context) error {
-	log.Println("initializing helper system")
-	thing := NewBasic(g)
-	// g.PutProp(thing)
-	g.Add(thing)
-	g.AddHandler(thing)
-	return nil
 }

@@ -21,7 +21,7 @@ func Pipeline(r *render.Context, fns ...PipelineFunc) render.StepFunc {
 }
 
 // Default detault rendering pipeline
-func Default(g *gorge.Context) {
+func System(g *gorge.Context) error {
 	r := render.FromContext(g)
 	r.SetRenderStage(Pipeline(r,
 		ProceduralSkybox,
@@ -32,4 +32,5 @@ func Default(g *gorge.Context) {
 			Render,
 		),
 	))
+	return nil
 }

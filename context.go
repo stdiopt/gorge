@@ -2,7 +2,8 @@ package gorge
 
 // Contexter interface to return a context containing Gorge instance.
 type Contexter interface {
-	Gorge() *Context
+	Add(...Entity)
+	G() *Context
 }
 
 type gorge = Gorge
@@ -13,7 +14,7 @@ type Context struct {
 }
 
 // Gorge context interface helper.
-func (c *Context) Gorge() *Context {
+func (c *Context) G() *Context {
 	return c
 }
 

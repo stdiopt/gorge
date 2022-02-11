@@ -6,7 +6,7 @@ func NewUI() *gorgeui.UI {
 	return gorgeui.New()
 }
 
-func AddUI(a entityAdder) *gorgeui.UI {
+func AddUI(a Contexter) *gorgeui.UI {
 	ui := NewUI()
 	a.Add(ui)
 	return ui
