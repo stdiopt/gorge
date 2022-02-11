@@ -42,17 +42,17 @@ func (w *WTextButton) SetFontScale(s float32) *WTextButton {
 	return w
 }
 
-func (w *WTextButton) Color(vs ...float32) *WTextButton {
+func (w *WTextButton) SetColor(vs ...float32) *WTextButton {
 	w.btn.Color(vs...)
 	return w
 }
 
-func (w *WTextButton) Highlight(vs ...float32) *WTextButton {
+func (w *WTextButton) SetHighlightColor(vs ...float32) *WTextButton {
 	w.btn.Highlight(vs...)
 	return w
 }
 
-func (w *WTextButton) Pressed(vs ...float32) *WTextButton {
+func (w *WTextButton) SetPressedColor(vs ...float32) *WTextButton {
 	w.btn.Pressed(vs...)
 	return w
 }

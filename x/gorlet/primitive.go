@@ -93,7 +93,11 @@ func (m *roundedQuadMesh) update() {
 	sz := m.size
 	m.path.Reset()
 	m.path.size = sz
+	m.path.Updates++
 
+	if sz[0] <= 0 || sz[1] <= 0 {
+		return
+	}
 	cx := gm.Clamp(m.radius, 0, sz[0]/2)
 	cy := gm.Clamp(m.radius, 0, sz[1]/2)
 	if cx < cy {

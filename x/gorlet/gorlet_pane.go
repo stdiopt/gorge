@@ -33,6 +33,7 @@ func (w *WPane) Build(b *B) {
 			w.layout.Layout(w)
 		}
 		w.roundedQuad.SetRadius(w.borderRadius)
+
 		// Rebuild mesh here?! if size changes
 		sz := w.ContentSize()
 		newRect := gm.Vec4{
@@ -45,7 +46,6 @@ func (w *WPane) Build(b *B) {
 			return
 		}
 		prevRect = newRect
-
 		w.roundedQuad.SetSize(newRect.ZW())
 		w.roundedQuad.update()
 		w.ent.Position = newRect.XY().Vec3(0)

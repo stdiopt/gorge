@@ -57,7 +57,7 @@ func NewSphere(sector, stack int) *Entity {
 }
 
 // AddSphere to entityAdder.
-func AddSphere(a Contexter, sector, stack int) *Entity {
+func AddSphere(a entityAdder, sector, stack int) *Entity {
 	s := NewSphere(sector, stack)
 	a.Add(s)
 	return s

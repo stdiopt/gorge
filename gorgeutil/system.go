@@ -12,6 +12,10 @@ type Contexter interface {
 	event.Handler
 }
 
+type entityAdder interface {
+	Add(...gorge.Entity)
+}
+
 // Camera creates and adds a default camera to a gorge context.
 func (c Context) Camera() *Camera {
 	cam := NewCamera()

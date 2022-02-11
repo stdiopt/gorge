@@ -74,6 +74,7 @@ func (w *WScroll) Build(b *B) {
 			}
 		}
 	})
+
 	event.Handle(w, func(e gorgeui.EventUpdate) {
 		sz := w.mask.ContentSize()
 		b := w.container.CalcMax()
@@ -171,6 +172,8 @@ func (w *WScrollbar) Build(b *B) {
 	const sp = .3
 	const spx = .2
 
+	w.SetDragEvents(true)
+
 	b.BeginPane()
 	if w.dir == Horizontal {
 		w.track = b.BeginContainer().
@@ -194,7 +197,7 @@ func (w *WScrollbar) Build(b *B) {
 		b.EndContainer()
 	}
 	b.EndPane()
-	w.SetDragEvents(true)
+
 	event.Handle(w, func(e gorgeui.EventPointerUp) {
 		if w.dragging != nil {
 			return

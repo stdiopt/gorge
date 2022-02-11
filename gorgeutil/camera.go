@@ -103,7 +103,7 @@ func NewUICamera() *Camera {
 	}
 }
 
-func AddUICamera(a Contexter) *Camera {
+func AddUICamera(a entityAdder) *Camera {
 	c := NewUICamera()
 	a.Add(c)
 	return c
