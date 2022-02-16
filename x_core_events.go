@@ -6,4 +6,13 @@ type (
 	EventCursorRelative bool
 	// EventCursorHidden turns true/false hidden cursor uppon triggering event.
 	EventCursorHidden bool
+
+	EventCursor CursorType
+)
+
+type CursorType int
+
+const (
+	CursorArrow CursorType = iota
+	CursorHand
 )

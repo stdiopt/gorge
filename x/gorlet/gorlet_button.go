@@ -71,9 +71,11 @@ func (w *WButton) Build(b *B) {
 	})
 	event.Handle(w, func(gorgeui.EventPointerEnter) {
 		state |= stateHover
+		event.Trigger(gorgeui.RootUI(w).Gorge(), gorge.EventCursor(gorge.CursorHand))
 	})
 	event.Handle(w, func(gorgeui.EventPointerLeave) {
 		state &= ^stateHover
+		event.Trigger(gorgeui.RootUI(w).Gorge(), gorge.EventCursor(gorge.CursorArrow))
 	})
 }
 

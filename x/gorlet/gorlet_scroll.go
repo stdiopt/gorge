@@ -20,7 +20,7 @@ type WScroll struct {
 	scrollVel gm.Vec2
 
 	scrolls   [2]scrollent
-	container *WContainer
+	container *WPane
 	mask      *WMask
 }
 
@@ -29,10 +29,15 @@ func Scroll(c ...gorge.Entity) *WScroll {
 }
 
 func (w *WScroll) Build(b *B) {
+	// Inner Pane is anchored 0,0,1,1 to parent which makes
+	// scroll be bigger than parent when scrolled down
+	// Ideally inner objects should be their own size and not be anchored
+	// this way we can reduce scroll to max when content is reduced.
+
 	w.mask = b.BeginMask()
-	w.container = b.BeginContainer()
+	w.container = b.BeginPane()
 	b.ClientArea()
-	b.EndContainer()
+	b.EndPane()
 	b.EndMask()
 	// w.SetClientArea(w.container)
 
@@ -57,11 +62,11 @@ func (w *WScroll) Build(b *B) {
 		sz := w.mask.ContentSize()
 		b := w.container.CalcMax()
 
-		if !w.scrolls[0].disabled && sz[0] > b[0] {
+		if !w.scrolls[0].disabled && sz[0] < b[0] {
 			w.scrollVel[0] -= e.Wheel[0] * 0.005
-			if e.Wheel[0] > 0 && w.scrolls[0].value != 1 {
+			if e.Wheel[0] > 0 && !gm.FloatEqual(w.scrolls[0].value, 1) {
 				e.StopPropagation()
-			} else if e.Wheel[0] < 0 && w.scrolls[0].value != 0 {
+			} else if e.Wheel[0] < 0 && !gm.FloatEqual(w.scrolls[0].value, 0) {
 				e.StopPropagation()
 			}
 		}
@@ -82,6 +87,7 @@ func (w *WScroll) Build(b *B) {
 		ssz := gm.Vec2{}
 
 		w.scrollVel = w.scrollVel.Lerp(gm.Vec2{}, e.DeltaTime()*20)
+
 		if !w.scrolls[0].disabled {
 			if sz[0]+gm.Epsilon >= b[0] {
 				w.scrolls[0].entity.SetValue(0)
@@ -107,6 +113,7 @@ func (w *WScroll) Build(b *B) {
 				hs := sz[1] * (sz[1] / b[1])
 				curScroll := w.container.Position[1] / (sz[1] - b[1])
 				delta := w.scrollVel[1] * .8
+
 				w.scrolls[1].entity.SetValue(curScroll + delta)
 				w.scrolls[1].entity.SetMax(hs)
 			}

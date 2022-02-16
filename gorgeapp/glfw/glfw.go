@@ -83,22 +83,6 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 
 	g := gorge.New(ggArgs...)
 
-	event.Handle(g, func(e gorge.EventCursorRelative) {
-		if e { // set cursor to center on turn on
-			sx, sy := s.window.GetSize()
-			cx, cy := float64(sx/2), float64(sy/2)
-			s.window.SetCursorPos(cx, cy)
-		}
-		s.cursorRelative = bool(e)
-	})
-	event.Handle(g, func(e gorge.EventCursorHidden) {
-		if e {
-			s.window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
-		} else {
-			s.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
-		}
-	})
-
 	// bind stuff together
 	if err := g.Start(); err != nil {
 		return err
@@ -145,6 +129,35 @@ func (s *glfwSystem) System(g *gorge.Context) {
 	s.input = input.FromContext(g)
 	s.gorge = g
 	s.setupEvents()
+
+	event.Handle(g, func(e gorge.EventCursorRelative) {
+		if e { // set cursor to center on turn on
+			sx, sy := s.window.GetSize()
+			cx, cy := float64(sx/2), float64(sy/2)
+			s.window.SetCursorPos(cx, cy)
+		}
+		s.cursorRelative = bool(e)
+	})
+	event.Handle(g, func(e gorge.EventCursorHidden) {
+		if e {
+			s.window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+		} else {
+			s.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+		}
+	})
+	// Temporary cursor experiment:
+	{
+		arrowCursor := glfw.CreateStandardCursor(glfw.ArrowCursor)
+		handCursor := glfw.CreateStandardCursor(glfw.HandCursor)
+		event.Handle(g, func(e gorge.EventCursor) {
+			switch gorge.CursorType(e) {
+			case gorge.CursorArrow:
+				s.window.SetCursor(arrowCursor)
+			case gorge.CursorHand:
+				s.window.SetCursor(handCursor)
+			}
+		})
+	}
 }
 
 func (s *glfwSystem) setupEvents() {

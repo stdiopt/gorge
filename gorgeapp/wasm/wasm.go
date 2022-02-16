@@ -65,10 +65,9 @@ func Run(opt Options, systems ...gorge.InitFunc) error {
 		resourceFS = resource.HTTPFS{""}
 	}
 	ggArgs := []gorge.InitFunc{
-		func(g *gorge.Context) error {
+		func(g *gorge.Context) {
 			res := resource.FromContext(g)
 			res.AddFS("/", resourceFS)
-			return nil
 		},
 		s.System,
 	}
@@ -90,13 +89,22 @@ type wasmSystem struct {
 	// Width, Height    float64
 }
 
-func (s *wasmSystem) System(g *gorge.Context) error {
-	s.gorge = g
+func (s *wasmSystem) System(g *gorge.Context) {
 	s.input = input.FromContext(g)
+	s.gorge = g
 	// g.PutProp(s.glctx)
 	s.checkCanvasSize()
 	event.Handle(g, func(gorge.EventStart) {
 		s.setupEvents()
+	})
+
+	event.Handle(g, func(e gorge.EventCursor) {
+		switch gorge.CursorType(e) {
+		case gorge.CursorArrow:
+			Body.Get("style").Set("cursor", "default")
+		case gorge.CursorHand:
+			Body.Get("style").Set("cursor", "hand")
+		}
 	})
 	event.Handle(g, func(gorge.EventAfterStart) {
 		var prevFrameTime float64 = 0
@@ -120,7 +128,6 @@ func (s *wasmSystem) System(g *gorge.Context) error {
 		})
 		js.Global().Call("requestAnimationFrame", ticker)
 	})
-	return nil
 }
 
 func (s *wasmSystem) checkCanvasSize() {

@@ -31,6 +31,10 @@ func (u *UI) String() string {
 	return "UI"
 }
 
+func (u *UI) Gorge() *gorge.Context {
+	return u.gorge
+}
+
 // New returns a new UI.
 func New() *UI {
 	e := &UI{

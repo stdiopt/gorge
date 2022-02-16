@@ -38,7 +38,7 @@ func (f *Font) getGlyph(ch rune) Glyph {
 // FontOptions options for font
 type FontOptions struct {
 	Resolution int
-	Chars      string
+	Chars      []rune
 	Background *gm.Vec4
 	Foreground *gm.Vec4
 }

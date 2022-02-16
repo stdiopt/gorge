@@ -20,14 +20,14 @@ func init() {
 	resource.Register((*Font)(nil), ".ttf", fontLoader)
 }
 
-const commonChars = "`" + `
+var commonChars = []rune("`" + `
 0123456789µ&
 abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 {}()[]|$@?!%/\:;,._-+=<>*"'~#
 áéíóúÁÉÍÓÚçÇãÃõÕ
-
-`
+►▼◀▲
+`)
 
 func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 	fontOut := v.(*Font)
@@ -57,10 +57,10 @@ func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 	}
 
 	chars := opt.Chars
-	if chars == "" {
+	if len(chars) == 0 {
 		chars = commonChars
 	}
-	chars = "�" + chars // prepend the interrogation
+	chars = append([]rune{'�'}, chars...) // prepend the interrogation
 
 	// Load font and dependents
 	fontData, err := res.LoadBytes(name)
@@ -186,7 +186,7 @@ func vec4ToColor(v gm.Vec4) color.Color {
 }
 
 // glyph returns the number of printable glyphs and maximum width,height
-func glyphCount(s string) int {
+func glyphCount(s []rune) int {
 	count := 0
 	for _, ch := range s {
 		if unicode.IsSpace(ch) {
