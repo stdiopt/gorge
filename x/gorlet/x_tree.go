@@ -56,10 +56,11 @@ func (w *WTree) Build(b *B) {
 	b.BeginContainer().SetRect(w.offset*2, 0, 0, 0)
 
 	w.icn = b.Label(prefix).
-		SetAnchor(0, 0, .1, 1).
-		SetSize(0)
+		SetAnchor(0, 0, 0, 1).
+		SetRect(0, 0, 2, 0)
 	w.lbl = b.Label(w.model.Name).
-		SetAnchor(.1, 0, .1, 1).
+		SetAnchor(0, 0, 0, 1).
+		SetRect(2, 0, 0, 0).
 		SetAutoSize(true).
 		SetOverflow(text.OverflowOverlap).
 		SetSize(0).

@@ -51,7 +51,7 @@ func (r *renderable) destroy() {
 type RenderableGroup struct {
 	renderer *Render
 	// Instances
-	Instances setlist.SetList[Renderable]
+	Instances setlist.SetList[HRenderable]
 	// Count is the number of ACTIVE renderable in this group
 	Count uint32
 
@@ -93,7 +93,7 @@ func (rg *RenderableGroup) Renderable() *gorge.RenderableComponent {
 
 // Add adds a new instance to this set.
 func (rg *RenderableGroup) Add(r Renderable) {
-	rg.Instances.Add(r)
+	rg.Instances.Add(HRenderable{r})
 	if rr, ok := gorge.GetGPU(rg.renderable).(*renderable); ok {
 		rr.troResize = true
 	}
@@ -101,7 +101,7 @@ func (rg *RenderableGroup) Add(r Renderable) {
 
 // Remove removes an instance from this set.
 func (rg *RenderableGroup) Remove(r Renderable) {
-	rg.Instances.Remove(r)
+	rg.Instances.Remove(HRenderable{r})
 	if rr, ok := gorge.GetGPU(rg.renderable).(*renderable); ok {
 		rr.troResize = true
 	}
@@ -119,7 +119,7 @@ func (rg *RenderableGroup) Destroy() {
 
 // Front returns the first Renderable on this group.
 func (rg *RenderableGroup) Front() Renderable {
-	return rg.Instances.Front()
+	return rg.Instances.Front().Renderable
 }
 
 // Update updates any related gpu buffer on the group based on pass
@@ -172,7 +172,7 @@ func (rg *RenderableGroup) Update(s *Step) {
 	offs := 0
 	rg.Count = 0
 	for _, r := range rg.Instances.Items() {
-		if v, ok := r.(interface{ RenderDisable() bool }); ok {
+		if v, ok := r.Renderable.(interface{ RenderDisable() bool }); ok {
 			// Could check transform Disable going upward parent
 			// if some parent is disable, this is disabled
 			if v.RenderDisable() {
@@ -184,7 +184,7 @@ func (rg *RenderableGroup) Update(s *Step) {
 		m := r.Mat4()
 		um := m.Inv().Transpose() // New: Normal Matrix
 		color := gm.Vec4{1, 1, 1, 1}
-		if v, ok := r.(interface{ GetColor() gm.Vec4 }); ok {
+		if v, ok := r.Renderable.(interface{ GetColor() gm.Vec4 }); ok {
 			color = v.GetColor()
 		}
 		totSize := unitSize

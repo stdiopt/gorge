@@ -16,7 +16,7 @@ func EachCamera(pipes ...PipelineFunc) PipelineFunc {
 		return func(p *render.Step) {
 			sort.Sort(cameraSorter(r.Cameras.Items()))
 			for _, c := range r.Cameras.Items() {
-				p.Camera = c
+				p.Camera = c.Camera
 				eachCamera(p)
 			}
 			next(p)

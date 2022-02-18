@@ -15,8 +15,8 @@ import (
 // Render thing
 type Render struct {
 	gorge          *gorge.Context
-	Cameras        setlist.SetList[Camera]
-	Lights         setlist.SetList[Light]
+	Cameras        setlist.SetList[HCamera]
+	Lights         setlist.SetList[HLight]
 	Renderables    []*RenderableGroup
 	renderablesMap map[*gorge.RenderableComponent]*RenderableGroup
 
@@ -123,23 +123,23 @@ func (r *Render) GetVBO(mesh *gorge.Mesh) *VBO {
 }
 
 // AddCamera adds a camera.
-func (r *Render) AddCamera(camera Camera) {
-	r.Cameras.Add(camera)
+func (r *Render) AddCamera(c Camera) {
+	r.Cameras.Add(HCamera{c})
 }
 
 // RemoveCamera removes a specific camera if exists.
-func (r *Render) RemoveCamera(camera Camera) {
-	r.Cameras.Remove(camera)
+func (r *Render) RemoveCamera(c Camera) {
+	r.Cameras.Remove(HCamera{c})
 }
 
 // AddLight adds a light to the light list.
-func (r *Render) AddLight(light Light) {
-	r.Lights.Add(light)
+func (r *Render) AddLight(l Light) {
+	r.Lights.Add(HLight{l})
 }
 
 // RemoveLight if exists.
-func (r *Render) RemoveLight(light Light) {
-	r.Lights.Remove(light)
+func (r *Render) RemoveLight(l Light) {
+	r.Lights.Remove(HLight{l})
 }
 
 // AddRenderable adds a renderable instance

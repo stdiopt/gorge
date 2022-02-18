@@ -6,6 +6,12 @@ import (
 	"github.com/stdiopt/gorge/systems/render/gl"
 )
 
+type (
+	HLight      struct{ Light }
+	HCamera     struct{ Camera }
+	HRenderable struct{ Renderable }
+)
+
 // Light interface for light composition
 type Light interface {
 	Mat4() gm.Mat4

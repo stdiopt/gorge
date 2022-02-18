@@ -66,7 +66,7 @@ func ProceduralSkybox(r *render.Context, next render.StepFunc) render.StepFunc {
 		// Do this elsewhere like on prepare
 		lightDir := gm.Vec3{-3, -3, -3} // Else we will use this
 		for _, rl := range r.Lights.Items() {
-			if rl.Light().Type == gorge.LightDirectional {
+			if rl.Light.Light().Type == gorge.LightDirectional {
 				// lightDir = gm.Vec3{}.Sub(rl.TransformComponent().WorldPosition()).Normalize()
 				// lightDir = rl.Transform().Forward() // WHAT again?
 				lightDir = rl.Mat4().MulV4(gm.Vec4{0, 0, -1, 0}).Vec3()

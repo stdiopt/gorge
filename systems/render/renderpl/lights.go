@@ -159,7 +159,7 @@ func PrepareLights(r *render.Context, next render.StepFunc) render.StepFunc {
 		lights := r.Lights.Items()
 		for ti := 0; ti < len(lights); ti++ {
 			lightDepthIndex := -1
-			light := lights[ti]
+			light := lights[ti].Light
 			l := light.Light()
 			// t := light.Transform()
 			mat4 := light.Mat4()

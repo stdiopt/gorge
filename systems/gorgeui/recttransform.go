@@ -222,6 +222,7 @@ func (c *RectComponent) RelativeSize(parentDim gm.Vec2) gm.Vec2 {
 	right = c.Size[0]
 	bottom = c.Size[1]
 	// If anchor min and max are the same we use pivot
+	// We need to claculate Anchor always unless it's 0
 	if c.Anchor[0] != c.Anchor[2] {
 		w := parentDim[0] // parentRect[0] is always 0 now
 		w -= w*(1-c.Anchor[2]) + w*(c.Anchor[0])
@@ -248,7 +249,7 @@ func (c *RectComponent) parentSize() gm.Vec2 {
 	return gm.Vec2{}
 }
 
-// TODO: this will be deprecated
+// TODO: this might be deprecated
 
 // Rect calculate and returns the rect.
 func (c *RectComponent) Rect() gm.Vec4 {

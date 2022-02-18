@@ -272,11 +272,11 @@ func (w *Widget[T, Tp]) IntersectFromScreen(pos gm.Vec2) ray.Result {
 // CalcMax calculates children bounds and positions and return min max
 // Calc maximum of the children
 func (w *Widget[T, Tp]) CalcMax() gm.Vec2 { // CalcMax
-	sz := w.ContentSize()
-	sz[0] += w.Margin[0] + w.Margin[2]
-	sz[1] += w.Margin[1] + w.Margin[3]
+	r := w.Rect()
+	r[2] += w.Margin[0] + w.Margin[2]
+	r[3] += w.Margin[1] + w.Margin[3]
 	if w.masked {
-		return sz
+		return r.ZW()
 	}
 
 	for _, c := range w.GetEntities() {
@@ -288,10 +288,10 @@ func (w *Widget[T, Tp]) CalcMax() gm.Vec2 { // CalcMax
 		b := e.CalcMax()
 		p := e.RectTransform().Position.XY()
 		p = p.Sub(e.RectTransform().Pivot.MulVec2(b))
-		sz[0] = gm.Max(sz[0], p[0]+b[0])
-		sz[1] = gm.Max(sz[1], p[1]+b[1])
+		r[2] = gm.Max(r[2], p[0]+b[0])
+		r[3] = gm.Max(r[3], p[1]+b[1])
 	}
-	return sz
+	return r.ZW()
 }
 
 // IsMasked returns true if the widget is masked

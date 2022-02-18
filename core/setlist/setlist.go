@@ -24,9 +24,6 @@ func (l *SetList[T]) Add(item T) bool {
 }
 
 func (l *SetList[T]) Remove(item T) bool {
-	if l.uniq == nil {
-		return false
-	}
 	if _, ok := l.uniq[item]; !ok {
 		return false
 	}

@@ -18,7 +18,7 @@ type Step struct {
 
 	// Current rendering camera.
 	Camera Camera
-	Lights []Light
+	Lights []HLight
 
 	QueuesIndex []int
 	Queues      map[int]*Queue
