@@ -259,9 +259,12 @@ func (c *RectComponent) Rect() gm.Vec4 {
 // RelativeRect calculate rect based on other.
 func (c *RectComponent) RelativeRect(parentRect gm.Vec4) gm.Vec4 {
 	var left, top, right, bottom float32
+
+	// parentW := parentRect[2] - parentRect[0]
+	// parentH := parentRect[3] - parentRect[1]
 	// We might discard rect
-	left = 0 // parentRect[0] //+ c.Anchor[0]*parentW
-	top = 0  // parentRect[1]  //+ c.Anchor[1]*parentH
+	left = 0 // c.Anchor[0] * parentW
+	top = 0  // c.Anchor[1] * parentH
 
 	right = c.Size[0]
 	bottom = c.Size[1]

@@ -273,8 +273,8 @@ func (w *Widget[T, Tp]) IntersectFromScreen(pos gm.Vec2) ray.Result {
 // Calc maximum of the children
 func (w *Widget[T, Tp]) CalcMax() gm.Vec2 { // CalcMax
 	r := w.Rect()
-	r[2] += w.Margin[0] + w.Margin[2]
-	r[3] += w.Margin[1] + w.Margin[3]
+	// r[2] += w.Margin[0] + w.Margin[2]
+	// r[3] += w.Margin[1] + w.Margin[3]
 	if w.masked {
 		return r.ZW()
 	}
@@ -284,9 +284,14 @@ func (w *Widget[T, Tp]) CalcMax() gm.Vec2 { // CalcMax
 		if !ok {
 			continue
 		}
+		rt := e.RectTransform()
+		p := gm.Vec2{
+			rt.Position[0] + r[2]*rt.Anchor[0],
+			rt.Position[1] + r[3]*rt.Anchor[1],
+		}
 
 		b := e.CalcMax()
-		p := e.RectTransform().Position.XY()
+
 		p = p.Sub(e.RectTransform().Pivot.MulVec2(b))
 		r[2] = gm.Max(r[2], p[0]+b[0])
 		r[3] = gm.Max(r[3], p[1]+b[1])

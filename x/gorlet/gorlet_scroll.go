@@ -35,7 +35,7 @@ func (w *WScroll) Build(b *B) {
 	// this way we can reduce scroll to max when content is reduced.
 
 	w.mask = b.BeginMask()
-	w.container = b.BeginPane()
+	w.container = b.BeginPane() //.SetAnchor(0)
 	b.ClientArea()
 	b.EndPane()
 	b.EndMask()
@@ -60,6 +60,9 @@ func (w *WScroll) Build(b *B) {
 
 	event.Handle(w, func(e gorgeui.EventPointerWheel) {
 		sz := w.mask.ContentSize()
+		// Match size of the mask as it Anchor is 0
+		// Container is a pane but has background
+		// w.container.SetSize(sz[0], sz[1])
 		b := w.container.CalcMax()
 
 		if !w.scrolls[0].disabled && sz[0] < b[0] {
