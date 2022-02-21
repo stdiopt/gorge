@@ -1,8 +1,6 @@
 package gorlet
 
 import (
-	"log"
-
 	"github.com/stdiopt/gorge"
 	"github.com/stdiopt/gorge/core/event"
 	"github.com/stdiopt/gorge/math/gm"
@@ -42,9 +40,6 @@ func Tree(n *TreeNode) *WTree {
 }
 
 func (w *WTree) Build(b *B) {
-	// var subtree *gorlet.WContainer
-	log.Printf("Building tree for: %v with offset: %v", w.model, w.offset)
-
 	prefix := ""
 	if len(w.model.Children) != 0 {
 		prefix = "-"
