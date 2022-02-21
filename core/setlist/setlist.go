@@ -1,9 +1,9 @@
 // Package setlist slice without duplication.
 package setlist
 
-type SetList[T comparable] struct {
+type SetList[T any] struct {
 	items []T
-	uniq  map[T]struct{}
+	uniq  map[any]struct{}
 }
 
 func (l *SetList[T]) Items() []T {
@@ -12,7 +12,7 @@ func (l *SetList[T]) Items() []T {
 
 func (l *SetList[T]) Add(item T) bool {
 	if l.uniq == nil {
-		l.uniq = make(map[T]struct{})
+		l.uniq = make(map[any]struct{})
 	}
 	if _, ok := l.uniq[item]; ok {
 		return false
@@ -31,7 +31,7 @@ func (l *SetList[T]) Remove(item T) bool {
 	delete(l.uniq, item)
 
 	for i, v := range l.items {
-		if v == item {
+		if any(v) == any(item) {
 			t := l.items
 			l.items = append(l.items[:i], l.items[i+1:]...)
 			var z T
