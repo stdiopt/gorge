@@ -123,23 +123,23 @@ func (r *Render) GetVBO(mesh *gorge.Mesh) *VBO {
 }
 
 // AddCamera adds a camera.
-func (r *Render) AddCamera(c Camera) {
-	r.Cameras.Add(c)
+func (r *Render) AddCamera(camera Camera) {
+	r.Cameras.Add(camera)
 }
 
 // RemoveCamera removes a specific camera if exists.
-func (r *Render) RemoveCamera(c Camera) {
-	r.Cameras.Remove(c)
+func (r *Render) RemoveCamera(camera Camera) {
+	r.Cameras.Remove(camera)
 }
 
 // AddLight adds a light to the light list.
-func (r *Render) AddLight(l Light) {
-	r.Lights.Add(l)
+func (r *Render) AddLight(light Light) {
+	r.Lights.Add(light)
 }
 
 // RemoveLight if exists.
-func (r *Render) RemoveLight(l Light) {
-	r.Lights.Remove(l)
+func (r *Render) RemoveLight(light Light) {
+	r.Lights.Remove(light)
 }
 
 // AddRenderable adds a renderable instance

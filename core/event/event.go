@@ -20,14 +20,10 @@ type Buser interface {
 	bus() *Bus
 }
 
-type handler struct {
-	Handler
-}
-
 type Bus struct {
 	listeners []any // slices
 
-	handlers setlist.SetList[handler]
+	handlers setlist.SetList[Handler]
 
 	children []Buser
 }
@@ -35,11 +31,11 @@ type Bus struct {
 func (b *Bus) bus() *Bus { return b }
 
 func (b *Bus) AddHandler(h Handler) {
-	b.handlers.Add(handler{h})
+	b.handlers.Add(h)
 }
 
 func (b *Bus) Remove(h Handler) {
-	b.handlers.Remove(handler{h})
+	b.handlers.Remove(h)
 }
 
 // AddBus adds a children bus.
@@ -83,9 +79,7 @@ func Handle[T any](bb Buser, fn HandlerFunc[T]) {
 	b := bb.bus()
 
 	if fn, ok := any(fn).(HandlerFunc[Event]); ok {
-		b.handlers.Add(handler{
-			Handler: &handleEvent{fn: fn},
-		})
+		b.handlers.Add(&handleEvent{fn: fn})
 		return
 	}
 
