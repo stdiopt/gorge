@@ -10,7 +10,7 @@ import (
 )
 
 type WSpinner struct {
-	Widget[WSpinner]
+	Widget[*WSpinner]
 
 	value float32
 	fmt   string

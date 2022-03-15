@@ -25,7 +25,7 @@ func (o Overflow) String() string {
 }
 
 type WPanel struct {
-	Widget[WPanel]
+	Widget[*WPanel]
 
 	main       *WCustom
 	background *WPane

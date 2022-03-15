@@ -6,7 +6,7 @@ import (
 )
 
 type WFlex struct {
-	Widget[WFlex]
+	Widget[*WFlex]
 
 	layout FlexLayout
 }

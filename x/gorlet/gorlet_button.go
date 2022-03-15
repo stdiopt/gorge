@@ -8,7 +8,7 @@ import (
 )
 
 type WButton struct {
-	Widget[WButton]
+	Widget[*WButton]
 	color      gm.Vec4
 	highlight  gm.Vec4
 	pressed    gm.Vec4

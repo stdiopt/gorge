@@ -53,7 +53,7 @@ var colorTex = func() *gorge.TextureData {
 }()
 
 type WColorPicker struct {
-	Widget[WColorPicker]
+	Widget[*WColorPicker]
 	spacing  float32
 	value    gm.Vec4
 	outColor *WPane

@@ -68,17 +68,16 @@ type entityRemover interface {
 
 type gcref struct{ n int }
 
-type entityConstraint[T any] interface {
-	*T
+type entityConstraint interface {
 	Entity
 }
 
-type Widget[T any, Tp entityConstraint[T]] struct {
+type Widget[T entityConstraint] struct {
 	id   string
 	name string
 	gorgeui.RectComponent
 	gorgeui.ElementComponent
-	base Tp
+	base T
 
 	clientArea Entity
 	masked     bool
@@ -89,7 +88,7 @@ type Widget[T any, Tp entityConstraint[T]] struct {
 	gcref *gcref
 }
 
-func (w *Widget[T, Tp]) String() string {
+func (w *Widget[T]) String() string {
 	b := &strings.Builder{}
 
 	fmt.Fprintf(b, "%T", w.base)
@@ -102,15 +101,15 @@ func (w *Widget[T, Tp]) String() string {
 	return b.String()
 }
 
-func (b *Widget[T, Tp]) setBase(b2 Widget[T, Tp]) {
+func (b *Widget[T]) setBase(b2 Widget[T]) {
 	*b = b2
 }
 
-type baseSetter[T any, Tp entityConstraint[T]] interface {
-	setBase(Widget[T, Tp])
+type baseSetter[T entityConstraint] interface {
+	setBase(Widget[T])
 }
 
-func Build[T any, Tp entityConstraint[T]](s Tp) Tp {
+func Build[T entityConstraint](s T) T {
 	ref := &gcref{1}
 
 	obj := fmt.Sprintf("%T", s)
@@ -126,7 +125,7 @@ func Build[T any, Tp entityConstraint[T]](s Tp) Tp {
 
 	atomic.AddInt64(&debugCounter, 1)
 
-	bw := Widget[T, Tp]{
+	bw := Widget[T]{
 		gcref: ref,
 		RectComponent: gorgeui.RectComponent{
 			Anchor:   gm.Vec4{0, 0, 1, 1},
@@ -138,7 +137,7 @@ func Build[T any, Tp entityConstraint[T]](s Tp) Tp {
 		base:             s,
 	}
 
-	any(s).(baseSetter[T, Tp]).setBase(bw)
+	any(s).(baseSetter[T]).setBase(bw)
 
 	if builder, ok := any(s).(interface{ Build(b *B) }); ok {
 		b := &B{root: &curEntity{entity: s}}
@@ -162,20 +161,20 @@ func entityUpdate(ent gorge.Entity) {
 	}
 }
 
-func (w *Widget[T, Tp]) ID() string {
+func (w *Widget[T]) ID() string {
 	return w.id
 }
 
-func (w *Widget[T, Tp]) SetID(id string) {
+func (w *Widget[T]) SetID(id string) {
 	w.id = id
 }
 
-func (w *Widget[T, Tp]) SetName(name string) Tp {
+func (w *Widget[T]) SetName(name string) T {
 	w.name = name
 	return w.base
 }
 
-func (w *Widget[T, Tp]) Attached(e gorgeui.Entity) {
+func (w *Widget[T]) Attached(e gorgeui.Entity) {
 	// Sounds bad
 	for _, c := range w.GetEntities() {
 		if r, ok := c.(renderabler); ok {
@@ -186,78 +185,78 @@ func (w *Widget[T, Tp]) Attached(e gorgeui.Entity) {
 	}
 }
 
-func (w *Widget[T, Tp]) GetClientArea() Entity {
+func (w *Widget[T]) GetClientArea() Entity {
 	return w.clientArea
 }
 
-func (w *Widget[T, Tp]) SetClientArea(a Entity) Tp {
+func (w *Widget[T]) SetClientArea(a Entity) T {
 	w.clientArea = a
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetDragEvents(b bool) Tp {
+func (w *Widget[T]) SetDragEvents(b bool) T {
 	w.DragEvents = b
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetMargin(vs ...float32) Tp {
+func (w *Widget[T]) SetMargin(vs ...float32) T {
 	w.RectComponent.SetMargin(vs...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetBorder(vs ...float32) Tp {
+func (w *Widget[T]) SetBorder(vs ...float32) T {
 	w.RectComponent.SetBorder(vs...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetDisableRaycast(b bool) Tp {
+func (w *Widget[T]) SetDisableRaycast(b bool) T {
 	w.ElementComponent.SetDisableRaycast(b)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetAnchor(vs ...float32) Tp {
+func (w *Widget[T]) SetAnchor(vs ...float32) T {
 	w.RectComponent.SetAnchor(vs...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetRect(vs ...float32) Tp {
+func (w *Widget[T]) SetRect(vs ...float32) T {
 	w.RectComponent.SetRect(vs...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) FillParent() Tp {
+func (w *Widget[T]) FillParent() T {
 	w.RectComponent.SetAnchor(0, 0, 1, 1)
 	w.RectComponent.SetSize(0)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetPivot(vs ...float32) Tp {
+func (w *Widget[T]) SetPivot(vs ...float32) T {
 	w.RectComponent.SetPivot(vs...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetSize(v ...float32) Tp {
+func (w *Widget[T]) SetSize(v ...float32) T {
 	w.RectComponent.SetSize(v...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetWidth(v float32) Tp {
+func (w *Widget[T]) SetWidth(v float32) T {
 	w.Size[0] = v
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetHeight(v float32) Tp {
+func (w *Widget[T]) SetHeight(v float32) T {
 	w.Size[1] = v
 	return w.base
 }
 
-func (w *Widget[T, Tp]) SetPosition(x, y, z float32) Tp {
+func (w *Widget[T]) SetPosition(x, y, z float32) T {
 	w.Position = gm.Vec3{x, y, z}
 	return w.base
 }
 
 // IntersectFromScreen intersects the entity rect from screen coordinates.
-func (w *Widget[T, Tp]) IntersectFromScreen(pos gm.Vec2) ray.Result {
+func (w *Widget[T]) IntersectFromScreen(pos gm.Vec2) ray.Result {
 	sz := w.ContentSize()
 	m := w.Mat4()
 	v0 := m.MulV4(gm.Vec4{0, 0, 0, 1}).Vec3()     // 0
@@ -271,10 +270,10 @@ func (w *Widget[T, Tp]) IntersectFromScreen(pos gm.Vec2) ray.Result {
 
 // CalcMax calculates children bounds and positions and return min max
 // Calc maximum of the children
-func (w *Widget[T, Tp]) CalcMax() gm.Vec2 { // CalcMax
+func (w *Widget[T]) CalcMax() gm.Vec2 { // CalcMax
 	r := w.Rect()
-	// r[2] += w.Margin[0] + w.Margin[2]
-	// r[3] += w.Margin[1] + w.Margin[3]
+	r[2] += w.Margin[0] + w.Margin[2]
+	r[3] += w.Margin[1] + w.Margin[3]
 	if w.masked {
 		return r.ZW()
 	}
@@ -301,16 +300,16 @@ func (w *Widget[T, Tp]) CalcMax() gm.Vec2 { // CalcMax
 
 // IsMasked returns true if the widget is masked
 // so it won't receive further events outside of its bounds.
-func (w *Widget[T, Tp]) IsMasked() bool {
+func (w *Widget[T]) IsMasked() bool {
 	return w.masked
 }
 
-func (w *Widget[T, Tp]) Add(cs ...gorge.Entity) Tp {
+func (w *Widget[T]) Add(cs ...gorge.Entity) T {
 	w.add(cs...)
 	return w.base
 }
 
-func (w *Widget[T, Tp]) Remove(cs ...gorge.Entity) Tp {
+func (w *Widget[T]) Remove(cs ...gorge.Entity) T {
 	w.remove(cs...)
 	return w.base
 }
@@ -324,7 +323,7 @@ func (w *Widget[T, Tp]) Remove(cs ...gorge.Entity) Tp {
 // Since then we wouldn't have HandleEvent exposed
 
 // HandleEvent handles events.
-func (w *Widget[T, Tp]) HandleEvent(evt event.Event) {
+func (w *Widget[T]) HandleEvent(evt event.Event) {
 	switch evt.(type) {
 	case gorgeui.EventUpdate:
 		if w.layout != nil {
@@ -334,7 +333,7 @@ func (w *Widget[T, Tp]) HandleEvent(evt event.Event) {
 	}
 }
 
-func (w *Widget[T, Tp]) add(cs ...gorge.Entity) {
+func (w *Widget[T]) add(cs ...gorge.Entity) {
 	if w.clientArea != nil {
 		w.clientArea.add(cs...)
 		return
@@ -354,7 +353,7 @@ func (w *Widget[T, Tp]) add(cs ...gorge.Entity) {
 	}
 }
 
-func (w *Widget[T, Tp]) remove(cs ...gorge.Entity) {
+func (w *Widget[T]) remove(cs ...gorge.Entity) {
 	if w.clientArea != nil {
 		w.clientArea.remove(cs...)
 		return
@@ -375,7 +374,7 @@ func (w *Widget[T, Tp]) remove(cs ...gorge.Entity) {
 }
 
 // Find returns the first entity in the graph that matches the predicate.
-func (w *Widget[T, Tp]) Find(id string) Entity {
+func (w *Widget[T]) Find(id string) Entity {
 	if w.ID() == id {
 		return w.base
 	}
@@ -392,11 +391,11 @@ func (w *Widget[T, Tp]) Find(id string) Entity {
 	return nil
 }
 
-func (w *Widget[T, Tp]) setClientArea(a Entity) {
+func (w *Widget[T]) setClientArea(a Entity) {
 	w.clientArea = a
 }
 
-func (w *Widget[T, Tp]) setMaskDepth(n int) {
+func (w *Widget[T]) setMaskDepth(n int) {
 	for _, c := range w.GetEntities() {
 		if s, ok := c.(masker); ok {
 			s.setMaskDepth(n)
