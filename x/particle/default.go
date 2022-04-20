@@ -7,7 +7,7 @@ import (
 
 // Emitter entity will emit particles based on the given parameters when added
 // to gorge, particle.System must be in gorge initialization list.
-type Emitter[T any, Tp particler[T]] struct {
+type Emitter[T any] struct {
 	gorge.TransformComponent
 	EmitterComponent
 
@@ -17,41 +17,41 @@ type Emitter[T any, Tp particler[T]] struct {
 }
 
 // NewEmitter creates a new default emitter.
-func NewEmitter[T any, Tp particler[T]]() *Emitter[T, Tp] {
-	return &Emitter[T, Tp]{
+func NewEmitter[T any]() *Emitter[T] {
+	return &Emitter[T]{
 		TransformComponent: *gorge.NewTransformComponent(),
-		EmitterComponent:   *NewEmitterComponent[T, Tp](),
+		EmitterComponent:   *NewEmitterComponent[T](),
 	}
 }
 
-func (e *Emitter[T, Tp]) SetCreateFunc(f func(*T)) {
+func (e *Emitter[T]) SetCreateFunc(f func(*T)) {
 	e.CreateFunc = f
 }
 
-func (e *Emitter[T, Tp]) SetInitFunc(f func(*T)) {
+func (e *Emitter[T]) SetInitFunc(f func(*T)) {
 	e.InitFunc = f
 }
 
-func (e *Emitter[T, Tp]) SetUpdateFunc(f func(*T, float32)) {
+func (e *Emitter[T]) SetUpdateFunc(f func(*T, float32)) {
 	e.UpdateFunc = f
 }
 
 // CreateParticle implements particle creator method.
-func (e *Emitter[T, Tp]) CreateParticle(p *T) {
+func (e *Emitter[T]) CreateParticle(p *T) {
 	if e.CreateFunc != nil {
 		e.CreateFunc(p)
 	}
 }
 
 // InitParticle implements particle initializer method.
-func (e *Emitter[T, Tp]) InitParticle(p *T) {
+func (e *Emitter[T]) InitParticle(p *T) {
 	if e.InitFunc != nil {
 		e.InitFunc(p)
 	}
 }
 
 // UpdateParticle implements particle updater method.
-func (e *Emitter[T, Tp]) UpdateParticle(p *T, dt float32) {
+func (e *Emitter[T]) UpdateParticle(p *T, dt float32) {
 	if e.UpdateFunc != nil {
 		e.UpdateFunc(p, dt)
 	}

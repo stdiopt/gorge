@@ -10,7 +10,7 @@ import (
 )
 
 type WSlider struct {
-	Widget[*WSlider]
+	Widget[WSlider]
 
 	background *WPane
 	track      *WContainer

@@ -26,8 +26,8 @@ func (p *Component) RenderDisable() bool {
 	return !p.enabled
 }
 
-type particler[T any] interface {
-	*T
+// particler used to have a T constraint to allow the pointers on methods.
+type particler interface {
 	gorge.Transformer
 	Particle() *Component
 }
@@ -41,7 +41,7 @@ type (
 // Particle container
 
 // Type is any but it should be a type where pointer implements particle
-type Particles[T any, Tp particler[T]] struct {
+type Particles[T any] struct {
 	// Controller controller[T]
 
 	particles  []T
@@ -53,14 +53,14 @@ type Particles[T any, Tp particler[T]] struct {
 	updateFunc func(*T, float32)
 }
 
-func (g *Particles[T, Tp]) destroy(gg *gorge.Context) {
+func (g *Particles[T]) destroy(gg *gorge.Context) {
 	for i := range g.particles {
 		gg.Remove(&g.particles[i])
 	}
 	g.particles = nil
 }
 
-func (g *Particles[T, Tp]) init(gg *gorge.Context, em emitter) {
+func (g *Particles[T]) init(gg *gorge.Context, em emitter) {
 	if c, ok := em.(pCreator[T]); ok {
 		g.createFunc = c.CreateParticle
 	}
@@ -93,7 +93,9 @@ func (g *Particles[T, Tp]) init(gg *gorge.Context, em emitter) {
 	g.particles = make([]T, count)
 	for i := range g.particles {
 		p := &g.particles[i]
-		pc := Tp(p).Particle()
+		// TODO: {lpf} Extra conversion for particle until we find solution
+		// it was Tp(p).Particle() before
+		pc := any(p).(particler).Particle()
 		pc.RenderableComponent = &g.renderable
 
 		if g.createFunc != nil {
@@ -107,7 +109,7 @@ func (g *Particles[T, Tp]) init(gg *gorge.Context, em emitter) {
 	}
 }
 
-func (g *Particles[T, Tp]) update(gg *gorge.Context, em emitter, dt float32) {
+func (g *Particles[T]) update(gg *gorge.Context, em emitter, dt float32) {
 	g.totTime += dt
 	ec := em.Emitter()
 	if ec.Count != len(g.particles) {
@@ -134,13 +136,14 @@ func (g *Particles[T, Tp]) update(gg *gorge.Context, em emitter, dt float32) {
 	// Generate particles
 	for i := range g.particles {
 		p := &g.particles[i]
-		pp := Tp(p)
+		// TODO: Extra conversion
+		pp := any(p).(particler)
 		pc := pp.Particle()
 		if pc.enabled {
 			lifeParticles++
 		}
 		if !pc.enabled && created < numNewParticles && ec.Enabled {
-			g.initParticle(em, pp)
+			g.initParticle(em, p)
 			if g.initFunc != nil {
 				g.initFunc(p)
 			}
@@ -168,7 +171,8 @@ func (g *Particles[T, Tp]) update(gg *gorge.Context, em emitter, dt float32) {
 			particles := g.particles[off : off+sz]
 			for i := range particles {
 				p := &particles[i]
-				pp := Tp(p)
+				// Extra conversion
+				pp := any(p).(particler)
 				pc := pp.Particle()
 				if !pc.enabled {
 					continue
@@ -228,14 +232,15 @@ func (g *Particles[T, Tp]) update(gg *gorge.Context, em emitter, dt float32) {
 }
 
 // initParticle initializes the particle
-func (c *Particles[T, Tp]) initParticle(em emitter, p Tp) {
+func (c *Particles[T]) initParticle(em emitter, p *T) {
 	const origin = 0.2
 	ec := em.Emitter()
-
-	pc := p.Particle()
+	// TODO: Extra conversion
+	pp := any(p).(particler)
+	pc := pp.Particle()
 	pc.Age = 0
 	pc.Life = 1
-	t := p.Transform()
+	t := pp.Transform()
 	if ec.Local {
 		// p.TransformComponent = *gorge.NewTransformComponent()
 		t.SetParent(em)

@@ -5,7 +5,7 @@ import (
 )
 
 type WTextButton struct {
-	Widget[*WTextButton]
+	Widget[WTextButton]
 	btn *WButton
 	lbl *WLabel
 }

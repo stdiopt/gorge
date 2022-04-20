@@ -11,7 +11,7 @@ import (
 )
 
 type WLabel struct {
-	Widget[*WLabel]
+	Widget[WLabel]
 
 	alignment [2]text.Align
 	autoSize  bool

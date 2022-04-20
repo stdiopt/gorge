@@ -7,7 +7,7 @@ import (
 )
 
 type WContainer struct {
-	Widget[*WContainer]
+	Widget[WContainer]
 	layouter Layouter
 }
 

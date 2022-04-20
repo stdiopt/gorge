@@ -58,7 +58,7 @@ func NewParticleEmitter() *ParticleEmitter {
 			Count:     1000,
 			Step:      0,
 			Rate:      100,
-			Particles: &particle.Particles[ParticleEntity, *ParticleEntity]{},
+			Particles: &particle.Particles[ParticleEntity]{},
 		},
 		rr:       gm.NewRand(time.Now().UnixNano()),
 		Life:     2,

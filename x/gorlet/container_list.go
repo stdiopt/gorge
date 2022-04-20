@@ -7,7 +7,7 @@ import (
 )
 
 type WList struct {
-	Widget[*WList]
+	Widget[WList]
 
 	layout ListLayout
 

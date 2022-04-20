@@ -15,7 +15,7 @@ type scrollent struct {
 }
 
 type WScroll struct {
-	Widget[*WScroll]
+	Widget[WScroll]
 
 	scrollVel gm.Vec2
 
@@ -162,7 +162,7 @@ func (w *WScroll) scrollFunc(n int) func(v float32) {
 }
 
 type WScrollbar struct {
-	Widget[*WScrollbar]
+	Widget[WScrollbar]
 
 	handler  *WButton
 	track    *WContainer

@@ -8,7 +8,7 @@ import (
 )
 
 type WPane struct {
-	Widget[*WPane]
+	Widget[WPane]
 
 	borderRadius float32
 	roundedQuad  *roundedQuadMesh

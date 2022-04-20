@@ -27,13 +27,13 @@ type EmitterComponent struct { // Component
 }
 
 // NewEmitterComponent creates a new emitter component with a default generator based on type T
-func NewEmitterComponent[T any, Tp particler[T]]() *EmitterComponent {
+func NewEmitterComponent[T any]() *EmitterComponent {
 	return &EmitterComponent{
 		Enabled:   true,
 		Count:     1000,
 		Rate:      100,
 		Step:      0.016,
-		Particles: &Particles[T, Tp]{},
+		Particles: &Particles[T]{},
 	}
 }
 

@@ -6,7 +6,7 @@ import (
 )
 
 type WSpinnerVec3 struct {
-	Widget[*WSpinnerVec3]
+	Widget[WSpinnerVec3]
 
 	value    gm.Vec3
 	changefn func(v gm.Vec3)

@@ -7,7 +7,7 @@ import (
 )
 
 type WGrid struct {
-	Widget[*WGrid]
+	Widget[WGrid]
 
 	layout GridLayout
 }

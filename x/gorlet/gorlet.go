@@ -68,16 +68,12 @@ type entityRemover interface {
 
 type gcref struct{ n int }
 
-type entityConstraint interface {
-	Entity
-}
-
-type Widget[T entityConstraint] struct {
+type Widget[T any] struct {
 	id   string
 	name string
 	gorgeui.RectComponent
 	gorgeui.ElementComponent
-	base T
+	base *T
 
 	clientArea Entity
 	masked     bool
@@ -101,18 +97,30 @@ func (w *Widget[T]) String() string {
 	return b.String()
 }
 
-func (b *Widget[T]) setBase(b2 Widget[T]) {
-	*b = b2
-}
-
-type baseSetter[T entityConstraint] interface {
-	setBase(Widget[T])
-}
-
-func Build[T entityConstraint](s T) T {
+func (w *Widget[T]) initBase(v *T) {
 	ref := &gcref{1}
 
-	obj := fmt.Sprintf("%T", s)
+	*w = Widget[T]{
+		gcref: ref,
+		RectComponent: gorgeui.RectComponent{
+			Anchor:   gm.Vec4{0, 0, 1, 1},
+			Size:     gm.Vec2{0, 0},
+			Scale:    gm.Vec3{1, 1, 1},
+			Rotation: gm.QIdent(),
+		},
+		ElementComponent: gorgeui.ElementComponent{},
+		base:             v,
+	}
+}
+
+type baseIniter[T any] interface {
+	initBase(T)
+}
+
+func Build[T baseIniter[T]](v T) T {
+	ref := &gcref{1}
+
+	obj := fmt.Sprintf("%T", v)
 	if Debug {
 		log.Println("Allocating:", obj)
 	}
@@ -125,7 +133,10 @@ func Build[T entityConstraint](s T) T {
 
 	atomic.AddInt64(&debugCounter, 1)
 
-	bw := Widget[T]{
+	// Should initialize the widget thing
+	v.initBase(v)
+
+	/*bw := Widget[T]{
 		gcref: ref,
 		RectComponent: gorgeui.RectComponent{
 			Anchor:   gm.Vec4{0, 0, 1, 1},
@@ -134,17 +145,18 @@ func Build[T entityConstraint](s T) T {
 			Rotation: gm.QIdent(),
 		},
 		ElementComponent: gorgeui.ElementComponent{},
-		base:             s,
+		base:             v,
 	}
 
-	any(s).(baseSetter[T]).setBase(bw)
+	any(v).(baseSetter[*T]).setBase(bw)
+	*/
 
-	if builder, ok := any(s).(interface{ Build(b *B) }); ok {
-		b := &B{root: &curEntity{entity: s}}
+	if builder, ok := any(v).(interface{ Build(b *B) }); ok {
+		b := &B{root: &curEntity{entity: any(v).(Entity)}}
 		b.Do(builder.Build)
-		entityUpdate(s)
+		entityUpdate(v)
 	}
-	return s
+	return v
 }
 
 func entityUpdate(ent gorge.Entity) {
@@ -169,7 +181,7 @@ func (w *Widget[T]) SetID(id string) {
 	w.id = id
 }
 
-func (w *Widget[T]) SetName(name string) T {
+func (w *Widget[T]) SetName(name string) *T {
 	w.name = name
 	return w.base
 }
@@ -189,68 +201,68 @@ func (w *Widget[T]) GetClientArea() Entity {
 	return w.clientArea
 }
 
-func (w *Widget[T]) SetClientArea(a Entity) T {
+func (w *Widget[T]) SetClientArea(a Entity) *T {
 	w.clientArea = a
 	return w.base
 }
 
-func (w *Widget[T]) SetDragEvents(b bool) T {
+func (w *Widget[T]) SetDragEvents(b bool) *T {
 	w.DragEvents = b
 	return w.base
 }
 
-func (w *Widget[T]) SetMargin(vs ...float32) T {
+func (w *Widget[T]) SetMargin(vs ...float32) *T {
 	w.RectComponent.SetMargin(vs...)
 	return w.base
 }
 
-func (w *Widget[T]) SetBorder(vs ...float32) T {
+func (w *Widget[T]) SetBorder(vs ...float32) *T {
 	w.RectComponent.SetBorder(vs...)
 	return w.base
 }
 
-func (w *Widget[T]) SetDisableRaycast(b bool) T {
+func (w *Widget[T]) SetDisableRaycast(b bool) *T {
 	w.ElementComponent.SetDisableRaycast(b)
 	return w.base
 }
 
-func (w *Widget[T]) SetAnchor(vs ...float32) T {
+func (w *Widget[T]) SetAnchor(vs ...float32) *T {
 	w.RectComponent.SetAnchor(vs...)
 	return w.base
 }
 
-func (w *Widget[T]) SetRect(vs ...float32) T {
+func (w *Widget[T]) SetRect(vs ...float32) *T {
 	w.RectComponent.SetRect(vs...)
 	return w.base
 }
 
-func (w *Widget[T]) FillParent() T {
+func (w *Widget[T]) FillParent() *T {
 	w.RectComponent.SetAnchor(0, 0, 1, 1)
 	w.RectComponent.SetSize(0)
 	return w.base
 }
 
-func (w *Widget[T]) SetPivot(vs ...float32) T {
+func (w *Widget[T]) SetPivot(vs ...float32) *T {
 	w.RectComponent.SetPivot(vs...)
 	return w.base
 }
 
-func (w *Widget[T]) SetSize(v ...float32) T {
+func (w *Widget[T]) SetSize(v ...float32) *T {
 	w.RectComponent.SetSize(v...)
 	return w.base
 }
 
-func (w *Widget[T]) SetWidth(v float32) T {
+func (w *Widget[T]) SetWidth(v float32) *T {
 	w.Size[0] = v
 	return w.base
 }
 
-func (w *Widget[T]) SetHeight(v float32) T {
+func (w *Widget[T]) SetHeight(v float32) *T {
 	w.Size[1] = v
 	return w.base
 }
 
-func (w *Widget[T]) SetPosition(x, y, z float32) T {
+func (w *Widget[T]) SetPosition(x, y, z float32) *T {
 	w.Position = gm.Vec3{x, y, z}
 	return w.base
 }
@@ -304,12 +316,12 @@ func (w *Widget[T]) IsMasked() bool {
 	return w.masked
 }
 
-func (w *Widget[T]) Add(cs ...gorge.Entity) T {
+func (w *Widget[T]) Add(cs ...gorge.Entity) *T {
 	w.add(cs...)
 	return w.base
 }
 
-func (w *Widget[T]) Remove(cs ...gorge.Entity) T {
+func (w *Widget[T]) Remove(cs ...gorge.Entity) *T {
 	w.remove(cs...)
 	return w.base
 }
@@ -327,7 +339,7 @@ func (w *Widget[T]) HandleEvent(evt event.Event) {
 	switch evt.(type) {
 	case gorgeui.EventUpdate:
 		if w.layout != nil {
-			w.layout.Layout(w.base)
+			w.layout.Layout(any(w.base).(Entity))
 		}
 	default:
 	}
@@ -343,7 +355,7 @@ func (w *Widget[T]) add(cs ...gorge.Entity) {
 			if r, ok := p.Parent().(entityRemover); ok {
 				r.remove(c)
 			}
-			p.SetParent(w.base)
+			p.SetParent(any(w.base).(gorge.Matrixer))
 		}
 	}
 	w.Container.Add(cs...)
@@ -376,7 +388,7 @@ func (w *Widget[T]) remove(cs ...gorge.Entity) {
 // Find returns the first entity in the graph that matches the predicate.
 func (w *Widget[T]) Find(id string) Entity {
 	if w.ID() == id {
-		return w.base
+		return any(w.base).(Entity)
 	}
 	children := w.GetEntities()
 	for _, c := range children {

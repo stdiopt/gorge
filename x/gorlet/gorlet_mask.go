@@ -8,7 +8,7 @@ import (
 )
 
 type WMask struct {
-	Widget[*WMask]
+	Widget[WMask]
 
 	borderRadius float32
 	depthMask    int

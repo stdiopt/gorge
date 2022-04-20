@@ -14,7 +14,7 @@ type TreeNode struct {
 }
 
 type WTree struct {
-	Widget[*WTree]
+	Widget[WTree]
 
 	model *TreeNode
 

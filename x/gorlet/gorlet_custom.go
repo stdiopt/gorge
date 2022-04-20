@@ -24,7 +24,7 @@ func (o *Observer) Call(v any) {
 }
 
 type WCustom struct {
-	Widget[*WCustom]
+	Widget[WCustom]
 	Layout    Layouter
 	observers map[string]*Observer
 }
