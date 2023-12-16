@@ -174,7 +174,7 @@ func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 		Size:     float32(size),
 		Glyphs:   glyphs,
 		Texture:  tex,
-		face:     face,
+		Face:     face,
 	}
 
 	return nil

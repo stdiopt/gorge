@@ -181,11 +181,11 @@ func (m *Mesh) MeasureWidth(w []rune) float32 {
 	for i, ch := range w {
 
 		kern := float32(0)
-		if i > 0 && m.Font.face != nil {
-			k := m.Font.face.Kern(w[i-1], ch)
+		if i > 0 && m.Font.Face != nil {
+			k := m.Font.Face.Kern(w[i-1], ch)
 			kern = float32(k>>6) / 72
 		}
-		g := m.Font.getGlyph(ch)
+		g := m.Font.Glyph(ch)
 		totalX = (x + g.BearingH + g.Size[0]) * size
 		x += g.Advance + kern
 	}
@@ -194,7 +194,7 @@ func (m *Mesh) MeasureWidth(w []rune) float32 {
 
 // Update Mesh
 // Ideas:
-//  - grab a line, for { measure, remove last word } until we get a proper size
+//   - grab a line, for { measure, remove last word } until we get a proper size
 func (m *Mesh) Update() {
 	// Or raw
 	if m.Mode == ModeRaw {
@@ -232,12 +232,12 @@ func (m *Mesh) updateRaw() {
 		}
 
 		kern := float32(0)
-		if i > 0 && m.Font.face != nil {
-			k := m.Font.face.Kern(text[i-1], ch)
+		if i > 0 && m.Font.Face != nil {
+			k := m.Font.Face.Kern(text[i-1], ch)
 			kern = float32(k>>6) / 72
 		}
 
-		g := m.Font.getGlyph(ch)
+		g := m.Font.Glyph(ch)
 
 		xpos := (x + g.BearingH) + kern
 		if (xpos+g.Size[0])*size > m.Boundary[0] {
@@ -362,13 +362,13 @@ func (m *Mesh) updateFlow() {
 			}
 
 			kern := float32(0)
-			if i > 0 && m.Font.face != nil {
-				k := m.Font.face.Kern(line[i-1], ch)
+			if i > 0 && m.Font.Face != nil {
+				k := m.Font.Face.Kern(line[i-1], ch)
 				// kern = float32(k>>6) / (72 * 0.4)
 				kern = float32(k>>6) / 72
 			}
 
-			g := m.Font.getGlyph(ch)
+			g := m.Font.Glyph(ch)
 
 			xpos := (x + g.BearingH) + kern
 			// chars will be centered as vertices 0.5?

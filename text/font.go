@@ -19,7 +19,7 @@ type Glyph struct {
 
 // Font is like a texture with extra information about glyphs
 type Font struct {
-	face     font.Face
+	Face     font.Face
 	Glyphs   map[rune]Glyph
 	SpaceAdv float32
 	// Size is the internally rendered size
@@ -27,7 +27,7 @@ type Font struct {
 	*gorge.Texture
 }
 
-func (f *Font) getGlyph(ch rune) Glyph {
+func (f *Font) Glyph(ch rune) Glyph {
 	g, ok := f.Glyphs[ch]
 	if !ok {
 		return f.Glyphs['�'] // Special one
@@ -64,5 +64,12 @@ func FontBackground(c gm.Vec4) FontOptionsFunc {
 func FontForeground(c gm.Vec4) FontOptionsFunc {
 	return func(opt *FontOptions) {
 		opt.Foreground = &c
+	}
+}
+
+// FontRunes sets the font texture runes option.
+func FontRunes(chars []rune) FontOptionsFunc {
+	return func(opt *FontOptions) {
+		opt.Chars = chars
 	}
 }
