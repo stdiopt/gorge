@@ -115,7 +115,8 @@ func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 		}
 		bnd, adv, ok := face.GlyphBounds(ch)
 		if !ok {
-			return fmt.Errorf("glyph bounds error")
+			// Todo handle this somehow
+			// return fmt.Errorf("glyph bounds error")
 		}
 		if (dot.X + ladv) > fixed.I(clip.Dx()) {
 			dot.X = 0
@@ -137,7 +138,8 @@ func fontLoader(res *resource.Context, v any, name string, opts ...any) error {
 		d := dot.Sub(bnd.Min)
 		gr, mask, maskp, _, ok := face.Glyph(d, ch)
 		if !ok {
-			return fmt.Errorf("glyph error")
+			// Todo handle this somehow
+			// return fmt.Errorf("glyph error")
 		}
 		// gr = clip.Intersect(gr)
 		draw.DrawMask(img, gr, image.NewUniform(fg), image.Point{}, mask, maskp, draw.Over)
